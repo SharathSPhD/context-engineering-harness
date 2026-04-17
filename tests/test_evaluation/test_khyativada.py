@@ -37,7 +37,7 @@ def test_akhyati_relational_combination_error():
     clf = KhyativadaClassifier()
     result = clf.classify_heuristic(
         claim="Einstein won the Nobel Prize in 1921 for his theory of relativity",
-        ground_truth="Einstein won in 1921 but not for relativity — he won for the photoelectric effect",
+        ground_truth="Einstein won in 1921 but not for relativity",
     )
     assert result["class"] == KhyativadaClass.akhyati
 
@@ -109,3 +109,5 @@ def test_batch_classify_returns_list():
     results = clf.batch_classify(examples)
     assert len(results) == 2
     assert all("class" in r for r in results)
+    assert results[0]["class"] == KhyativadaClass.asatkhyati  # "does not exist" → asatkhyati
+    assert results[1]["class"] == KhyativadaClass.anyathakhyati  # version mismatch → anyathakhyati

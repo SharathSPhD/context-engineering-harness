@@ -1,3 +1,5 @@
+import json
+import re
 from enum import Enum
 
 
@@ -27,7 +29,8 @@ class KhyativadaClassifier:
             }
 
         # akhyati: relational error — true components combined falsely
-        if ("not" in gt_lower and "for" in gt_lower) or "combination" in gt_lower:
+        # "but not for" captures "he won the prize but not for X" pattern
+        if "but not for" in gt_lower or "but not due to" in gt_lower or "incorrectly attributed" in gt_lower:
             return {
                 "class": KhyativadaClass.akhyati,
                 "confidence": 0.75,
@@ -35,7 +38,6 @@ class KhyativadaClassifier:
             }
 
         # anyathakhyati: version/identifier mismatch
-        import re
         claim_nums = re.findall(r'\d+\.\d+', claim)
         gt_nums = re.findall(r'\d+\.\d+', ground_truth)
         if claim_nums and gt_nums and set(claim_nums) != set(gt_nums):
@@ -56,7 +58,6 @@ class KhyativadaClassifier:
         if not api_key:
             return self.classify_heuristic(claim, ground_truth)
         import anthropic
-        import json
         client = anthropic.Anthropic(api_key=api_key)
         prompt = f"""Classify this hallucination into exactly one of these 6 khyātivāda types:
 - anyathakhyati: real entity misidentified as another real entity
@@ -72,11 +73,18 @@ Ground truth: {ground_truth}
 
 Respond with JSON only: {{"class": "<type>", "confidence": <0-1>, "rationale": "<one sentence>"}}"""
         response = client.messages.create(
-            model="claude-haiku-4-5-20251001",
+            model="claude-sonnet-4-6",
             max_tokens=200,
             messages=[{"role": "user", "content": prompt}],
         )
-        return json.loads(response.content[0].text)
+        try:
+            result = json.loads(response.content[0].text)
+            required = {"class", "confidence", "rationale"}
+            if not required.issubset(result.keys()):
+                raise ValueError(f"LLM response missing keys: {result}")
+            return result
+        except (json.JSONDecodeError, ValueError, KeyError):
+            return self.classify_heuristic(claim, ground_truth)
 
     def batch_classify(self, examples: list[dict], api_key: str = "") -> list[dict]:
         return [
