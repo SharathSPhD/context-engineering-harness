@@ -8,6 +8,10 @@ class ContextStore:
         self._elements: dict[str, ContextElement] = {}
 
     def insert(self, element: ContextElement) -> None:
+        if element.sublated_by is not None and element.precision > 0:
+            raise ValueError(
+                f"Element {element.id!r}: sublated_by is set but precision > 0 violates the sublation invariant"
+            )
         self._elements[element.id] = element
 
     def get(self, element_id: str) -> ContextElement | None:
@@ -42,7 +46,7 @@ class ContextStore:
         """Set precision=0.0 on non-sublated elements below threshold. Returns their IDs."""
         compressed = []
         for eid, elem in list(self._elements.items()):
-            if elem.precision > 0 and elem.precision < precision_threshold and elem.sublated_by is None:
+            if elem.sublated_by is None and 0 < elem.precision < precision_threshold:
                 self._elements[eid] = dataclasses.replace(elem, precision=0.0)
                 compressed.append(eid)
         return compressed

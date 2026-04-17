@@ -8,7 +8,7 @@ AVACCHEDAKA_QUERY_SCHEMA = {
         "qualifier": {"type": "string", "default": ""},
         "condition": {"type": "string"},
         "precision_threshold": {"type": "number", "minimum": 0, "maximum": 1, "default": 0.5},
-        "max_elements": {"type": "integer", "default": 10},
+        "max_elements": {"type": "integer", "default": 20},
     },
 }
 

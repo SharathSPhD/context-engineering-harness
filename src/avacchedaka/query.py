@@ -15,7 +15,8 @@ class AvacchedakaQuery:
             return False
         if not self.condition:
             return True
+        element_tokens = {t.strip() for t in element.avacchedaka.condition.split(" AND ")}
         for token in self.condition.split(" AND "):
-            if token.strip() not in element.avacchedaka.condition:
+            if token.strip() not in element_tokens:
                 return False
         return True

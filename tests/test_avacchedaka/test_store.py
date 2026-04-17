@@ -81,6 +81,20 @@ def test_to_context_window_format(sample_element):
     assert "precision=0.90" in window
 
 
+def test_insert_rejects_sublated_with_nonzero_precision():
+    store = ContextStore()
+    with pytest.raises(ValueError, match="sublation invariant"):
+        store.insert(ContextElement(
+            id="bad",
+            content="content",
+            precision=0.9,
+            avacchedaka=AvacchedakaConditions(
+                qualificand="auth_module", qualifier="prop", condition="task_type=code_review"
+            ),
+            sublated_by="other-id",
+        ))
+
+
 def test_retrieve_sorted_by_precision_descending():
     store = ContextStore()
     store.insert(_make_element("e1", "low", 0.6))

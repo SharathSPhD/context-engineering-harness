@@ -41,3 +41,9 @@ def test_matches_multi_token_and_all_present():
 def test_matches_multi_token_partial_miss():
     query = AvacchedakaQuery(qualificand="auth", condition="task_type=qa AND env=prod")
     assert query.matches(_elem(qualificand="auth", condition="task_type=qa")) is False
+
+
+def test_matches_no_false_positive_substring():
+    """Ensure 'env=p' does NOT match element condition 'env=prod'."""
+    query = AvacchedakaQuery(qualificand="auth", condition="env=p")
+    assert query.matches(_elem(qualificand="auth", condition="env=prod")) is False
