@@ -26,7 +26,13 @@ from src.benchmarks.base import BenchmarkAdapter, BenchmarkExample, ModelOutput
 from src.benchmarks.registry import register
 
 from ._hf_loader import HFUnavailable, load_hf_examples
-from ._synthetic import generate_examples
+from ._real_corpus import (
+    RealCorpus,
+    RealCorpusUnavailable,
+    build_real_haystack,
+    make_real_corpus,
+)
+from ._synthetic import generate_examples, make_needle
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +65,9 @@ class RulerNIAHAdapter(BenchmarkAdapter):
     hf_split: str = "test"
     hf_task_filter: str = "niah_single_1"
 
+    use_real_corpus: bool = False
+    real_corpus_sources: tuple[str, ...] = ("wikipedia", "arxiv")
+
     def load_examples(self, *, n: int | None = None, seed: int = 0) -> list[BenchmarkExample]:
         n_use = n or self.default_n
         if self.load_real:
@@ -70,7 +79,55 @@ class RulerNIAHAdapter(BenchmarkAdapter):
                     exc,
                     self.target_tokens,
                 )
+        if self.use_real_corpus:
+            try:
+                return self._load_synthetic_with_real_corpus(n=n_use, seed=seed)
+            except RealCorpusUnavailable as exc:
+                logger.warning(
+                    "RULER real-corpus distractors unavailable (%s); falling back to template filler",
+                    exc,
+                )
         return self._load_synthetic(n=n_use, seed=seed)
+
+    def _load_synthetic_with_real_corpus(self, *, n: int, seed: int) -> list[BenchmarkExample]:
+        """Build NIAH examples with real Wikipedia/arXiv distractors.
+
+        Uses the same needle structure as the pure-template path so the
+        scorers and prompts work unchanged — only the distractor content
+        changes.
+        """
+        corpus: RealCorpus = make_real_corpus(self.real_corpus_sources)
+        examples: list[BenchmarkExample] = []
+        for i in range(n):
+            seed_i = seed * 10_000 + i
+            needles = [make_needle(seed_i, k) for k in range(self.needles_per_example)]
+            haystack = build_real_haystack(
+                target_tokens=self.target_tokens,
+                needles=needles,
+                seed=seed_i,
+                corpus=corpus,
+            )
+            primary = needles[0]
+            ground_truth = (
+                primary.value
+                if self.needles_per_example == 1
+                else {n.key: n.value for n in needles}
+            )
+            examples.append(
+                BenchmarkExample(
+                    id=f"real-{seed:02d}-{i:04d}",
+                    prompt=primary.key,
+                    ground_truth=ground_truth,
+                    metadata={
+                        "target_tokens": self.target_tokens,
+                        "needle_count": len(needles),
+                        "source": "synthetic+real_corpus",
+                        "real_corpus_sources": list(self.real_corpus_sources),
+                    },
+                    context=haystack,
+                )
+            )
+        return examples
 
     def _load_synthetic(self, *, n: int, seed: int) -> list[BenchmarkExample]:
         synthetic = generate_examples(

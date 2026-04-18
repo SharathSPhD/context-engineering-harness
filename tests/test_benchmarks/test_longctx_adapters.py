@@ -101,6 +101,54 @@ def test_nocha_score_requires_both_verdicts_correct():
     assert s_no == 0.0
 
 
+def test_ruler_use_real_corpus_falls_back_when_unavailable(monkeypatch):
+    """When real corpora can't load, the adapter falls back to template filler.
+
+    We disable HF entirely so the real-corpus path raises and the adapter
+    silently uses the synthetic generator. The end product must still be a
+    valid haystack containing the needle.
+    """
+    monkeypatch.setenv("CEH_DISABLE_HF", "1")
+    monkeypatch.delenv("CEH_REAL_LONGCTX", raising=False)
+    adapter = RulerNIAHAdapter(target_tokens=1_500, default_n=2, use_real_corpus=True)
+    examples = adapter.load_examples(seed=0)
+    assert len(examples) == 2
+    for ex in examples:
+        assert ex.ground_truth in ex.context
+
+
+def test_ruler_use_real_corpus_uses_corpus_when_available(monkeypatch, tmp_path):
+    """When real corpora are pre-cached, the adapter actually uses them."""
+    monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path))
+    monkeypatch.setenv("CEH_REAL_LONGCTX", "1")
+    monkeypatch.delenv("CEH_DISABLE_HF", raising=False)
+
+    from src.benchmarks.adapters.longctx._real_corpus import (
+        HFArxivCorpus,
+        HFWikipediaCorpus,
+        _write_cache,
+    )
+
+    wiki = HFWikipediaCorpus()
+    arxiv = HFArxivCorpus()
+    _write_cache(
+        wiki._cache_key(),
+        [f"Real Wikipedia paragraph number {i} discussing science topics." for i in range(80)],
+    )
+    _write_cache(
+        arxiv._cache_key(),
+        [f"Real arXiv abstract number {i} on computational methods. " * 4 for i in range(80)],
+    )
+
+    adapter = RulerNIAHAdapter(target_tokens=1_500, default_n=2, use_real_corpus=True)
+    examples = adapter.load_examples(seed=0)
+    assert len(examples) == 2
+    for ex in examples:
+        assert ex.metadata["source"] == "synthetic+real_corpus"
+        assert ex.ground_truth in ex.context
+        assert "Real Wikipedia paragraph" in ex.context or "Real arXiv abstract" in ex.context
+
+
 def test_runner_end_to_end_with_ruler_adapter_and_oracle_caller():
     """Treatment caller answers correctly; baseline caller hallucinates.
 
