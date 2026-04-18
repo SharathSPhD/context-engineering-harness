@@ -24,7 +24,9 @@ def test_bridge_returns_text_from_result_field():
     assert resp.content[0].text == "Hello!"
 
 
-def test_bridge_passes_system_prompt_as_flag():
+def test_bridge_passes_system_prompt_as_flag_and_stream_json_user_turn():
+    """v2 (G10): system prompt rides on `--system-prompt`; user/assistant turns
+    ride on stream-json over stdin in `{type, message:{role,content}}` shape."""
     from src.cli_bridge import ClaudeCLIClient
     with patch("subprocess.run", return_value=_mock_run({"result": "ok"})) as mock_run:
         ClaudeCLIClient().messages.create(
@@ -34,8 +36,12 @@ def test_bridge_passes_system_prompt_as_flag():
             messages=[{"role": "user", "content": "Hi"}],
         )
     cmd = mock_run.call_args[0][0]
-    assert "--system-prompt" in cmd
-    assert "You are a test assistant." in cmd
+    stdin_blob = mock_run.call_args.kwargs["input"]
+    assert cmd[cmd.index("--input-format") + 1] == "stream-json"
+    assert cmd[cmd.index("--output-format") + 1] == "stream-json"
+    assert cmd[cmd.index("--system-prompt") + 1] == "You are a test assistant."
+    lines = [json.loads(l) for l in stdin_blob.strip().splitlines()]
+    assert lines == [{"type": "user", "message": {"role": "user", "content": "Hi"}}]
 
 
 def test_bridge_raises_on_nonzero_exit():

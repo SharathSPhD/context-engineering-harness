@@ -24,11 +24,25 @@ class ManasAgent:
         "recommended_queries (list of {qualificand, condition} dicts), reasoning_sketch (str)."
     )
 
-    def __init__(self, api_key: str = "", model: str = ""):
+    def __init__(self, api_key: str = "", model: str = "", max_tokens: int = 512):
         self.client = get_client(api_key)
         self.model = model or config.fast_model
+        self.max_tokens = max_tokens
 
-    def run(self, question: str, context_window: str, task_context: str, qualificand: str) -> ManasOutput:
+    def run(
+        self,
+        question: str,
+        context_window: str,
+        task_context: str,
+        qualificand: str,
+        sakshi_invariant: str = "",
+    ) -> ManasOutput:
+        system = self.SYSTEM
+        if sakshi_invariant:
+            system = (
+                f"{self.SYSTEM}\n\n"
+                f"<sakshi_prefix>\n{sakshi_invariant}\n</sakshi_prefix>"
+            )
         messages = [
             {
                 "role": "user",
@@ -37,8 +51,8 @@ class ManasAgent:
         ]
         response = self.client.messages.create(
             model=self.model,
-            max_tokens=512,
-            system=self.SYSTEM,
+            max_tokens=self.max_tokens,
+            system=system,
             messages=messages,
         )
         try:

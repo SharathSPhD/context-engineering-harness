@@ -7,7 +7,9 @@ Method:
 - Measure: congruent accuracy vs incongruent accuracy.
 - The delta proves congruence is the signal, not length.
 
-Target: congruent_accuracy < incongruent_accuracy (any negative delta = H1 supported).
+Target: congruent_accuracy > incongruent_accuracy. (Higher accuracy on
+schema-congruent contexts means congruence — not length — predicts whether
+the model finds the answer. Direction was inverted in v0; fixed in v2 G3.)
 """
 from __future__ import annotations
 
@@ -87,8 +89,8 @@ def run_h1() -> dict:
         "congruent_accuracy": round(cong_acc, 3),
         "incongruent_accuracy": round(incong_acc, 3),
         "delta": round(delta, 3),
-        "target_met": delta < 0,
-        "target_description": "congruent_accuracy < incongruent_accuracy",
+        "target_met": delta > 0,
+        "target_description": "congruent_accuracy > incongruent_accuracy",
         "details": results,
     }
 

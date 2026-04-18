@@ -26,9 +26,10 @@ class BuddhiAgent:
         "If confidence < 0.6 and evidence is weak, set answer to null. Never fabricate."
     )
 
-    def __init__(self, api_key: str = "", model: str = ""):
+    def __init__(self, api_key: str = "", model: str = "", max_tokens: int = 1024):
         self.client = get_client(api_key)
         self.model = model or config.smart_model
+        self.max_tokens = max_tokens
 
     def run(
         self,
@@ -37,7 +38,14 @@ class BuddhiAgent:
         manas_sketch: str,
         uncertainty: float,
         candidate_ids: list[str] | None = None,
+        sakshi_invariant: str = "",
     ) -> BuddhiOutput:
+        system = self.SYSTEM
+        if sakshi_invariant:
+            system = (
+                f"{self.SYSTEM}\n\n"
+                f"<sakshi_prefix>\n{sakshi_invariant}\n</sakshi_prefix>"
+            )
         content = (
             f"Context:\n{context_window}\n\n"
             f"Candidate element IDs surfaced by manas: {candidate_ids or []}\n\n"
@@ -53,8 +61,8 @@ class BuddhiAgent:
         ]
         response = self.client.messages.create(
             model=self.model,
-            max_tokens=512,
-            system=self.SYSTEM,
+            max_tokens=self.max_tokens,
+            system=system,
             messages=messages,
         )
         try:

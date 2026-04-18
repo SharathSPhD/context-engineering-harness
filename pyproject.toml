@@ -14,6 +14,7 @@ dependencies = [
     "mlflow>=2.0",
     "numpy>=1.26",
     "pandas>=2.0",
+    "tiktoken>=0.7",
 ]
 
 [project.optional-dependencies]
@@ -31,6 +32,9 @@ testpaths = ["tests"]
 asyncio_mode = "auto"
 markers = [
     "integration: marks tests that require ANTHROPIC_API_KEY and make live API calls",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
 ]
 
 [tool.coverage.run]

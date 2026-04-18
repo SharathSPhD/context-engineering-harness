@@ -22,16 +22,31 @@ class BoundaryTriggeredCompactor:
             qualificand: Optional avacchedaka qualificand scope for targeted compaction.
             task_context: Optional condition string to scope which elements to compact.
         """
-        return self.store.compress(self.compress_threshold)
+        return self.store.compress(
+            self.compress_threshold,
+            qualificand=qualificand,
+            task_context=task_context,
+        )
 
-    def threshold_compact(self, token_count: int, token_threshold: int, qualificand: str = "") -> list[str]:
+    def threshold_compact(
+        self,
+        token_count: int,
+        token_threshold: int,
+        qualificand: str = "",
+        task_context: str = "",
+    ) -> list[str]:
         """Baseline: compress when token count exceeds a fixed threshold.
 
         Args:
             qualificand: Optional avacchedaka qualificand to scope the compaction.
+            task_context: Optional condition scope.
         """
         if token_count >= token_threshold:
-            return self.store.compress(self.compress_threshold)
+            return self.store.compress(
+                self.compress_threshold,
+                qualificand=qualificand,
+                task_context=task_context,
+            )
         return []
 
 
@@ -49,15 +64,26 @@ class BoundaryTriggeredSession:
         self.compactor = BoundaryTriggeredCompactor(store, compress_threshold)
         self.compaction_events: list[dict] = []
 
-    def process_surprises(self, surprises: list[float], step: int = 0) -> list[str]:
+    def process_surprises(
+        self,
+        surprises: list[float],
+        step: int = 0,
+        qualificand: str = "",
+        task_context: str = "",
+    ) -> list[str]:
         """Check for boundaries in surprise sequence; compact if found."""
         boundaries = self.detector.detect_from_surprises(surprises)
         if boundaries:
-            compressed = self.compactor.compact_at_boundary()
+            compressed = self.compactor.compact_at_boundary(
+                qualificand=qualificand,
+                task_context=task_context,
+            )
             self.compaction_events.append({
                 "step": step,
                 "boundary_indices": boundaries,
                 "compressed_ids": compressed,
+                "qualificand": qualificand,
+                "task_context": task_context,
             })
             return compressed
         return []
