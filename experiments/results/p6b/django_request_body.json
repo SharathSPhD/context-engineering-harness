@@ -1,0 +1,228 @@
+{
+  "case_id": "django_request_body",
+  "title": "When does Django raise RawPostDataException after request.POST?",
+  "repo": "django/django",
+  "issue_url": "https://code.djangoproject.com/ticket/27592",
+  "pinned_commit": "django-4.2.11",
+  "probe_question": "On Django 4.2, can I read request.body after I have already accessed request.POST for a form-encoded POST request?",
+  "gold_answer_substring": "form-encoded",
+  "forbidden_substrings": [
+    "Django 1.x",
+    "always raises",
+    "never raises"
+  ],
+  "with_harness": {
+    "arm": "with_harness",
+    "case_id": "django_request_body",
+    "final_answer": "Django 4.1 release notes clarified that the RawPostDataException is raised only for form-encoded requests; JSON bodies remain readable via request.body even after POST inspection.",
+    "answer_correct": true,
+    "forbidden_hits": [],
+    "metrics": {
+      "n_evidence_in_context": 4,
+      "n_evidence_dropped": 0,
+      "approx_context_tokens": 213,
+      "stale_evidence_in_context": 0,
+      "sublations": 3,
+      "compactions": 1,
+      "store_size_total": 5,
+      "store_size_active": 4,
+      "store_size_sublated": 1,
+      "answer_policy": "highest_precision_survivor"
+    },
+    "transcript": [
+      {
+        "step": 1,
+        "action": "plugin_insert",
+        "payload": {
+          "id": "django-so-1",
+          "precision": 0.42,
+          "qualificand": "django_request",
+          "qualifier": "post_then_body",
+          "condition": "repo=django/django AND topic=request_body",
+          "stale_at_source": true,
+          "approx_tokens": 43,
+          "source": "stackoverflow.com/q/22919637 (2014, top answer)"
+        }
+      },
+      {
+        "step": 2,
+        "action": "plugin_insert",
+        "payload": {
+          "id": "django-blog",
+          "precision": 0.55,
+          "qualificand": "django_request",
+          "qualifier": "post_then_body",
+          "condition": "repo=django/django AND topic=request_body",
+          "stale_at_source": false,
+          "approx_tokens": 45,
+          "source": "djangotricks.blogspot.com/2017"
+        }
+      },
+      {
+        "step": 3,
+        "action": "plugin_sublate_with_evidence",
+        "payload": {
+          "older_id": "django-so-1",
+          "newer_id": "django-blog",
+          "older_precision": 0.42,
+          "newer_precision": 0.55,
+          "rationale": "stale older with strictly lower precision for same qualifier"
+        }
+      },
+      {
+        "step": 4,
+        "action": "plugin_insert",
+        "payload": {
+          "id": "django-docs-current",
+          "precision": 0.92,
+          "qualificand": "django_request",
+          "qualifier": "post_then_body",
+          "condition": "repo=django/django AND topic=request_body",
+          "stale_at_source": false,
+          "approx_tokens": 81,
+          "source": "docs.djangoproject.com/en/4.2/ref/request-response/"
+        }
+      },
+      {
+        "step": 5,
+        "action": "plugin_sublate_with_evidence",
+        "payload": {
+          "older_id": "django-so-1",
+          "newer_id": "django-docs-current",
+          "older_precision": 0.42,
+          "newer_precision": 0.92,
+          "rationale": "explicit superseded_by pointer"
+        }
+      },
+      {
+        "step": 6,
+        "action": "plugin_insert",
+        "payload": {
+          "id": "django-pr-15497-changelog",
+          "precision": 0.95,
+          "qualificand": "django_request",
+          "qualifier": "post_then_body",
+          "condition": "repo=django/django AND topic=request_body",
+          "stale_at_source": false,
+          "approx_tokens": 44,
+          "source": "github.com/django/django/blob/4.2/docs/releases/4.1.txt"
+        }
+      },
+      {
+        "step": 7,
+        "action": "plugin_sublate_with_evidence",
+        "payload": {
+          "older_id": "django-so-1",
+          "newer_id": "django-pr-15497-changelog",
+          "older_precision": 0.42,
+          "newer_precision": 0.95,
+          "rationale": "stale older with strictly lower precision for same qualifier"
+        }
+      },
+      {
+        "step": 8,
+        "action": "plugin_compact",
+        "payload": {
+          "precision_threshold": 0.5,
+          "ok": true,
+          "compressed_ids": [],
+          "n_compressed": 0
+        }
+      },
+      {
+        "step": 9,
+        "action": "plugin_emit_answer",
+        "payload": {
+          "policy": "highest_precision_survivor",
+          "selected_evidence_id": "django-so-1__sublator__1776547735321",
+          "n_survivors": 1
+        }
+      }
+    ]
+  },
+  "without_harness": {
+    "arm": "without_harness",
+    "case_id": "django_request_body",
+    "final_answer": "If you have already accessed request.POST you cannot read request.body afterwards: Django raises a RawPostDataException. This is the historical Django 1.x and 2.x behaviour.",
+    "answer_correct": false,
+    "forbidden_hits": [
+      "Django 1.x"
+    ],
+    "metrics": {
+      "n_evidence_in_context": 4,
+      "n_evidence_dropped": 0,
+      "approx_context_tokens": 213,
+      "stale_evidence_in_context": 1,
+      "sublations": 0,
+      "compactions": 0,
+      "answer_policy": "first_seen_wins"
+    },
+    "transcript": [
+      {
+        "step": 1,
+        "action": "ingest_evidence",
+        "payload": {
+          "id": "django-so-1",
+          "source": "stackoverflow.com/q/22919637 (2014, top answer)",
+          "precision_metadata_available": false,
+          "approx_tokens": 43,
+          "content_preview": "If you have already accessed request.POST you cannot read request.body afterwards: Django raises a RawPostDataException."
+        }
+      },
+      {
+        "step": 2,
+        "action": "ingest_evidence",
+        "payload": {
+          "id": "django-blog",
+          "source": "djangotricks.blogspot.com/2017",
+          "precision_metadata_available": false,
+          "approx_tokens": 45,
+          "content_preview": "Workaround: copy request.body before you read request.POST, because Django consumes the input stream when parsing the fo"
+        }
+      },
+      {
+        "step": 3,
+        "action": "ingest_evidence",
+        "payload": {
+          "id": "django-docs-current",
+          "source": "docs.djangoproject.com/en/4.2/ref/request-response/",
+          "precision_metadata_available": false,
+          "approx_tokens": 81,
+          "content_preview": "Per the Django 4.x reference: accessing request.body after request.POST is allowed only when the request body has not be"
+        }
+      },
+      {
+        "step": 4,
+        "action": "ingest_evidence",
+        "payload": {
+          "id": "django-pr-15497-changelog",
+          "source": "github.com/django/django/blob/4.2/docs/releases/4.1.txt",
+          "precision_metadata_available": false,
+          "approx_tokens": 44,
+          "content_preview": "Django 4.1 release notes clarified that the RawPostDataException is raised only for form-encoded requests; JSON bodies r"
+        }
+      },
+      {
+        "step": 5,
+        "action": "emit_answer",
+        "payload": {
+          "policy": "first_seen_wins",
+          "selected_evidence_id": "django-so-1",
+          "rationale": "no precision metadata; anchor on first surfaced source"
+        }
+      }
+    ]
+  },
+  "comparison": {
+    "answer_correct_with_harness": true,
+    "answer_correct_without_harness": false,
+    "answer_correct_delta": 1,
+    "n_forbidden_hits_with_harness": 0,
+    "n_forbidden_hits_without_harness": 1,
+    "forbidden_hits_delta": -1,
+    "stale_evidence_delta": -1,
+    "context_tokens_with_harness": 213,
+    "context_tokens_without_harness": 213
+  },
+  "ts": "2026-04-18T21:28:55.321720+00:00"
+}

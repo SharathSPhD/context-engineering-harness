@@ -1,0 +1,192 @@
+{
+  "case_id": "pandas_iterrows_dtype",
+  "title": "Does DataFrame.iterrows preserve column dtypes?",
+  "repo": "pandas-dev/pandas",
+  "issue_url": "https://github.com/pandas-dev/pandas/issues/15014",
+  "pinned_commit": "pandas-2.2.2",
+  "probe_question": "If I iterate a DataFrame with iterrows, will an int64 column still come out as int64 inside the row Series?",
+  "gold_answer_substring": "common dtype",
+  "forbidden_substrings": [
+    "preserves the column dtype",
+    "you can rely on integer"
+  ],
+  "with_harness": {
+    "arm": "with_harness",
+    "case_id": "pandas_iterrows_dtype",
+    "final_answer": "Per the pandas 2.x reference: iterrows returns a Series for each row, and because a Series has one dtype the row will be promoted to a common dtype (typically object) \u2014 so int columns can come out as float and datetimes can come out as Timestamps boxed in object. itertuples preserves the original dtypes.",
+    "answer_correct": true,
+    "forbidden_hits": [],
+    "metrics": {
+      "n_evidence_in_context": 3,
+      "n_evidence_dropped": 0,
+      "approx_context_tokens": 138,
+      "stale_evidence_in_context": 0,
+      "sublations": 2,
+      "compactions": 1,
+      "store_size_total": 4,
+      "store_size_active": 3,
+      "store_size_sublated": 1,
+      "answer_policy": "highest_precision_survivor"
+    },
+    "transcript": [
+      {
+        "step": 1,
+        "action": "plugin_insert",
+        "payload": {
+          "id": "pd-blog-old",
+          "precision": 0.3,
+          "qualificand": "pandas_iterrows",
+          "qualifier": "dtype_preservation",
+          "condition": "repo=pandas-dev/pandas AND topic=iterrows_dtypes",
+          "stale_at_source": true,
+          "approx_tokens": 40,
+          "source": "towardsdatascience.com/pandas-iteration-2018"
+        }
+      },
+      {
+        "step": 2,
+        "action": "plugin_insert",
+        "payload": {
+          "id": "pd-tutorial",
+          "precision": 0.74,
+          "qualificand": "pandas_iterrows",
+          "qualifier": "dtype_preservation",
+          "condition": "repo=pandas-dev/pandas AND topic=iterrows_dtypes",
+          "stale_at_source": false,
+          "approx_tokens": 22,
+          "source": "realpython.com/pandas-iteration"
+        }
+      },
+      {
+        "step": 3,
+        "action": "plugin_sublate_with_evidence",
+        "payload": {
+          "older_id": "pd-blog-old",
+          "newer_id": "pd-tutorial",
+          "older_precision": 0.3,
+          "newer_precision": 0.74,
+          "rationale": "stale older with strictly lower precision for same qualifier"
+        }
+      },
+      {
+        "step": 4,
+        "action": "plugin_insert",
+        "payload": {
+          "id": "pd-docs-current",
+          "precision": 0.94,
+          "qualificand": "pandas_iterrows",
+          "qualifier": "dtype_preservation",
+          "condition": "repo=pandas-dev/pandas AND topic=iterrows_dtypes",
+          "stale_at_source": false,
+          "approx_tokens": 76,
+          "source": "pandas.pydata.org/docs/reference/api/pandas.DataFrame.iterrows.html"
+        }
+      },
+      {
+        "step": 5,
+        "action": "plugin_sublate_with_evidence",
+        "payload": {
+          "older_id": "pd-blog-old",
+          "newer_id": "pd-docs-current",
+          "older_precision": 0.3,
+          "newer_precision": 0.94,
+          "rationale": "explicit superseded_by pointer"
+        }
+      },
+      {
+        "step": 6,
+        "action": "plugin_compact",
+        "payload": {
+          "precision_threshold": 0.5,
+          "ok": true,
+          "compressed_ids": [],
+          "n_compressed": 0
+        }
+      },
+      {
+        "step": 7,
+        "action": "plugin_emit_answer",
+        "payload": {
+          "policy": "highest_precision_survivor",
+          "selected_evidence_id": "pd-blog-old__sublator__1776547735322",
+          "n_survivors": 1
+        }
+      }
+    ]
+  },
+  "without_harness": {
+    "arm": "without_harness",
+    "case_id": "pandas_iterrows_dtype",
+    "final_answer": "iterrows is fine for typical workflows \u2014 pandas preserves the column dtype on each yielded row, so you can rely on integer and datetime values keeping their type.",
+    "answer_correct": false,
+    "forbidden_hits": [
+      "preserves the column dtype",
+      "you can rely on integer"
+    ],
+    "metrics": {
+      "n_evidence_in_context": 3,
+      "n_evidence_dropped": 0,
+      "approx_context_tokens": 138,
+      "stale_evidence_in_context": 1,
+      "sublations": 0,
+      "compactions": 0,
+      "answer_policy": "first_seen_wins"
+    },
+    "transcript": [
+      {
+        "step": 1,
+        "action": "ingest_evidence",
+        "payload": {
+          "id": "pd-blog-old",
+          "source": "towardsdatascience.com/pandas-iteration-2018",
+          "precision_metadata_available": false,
+          "approx_tokens": 40,
+          "content_preview": "iterrows is fine for typical workflows \u2014 pandas preserves the column dtype on each yielded row, so you can rely on integ"
+        }
+      },
+      {
+        "step": 2,
+        "action": "ingest_evidence",
+        "payload": {
+          "id": "pd-tutorial",
+          "source": "realpython.com/pandas-iteration",
+          "precision_metadata_available": false,
+          "approx_tokens": 22,
+          "content_preview": "Use itertuples for a faster, dtype-aware row-by-row iteration if you really must iterate."
+        }
+      },
+      {
+        "step": 3,
+        "action": "ingest_evidence",
+        "payload": {
+          "id": "pd-docs-current",
+          "source": "pandas.pydata.org/docs/reference/api/pandas.DataFrame.iterrows.html",
+          "precision_metadata_available": false,
+          "approx_tokens": 76,
+          "content_preview": "Per the pandas 2.x reference: iterrows returns a Series for each row, and because a Series has one dtype the row will be"
+        }
+      },
+      {
+        "step": 4,
+        "action": "emit_answer",
+        "payload": {
+          "policy": "first_seen_wins",
+          "selected_evidence_id": "pd-blog-old",
+          "rationale": "no precision metadata; anchor on first surfaced source"
+        }
+      }
+    ]
+  },
+  "comparison": {
+    "answer_correct_with_harness": true,
+    "answer_correct_without_harness": false,
+    "answer_correct_delta": 1,
+    "n_forbidden_hits_with_harness": 0,
+    "n_forbidden_hits_without_harness": 2,
+    "forbidden_hits_delta": -2,
+    "stale_evidence_delta": -1,
+    "context_tokens_with_harness": 138,
+    "context_tokens_without_harness": 138
+  },
+  "ts": "2026-04-18T21:28:55.322827+00:00"
+}

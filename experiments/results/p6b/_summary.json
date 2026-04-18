@@ -1,0 +1,68 @@
+{
+  "meta": {
+    "runner": "experiments.v2.p6b.run_case_study",
+    "ts": "2026-04-18T21:28:55.322933+00:00"
+  },
+  "summary": {
+    "n_cases": 3,
+    "accuracy_with_harness": 1.0,
+    "accuracy_without_harness": 0.0,
+    "accuracy_delta": 1.0,
+    "n_forbidden_hits_with_harness": 1,
+    "n_forbidden_hits_without_harness": 5,
+    "forbidden_hits_delta": -4,
+    "stale_evidence_in_context_total_with_harness": 0,
+    "stale_evidence_in_context_total_without_harness": 3,
+    "total_sublations_fired": 7,
+    "total_compactions_fired": 3,
+    "case_ids": [
+      "django_request_body",
+      "requests_retry_adapter",
+      "pandas_iterrows_dtype"
+    ]
+  },
+  "per_case": [
+    {
+      "case_id": "django_request_body",
+      "comparison": {
+        "answer_correct_with_harness": true,
+        "answer_correct_without_harness": false,
+        "answer_correct_delta": 1,
+        "n_forbidden_hits_with_harness": 0,
+        "n_forbidden_hits_without_harness": 1,
+        "forbidden_hits_delta": -1,
+        "stale_evidence_delta": -1,
+        "context_tokens_with_harness": 213,
+        "context_tokens_without_harness": 213
+      }
+    },
+    {
+      "case_id": "requests_retry_adapter",
+      "comparison": {
+        "answer_correct_with_harness": true,
+        "answer_correct_without_harness": false,
+        "answer_correct_delta": 1,
+        "n_forbidden_hits_with_harness": 1,
+        "n_forbidden_hits_without_harness": 2,
+        "forbidden_hits_delta": -1,
+        "stale_evidence_delta": -1,
+        "context_tokens_with_harness": 128,
+        "context_tokens_without_harness": 128
+      }
+    },
+    {
+      "case_id": "pandas_iterrows_dtype",
+      "comparison": {
+        "answer_correct_with_harness": true,
+        "answer_correct_without_harness": false,
+        "answer_correct_delta": 1,
+        "n_forbidden_hits_with_harness": 0,
+        "n_forbidden_hits_without_harness": 2,
+        "forbidden_hits_delta": -2,
+        "stale_evidence_delta": -1,
+        "context_tokens_with_harness": 138,
+        "context_tokens_without_harness": 138
+      }
+    }
+  ]
+}

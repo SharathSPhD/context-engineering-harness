@@ -1,0 +1,194 @@
+{
+  "case_id": "requests_retry_adapter",
+  "title": "Correct retry-strategy spelling for requests + urllib3 2.x",
+  "repo": "psf/requests",
+  "issue_url": "https://github.com/psf/requests/issues/2401",
+  "pinned_commit": "requests-2.32.3+urllib3-2.2.2",
+  "probe_question": "How do I configure a retry strategy on a requests.Session given urllib3 2.x is installed?",
+  "gold_answer_substring": "allowed_methods",
+  "forbidden_substrings": [
+    "method_whitelist",
+    "requests.packages.urllib3"
+  ],
+  "with_harness": {
+    "arm": "with_harness",
+    "case_id": "requests_retry_adapter",
+    "final_answer": "urllib3 1.26 deprecated method_whitelist in favour of allowed_methods; urllib3 2.0 removed method_whitelist entirely. Use Retry(total=5, allowed_methods={'GET','HEAD','OPTIONS'}) and import Retry from urllib3.util.retry directly.",
+    "answer_correct": true,
+    "forbidden_hits": [
+      "method_whitelist"
+    ],
+    "metrics": {
+      "n_evidence_in_context": 3,
+      "n_evidence_dropped": 0,
+      "approx_context_tokens": 128,
+      "stale_evidence_in_context": 0,
+      "sublations": 2,
+      "compactions": 1,
+      "store_size_total": 4,
+      "store_size_active": 3,
+      "store_size_sublated": 1,
+      "answer_policy": "highest_precision_survivor"
+    },
+    "transcript": [
+      {
+        "step": 1,
+        "action": "plugin_insert",
+        "payload": {
+          "id": "req-so-old",
+          "precision": 0.35,
+          "qualificand": "requests_retry",
+          "qualifier": "adapter_api",
+          "condition": "repo=psf/requests AND topic=retry_strategy",
+          "stale_at_source": true,
+          "approx_tokens": 43,
+          "source": "stackoverflow.com/q/15431044 (pre-2020, urllib3 1.x)"
+        }
+      },
+      {
+        "step": 2,
+        "action": "plugin_insert",
+        "payload": {
+          "id": "req-cookbook",
+          "precision": 0.7,
+          "qualificand": "requests_retry",
+          "qualifier": "adapter_api",
+          "condition": "repo=psf/requests AND topic=retry_strategy",
+          "stale_at_source": false,
+          "approx_tokens": 28,
+          "source": "docs.python-requests.org/en/latest/user/advanced/"
+        }
+      },
+      {
+        "step": 3,
+        "action": "plugin_sublate_with_evidence",
+        "payload": {
+          "older_id": "req-so-old",
+          "newer_id": "req-cookbook",
+          "older_precision": 0.35,
+          "newer_precision": 0.7,
+          "rationale": "stale older with strictly lower precision for same qualifier"
+        }
+      },
+      {
+        "step": 4,
+        "action": "plugin_insert",
+        "payload": {
+          "id": "req-urllib3-changelog",
+          "precision": 0.93,
+          "qualificand": "requests_retry",
+          "qualifier": "adapter_api",
+          "condition": "repo=psf/requests AND topic=retry_strategy",
+          "stale_at_source": false,
+          "approx_tokens": 57,
+          "source": "github.com/urllib3/urllib3/blob/main/CHANGES.rst (2.0.0 entry)"
+        }
+      },
+      {
+        "step": 5,
+        "action": "plugin_sublate_with_evidence",
+        "payload": {
+          "older_id": "req-so-old",
+          "newer_id": "req-urllib3-changelog",
+          "older_precision": 0.35,
+          "newer_precision": 0.93,
+          "rationale": "explicit superseded_by pointer"
+        }
+      },
+      {
+        "step": 6,
+        "action": "plugin_compact",
+        "payload": {
+          "precision_threshold": 0.5,
+          "ok": true,
+          "compressed_ids": [],
+          "n_compressed": 0
+        }
+      },
+      {
+        "step": 7,
+        "action": "plugin_emit_answer",
+        "payload": {
+          "policy": "highest_precision_survivor",
+          "selected_evidence_id": "req-so-old__sublator__1776547735322",
+          "n_survivors": 1
+        }
+      }
+    ]
+  },
+  "without_harness": {
+    "arm": "without_harness",
+    "case_id": "requests_retry_adapter",
+    "final_answer": "Use Retry from requests.packages.urllib3.util.retry \u2014 session.mount('http://', HTTPAdapter(max_retries=Retry(...))). method_whitelist parameter controls which methods retry.",
+    "answer_correct": false,
+    "forbidden_hits": [
+      "method_whitelist",
+      "requests.packages.urllib3"
+    ],
+    "metrics": {
+      "n_evidence_in_context": 3,
+      "n_evidence_dropped": 0,
+      "approx_context_tokens": 128,
+      "stale_evidence_in_context": 1,
+      "sublations": 0,
+      "compactions": 0,
+      "answer_policy": "first_seen_wins"
+    },
+    "transcript": [
+      {
+        "step": 1,
+        "action": "ingest_evidence",
+        "payload": {
+          "id": "req-so-old",
+          "source": "stackoverflow.com/q/15431044 (pre-2020, urllib3 1.x)",
+          "precision_metadata_available": false,
+          "approx_tokens": 43,
+          "content_preview": "Use Retry from requests.packages.urllib3.util.retry \u2014 session.mount('http://', HTTPAdapter(max_retries=Retry(...))). met"
+        }
+      },
+      {
+        "step": 2,
+        "action": "ingest_evidence",
+        "payload": {
+          "id": "req-cookbook",
+          "source": "docs.python-requests.org/en/latest/user/advanced/",
+          "precision_metadata_available": false,
+          "approx_tokens": 28,
+          "content_preview": "requests.adapters.HTTPAdapter is the supported integration point. Pass a urllib3 Retry instance via max_retries."
+        }
+      },
+      {
+        "step": 3,
+        "action": "ingest_evidence",
+        "payload": {
+          "id": "req-urllib3-changelog",
+          "source": "github.com/urllib3/urllib3/blob/main/CHANGES.rst (2.0.0 entry)",
+          "precision_metadata_available": false,
+          "approx_tokens": 57,
+          "content_preview": "urllib3 1.26 deprecated method_whitelist in favour of allowed_methods; urllib3 2.0 removed method_whitelist entirely. Us"
+        }
+      },
+      {
+        "step": 4,
+        "action": "emit_answer",
+        "payload": {
+          "policy": "first_seen_wins",
+          "selected_evidence_id": "req-so-old",
+          "rationale": "no precision metadata; anchor on first surfaced source"
+        }
+      }
+    ]
+  },
+  "comparison": {
+    "answer_correct_with_harness": true,
+    "answer_correct_without_harness": false,
+    "answer_correct_delta": 1,
+    "n_forbidden_hits_with_harness": 1,
+    "n_forbidden_hits_without_harness": 2,
+    "forbidden_hits_delta": -1,
+    "stale_evidence_delta": -1,
+    "context_tokens_with_harness": 128,
+    "context_tokens_without_harness": 128
+  },
+  "ts": "2026-04-18T21:28:55.322400+00:00"
+}
