@@ -1,0 +1,172 @@
+\section{6 · The Cursor / Claude-Code Plugin}\label{the-cursor-claude-code-plugin}
+
+The harness ships as a single plugin, \textbf{\texttt{pratyaksha-context-eng-harness}} (v1.0.0, MIT-licensed), installable into Cursor, Claude Code (CLI and the VS Code extension), and Claude Desktop via the Model Context Protocol \citep{anthropic2025mcp}. This section specifies the shipped artefact in enough detail that an external reviewer can verify its claims directly against the repository at \texttt{github.com/SharathSPhD/pratyaksha-context-eng-harness}.
+
+\subsection{6.1 Manifest and discovery}\label{manifest-and-discovery}
+
+Two manifests are shipped:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{.claude-plugin/plugin.json} --- Claude-Code-format component manifest declaring the 3 agents, 4 commands, 3 skills, and the \texttt{hooks/hooks.json} registration.
+\item
+  \texttt{marketplace.json} --- top-level marketplace manifest used for \texttt{/plugin\ install} discovery, listing the canonical id, version, repository URL, license, keywords, and feature catalogue.
+\end{itemize}
+
+Both manifests are version-pinned to \texttt{1.0.0}, point to the same upstream URL, and resolve identically in Cursor (via the plugin marketplace \citep{cursor2025plugins}) and Claude Code (via the new plugin marketplace surface \citep{anthropic2025claudecode}). Setup is a single command: \texttt{curl\ -LsSf\ https://astral.sh/uv/install.sh\ \textbar{}\ sh}; the MCP server's Python dependencies are installed lazily on first tool call by \texttt{uv} \citep{uv2025}, so a fresh user can install the plugin without ever invoking \texttt{pip}, creating a virtualenv, or running \texttt{claude\ mcp\ add}.
+
+\subsection{6.2 The 15 MCP tools}\label{the-15-mcp-tools}
+
+The MCP server (\texttt{mcp/server.py}, FastMCP-style) exposes exactly fifteen tools. Their names, signatures, and operational roles are:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\#
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Tool
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Signature
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Operationalizes
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & \texttt{context\_insert} & \texttt{InsertInput\ →\ ContextElement} & Avacchedaka insertion (Section 4.2) \\
+2 & \texttt{context\_retrieve} & \texttt{RetrieveInput\ →\ list{[}ContextElement{]}} & Default avacchedaka query \\
+3 & \texttt{context\_get} & \texttt{GetByIdInput\ →\ ContextElement} & Direct id-based fetch (audit) \\
+4 & \texttt{context\_sublate} & \texttt{SublateInput\ →\ ContextElement} & Bādha (basic, by id) \\
+5 & \texttt{sublate\_with\_evidence} & \texttt{SublateWithEvidenceInput\ →\ ...} & Bādha with explicit pointer + reason \\
+6 & \texttt{detect\_conflict} & \texttt{RetrieveInput\ →\ \{conflicted:\ bool,\ items:\ ...\}} & Bayesian-margin conflict check \\
+7 & \texttt{list\_qualificands} & \texttt{()\ →\ list{[}str{]}} & Diagnostic surface \\
+8 & \texttt{compact} & \texttt{CompactInput\ →\ CompactionReport} & Adaptive forgetting (Section 5.7) \\
+9 & \texttt{boundary\_compact} & \texttt{BoundaryCompactInput\ →\ ...} & Event-boundary compaction (Section 5.6) \\
+10 & \texttt{context\_window} & \texttt{ContextWindowInput\ →\ WindowSnapshot} & Visible-context summary for Manas \\
+11 & \texttt{set\_sakshi} & \texttt{SetSakshiInput\ →\ ()} & Pin a session-stable witness invariant \\
+12 & \texttt{get\_sakshi} & \texttt{()\ →\ list{[}SakshiInvariant{]}} & Retrieve the witness invariants \\
+13 & \texttt{classify\_khyativada} & \texttt{ClassifyInput\ →\ KhyatiResult} & 7-class hallucination classifier \\
+14 & \texttt{budget\_status} & \texttt{BudgetStatusInput\ →\ BudgetStatus} & TokenBudgetWatchdog (Section 5.8) \\
+15 & \texttt{budget\_record} & \texttt{BudgetRecordInput\ →\ BudgetStatus} & Record consumed tokens per turn \\
+\end{longtable}
+}
+
+Every tool is typed via Pydantic v2 input/output models, returns JSON-serializable structures, and is exercised by at least one unit test in \texttt{tests/test\_v2/}. A complete tool reference with full schemas is in \textbf{Appendix B}.
+
+\subsection{6.3 The 3 sub-agents}\label{the-3-sub-agents}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{\texttt{agents/manas.md}} --- defines the \emph{attentional sense-organ} \textbf{sub-agent}. System prompt instructs the model to call \texttt{get\_sakshi}, \texttt{context\_retrieve}, \texttt{context\_window}, \texttt{classify\_khyativada}, and \texttt{budget\_record}, and to return structured JSON of the form \texttt{\{\ "draft":\ "...",\ "grounding":\ {[}"\textless{}element\_id\textgreater{}",\ ...{]},\ "uncertain\_claims":\ {[}"..."{]},\ "needs\_buddhi":\ true\ \textbar{}\ false\ \}} (verbatim contract in the repository file). Manas must \emph{never} emit a user-visible final answer.
+\item
+  \textbf{\texttt{agents/buddhi.md}} --- the \emph{determinative judging} sub-agent. May call \texttt{sublate\_with\_evidence}, \texttt{detect\_conflict}, and \texttt{classify\_khyativada}. Emits the user-visible answer and its self-classified \texttt{khyati\_class} and \texttt{confidence}.
+\item
+  \textbf{\texttt{agents/sakshi-keeper.md}} --- the \emph{witness keeper}. Read-only on the live store; append-only on the JSON-lines audit log at \texttt{\textasciitilde{}/.cache/pratyaksha/audit.jsonl}. Invoked from the lifecycle hooks (Section 6.5).
+\end{itemize}
+
+The choice to ship Manas and Buddhi as \emph{agents} (system-prompt-only sub-agents driven by the host LLM) rather than as fine-tunes is deliberate: it preserves the harness's host-platform-agnosticism (Section 5.4) and lets users swap the underlying model without re-training anything.
+
+\subsection{6.4 The 3 skills}\label{the-3-skills}
+
+Following the Cursor/Claude-Code skill format (an \texttt{SKILL.md} per directory):
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{\texttt{skills/context-discipline/SKILL.md}} --- surfaces the harness's discipline as a triggered skill: \emph{``every retrieved item must be entered with avacchedaka qualifiers; no free-text dumps''}. Activates when the host agent is about to call a search/RAG tool.
+\item
+  \textbf{\texttt{skills/sublate-on-conflict/SKILL.md}} --- triggers Buddhi's call to \texttt{sublate\_with\_evidence} when \texttt{detect\_conflict} returns true.
+\item
+  \textbf{\texttt{skills/witness-prefix/SKILL.md}} --- wraps every Buddhi prompt with a stable \texttt{\textless{}sakshi\_invariants\textgreater{}} system block via \texttt{get\_sakshi}, so the witness frame is \emph{literally a system message}, not inlined into the user turn.
+\end{itemize}
+
+\subsection{6.5 The 4 slash commands}\label{the-4-slash-commands}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{\texttt{/context-status}} --- pretty-prints the visible context window, by category, with budget gauge.
+\item
+  \textbf{\texttt{/sublate\ \textless{}target\_id\textgreater{}\ \textless{}by\_id\textgreater{}\ \textless{}reason\textgreater{}}} --- manual sublation override (audit / debug).
+\item
+  \textbf{\texttt{/budget}} --- shorthand for \texttt{budget\_status} rendered as a one-line gauge.
+\item
+  \textbf{\texttt{/compact-now\ {[}strategy{]}}} --- manually trigger compaction; \texttt{strategy\ ∈\ \{adaptive,\ lru,\ none\}} (default \texttt{adaptive}).
+\end{itemize}
+
+\subsection{6.6 The 3 lifecycle hooks}\label{the-3-lifecycle-hooks}
+
+\texttt{hooks/hooks.json} registers three hooks against the standard Claude Code lifecycle events:
+
+\begin{verbatim}
+{
+  "hooks": {
+    "SessionStart": [{ "matcher": "*", "hooks": [
+      { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh", "timeout": 10 }
+    ]}],
+    "PreToolUse": [{ "matcher": "mcp__pratyaksha_mcp__.*", "hooks": [
+      { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pretooluse-budget.sh", "timeout": 5 }
+    ]}],
+    "Stop": [{ "matcher": "*", "hooks": [
+      { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/stop-compact.sh", "timeout": 5 }
+    ]}]
+  }
+}
+\end{verbatim}
+
+Their roles are:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{\texttt{session-start.sh}} seeds the session-stable Sākṣī invariants (working directory, git SHA, model id, plugin version) via \texttt{set\_sakshi}.
+\item
+  \textbf{\texttt{pretooluse-budget.sh}} consults \texttt{budget\_status} before any harness tool runs and \textbf{logs} over-threshold use by default (advisory hook). If \texttt{PRATYAKSHA\_BUDGET\_STRICT=1}, the same script can be configured to \textbf{deny} tool execution when the gauge exceeds a hard threshold (default 95\% of \texttt{context\_budget}).
+\item
+  \textbf{\texttt{stop-compact.sh}} invokes \texttt{compact(strategy="adaptive")} at the end of every turn so memory pressure does not accumulate across turns.
+\end{itemize}
+
+\subsection{\texorpdfstring{6.7 What the plugin does \emph{not} contain}{6.7 What the plugin does not contain}}\label{what-the-plugin-does-not-contain}
+
+We assert and audit two negative claims:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Zero references to the dev-time orchestration tools} \texttt{attractor-flow}, \texttt{ralph-loop}, and \texttt{triz-engine}. Those tools were used to build the harness (Section 3) but are not runtime dependencies. A grep over the entire shipped plugin tree returns zero matches; the audit is preserved as \texttt{docs/no\_dev\_deps\_audit.md} in the repository.
+\item
+  \textbf{Zero hard dependencies on heavyweight stacks} like \texttt{vllm}, \texttt{mlflow}, \texttt{chromadb}, or \texttt{huggingface-hub}. The harness's runtime requirements are \texttt{mcp}, \texttt{pydantic}, \texttt{tiktoken}, \texttt{numpy}, and \texttt{anthropic}; the optional Qwen3-1.7B surprise backend is loaded only when the user opts in.
+\end{enumerate}
+
+This matters because the harness is a \emph{discipline}, not an infrastructure. Anything heavier than that would defeat the purpose of a plugin you can install in 30 seconds.
+
+\subsection{6.8 Smoke test and CI}\label{smoke-test-and-ci}
+
+\texttt{mcp/smoke\_test.py} exercises every tool against the local MCP server: 15 round-trips, each verifying the input schema, the output schema, and one non-trivial behavioural assertion (e.g.~\texttt{sublate\_with\_evidence} actually flips the target item's status). The smoke test runs in roughly 4 seconds wall-clock and is wired into the repo's CI as \texttt{pytest\ -m\ smoke}. We additionally exercise every command and hook via \texttt{claude\ -\/-debug} in the developer's local Claude Code installation; the transcript of one such smoke run is preserved in \texttt{docs/plugin\_smoke\_transcript.md}.
+
+\subsection{6.9 Hot-swappability across hosts}\label{hot-swappability-across-hosts}
+
+The same \texttt{marketplace.json} resolves in:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Cursor} --- via the IDE's plugin browser, registered by URL.
+\item
+  \textbf{Claude Code (CLI)} --- via \texttt{/plugin\ install\ \textless{}url\textgreater{}}.
+\item
+  \textbf{Claude Code (VS Code extension)} --- via the same \texttt{/plugin\ install} UI.
+\item
+  \textbf{Claude Desktop} --- via the Desktop app's MCP-based plugin surface.
+\end{itemize}
+
+We have manually exercised the install path on all four hosts during development. The harness's runtime invariants (Sections 4 and 5) hold identically across all four because the only inter-process surface is MCP, and MCP is host-agnostic by construction \citep{anthropic2025mcp}.

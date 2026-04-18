@@ -1,0 +1,202 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Layout ---
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{titlesec}
+\titleformat*{\section}{\Large\bfseries}
+\titleformat*{\subsection}{\large\bfseries}
+\titleformat*{\subsubsection}{\normalsize\bfseries}
+
+% --- Encoding & fonts ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{newunicodechar}
+% Sanskrit/IAST diacritics fallback for pdflatex
+\newunicodechar{ā}{\=a}
+\newunicodechar{Ā}{\=A}
+\newunicodechar{ī}{\=\i}
+\newunicodechar{Ī}{\=I}
+\newunicodechar{ū}{\=u}
+\newunicodechar{Ū}{\=U}
+\newunicodechar{ṛ}{\d{r}}
+\newunicodechar{Ṛ}{\d{R}}
+\newunicodechar{ṝ}{\d{\=r}}
+\newunicodechar{ḷ}{\d{l}}
+\newunicodechar{ḹ}{\d{\=l}}
+\newunicodechar{ṃ}{\d{m}}
+\newunicodechar{Ṃ}{\d{M}}
+\newunicodechar{ṁ}{\.{m}}
+\newunicodechar{ḥ}{\d{h}}
+\newunicodechar{Ḥ}{\d{H}}
+\newunicodechar{ñ}{\~n}
+\newunicodechar{ṅ}{\.{n}}
+\newunicodechar{ṇ}{\d{n}}
+\newunicodechar{ṭ}{\d{t}}
+\newunicodechar{Ṭ}{\d{T}}
+\newunicodechar{ḍ}{\d{d}}
+\newunicodechar{Ḍ}{\d{D}}
+\newunicodechar{ś}{\'s}
+\newunicodechar{Ś}{\'S}
+\newunicodechar{ṣ}{\d{s}}
+\newunicodechar{Ṣ}{\d{S}}
+% Common Unicode in body text
+\newunicodechar{—}{---}
+\newunicodechar{–}{--}
+\newunicodechar{“}{``}
+\newunicodechar{”}{''}
+\newunicodechar{‘}{`}
+\newunicodechar{’}{'}
+\newunicodechar{…}{\ldots}
+\newunicodechar{·}{\textperiodcentered}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{≠}{\ensuremath{\neq}}
+\newunicodechar{±}{\ensuremath{\pm}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{β}{\ensuremath{\beta}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{δ}{\ensuremath{\delta}}
+\newunicodechar{Δ}{\ensuremath{\Delta}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{μ}{\ensuremath{\mu}}
+\newunicodechar{σ}{\ensuremath{\sigma}}
+\newunicodechar{Σ}{\ensuremath{\Sigma}}
+\newunicodechar{τ}{\ensuremath{\tau}}
+\newunicodechar{φ}{\ensuremath{\phi}}
+\newunicodechar{π}{\ensuremath{\pi}}
+\newunicodechar{Ω}{\ensuremath{\Omega}}
+\newunicodechar{∈}{\ensuremath{\in}}
+\newunicodechar{∞}{\ensuremath{\infty}}
+\newunicodechar{∑}{\ensuremath{\sum}}
+\newunicodechar{≡}{\ensuremath{\equiv}}
+\newunicodechar{∝}{\ensuremath{\propto}}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{←}{\ensuremath{\leftarrow}}
+\newunicodechar{⁰}{\ensuremath{^0}}
+\newunicodechar{¹}{\ensuremath{^1}}
+\newunicodechar{²}{\ensuremath{^2}}
+\newunicodechar{³}{\ensuremath{^3}}
+\newunicodechar{⁴}{\ensuremath{^4}}
+\newunicodechar{⁵}{\ensuremath{^5}}
+\newunicodechar{⁶}{\ensuremath{^6}}
+\newunicodechar{⁷}{\ensuremath{^7}}
+\newunicodechar{⁸}{\ensuremath{^8}}
+\newunicodechar{⁹}{\ensuremath{^9}}
+\newunicodechar{⁻}{\ensuremath{^{-}}}
+\newunicodechar{₀}{\ensuremath{_0}}
+\newunicodechar{₁}{\ensuremath{_1}}
+\newunicodechar{₂}{\ensuremath{_2}}
+\newunicodechar{‑}{-}
+
+% --- Math, science, code ---
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,longtable,array,multirow}
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+\usepackage[font=small,labelfont=bf]{caption}
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  columns=fullflexible,
+  showstringspaces=false,
+  frame=single,
+  framesep=4pt,
+  xleftmargin=8pt,
+  xrightmargin=8pt
+}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\setlist{topsep=2pt,parsep=2pt,itemsep=2pt}
+
+% --- References ---
+\usepackage[round,authoryear]{natbib}
+\bibliographystyle{plainnat}
+\setcitestyle{round}
+
+% --- Color & hyperlinks (last) ---
+\usepackage{xcolor}
+\usepackage[colorlinks=true,
+            linkcolor=black,
+            citecolor=blue!50!black,
+            urlcolor=blue!50!black]{hyperref}
+\usepackage{cleveref}
+
+% Pandoc tightlist compat
+\providecommand{\tightlist}{\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+% Pandoc passthrough (bare URLs etc.)
+\providecommand{\passthrough}[1]{#1}
+% Pandoc emits {\def\LTcaptype{none} ... } around uncaptioned longtables.
+% Define a no-op `none' counter so this does not fail.
+\newcounter{none}
+% Pandoc occasionally emits \real{...} for column widths; provide a fallback.
+\providecommand{\real}[1]{#1}
+
+\begin{document}
+
+\begin{titlepage}
+\begin{center}
+\vspace*{2cm}
+{\LARGE\bfseries The Pratyak\d{s}a Context-Engineering Harness:\\
+A Vedic-Epistemology-Grounded Plugin for\\
+Long-Context, Hallucination-Resistant\\
+LLM Coding Agents\par}
+\vspace{1.5cm}
+{\large Sharath Phulari\par}
+{\normalsize Independent Researcher\par}
+{\normalsize \texttt{SharathSPhD@github}\par}
+\vfill
+{\small Preprint v1.0 \quad\textbar\quad 2026-04-18\par}
+\vspace{0.5cm}
+{\small Code: \url{https://github.com/SharathSPhD/pratyaksha-context-eng-harness}\par}
+{\small Plugin marketplace manifest: \texttt{.claude-plugin/marketplace.json}\par}
+{\small Reproducibility: \texttt{experiments/results/p7/\_index.json}, \texttt{\_summary.md}\par}
+\end{center}
+\end{titlepage}
+
+\input{sections/00_frontmatter.tex}
+\clearpage
+\tableofcontents
+\clearpage
+
+\input{sections/01_introduction.tex}
+\input{sections/02_related_work.tex}
+\input{sections/03_origin.tex}
+\input{sections/04_theory.tex}
+\input{sections/05_architecture.tex}
+\input{sections/06_plugin.tex}
+\input{sections/07_methodology.tex}
+\input{sections/08_results_l1.tex}
+\input{sections/09_results_l2.tex}
+\input{sections/10_results_l3.tex}
+\input{sections/11_discussion.tex}
+\input{sections/12_conclusion.tex}
+
+\clearpage
+\appendix
+
+\input{appendices/A_glossary.tex}
+\input{appendices/B_mcp_tools.tex}
+\input{appendices/C_reproducibility.tex}
+\input{appendices/D_prompts.tex}
+\input{appendices/E_p6c_protocol.tex}
+\input{appendices/F_negative_results.tex}
+
+\clearpage
+\section*{All Figures}
+\input{generated/figures.tex}
+
+\clearpage
+\section*{All Tables}
+\input{generated/tables.tex}
+
+\clearpage
+\bibliography{references}
+
+\end{document}

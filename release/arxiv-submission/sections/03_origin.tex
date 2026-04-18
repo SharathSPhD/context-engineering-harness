@@ -1,0 +1,59 @@
+\section{3 · Origin: From a TRIZ Contradiction Analysis to Vedic Epistemology}\label{origin-from-a-triz-contradiction-analysis-to-vedic-epistemology}
+
+This section narrates how the project came to be, because the methodology itself is part of the contribution. We did \emph{not} begin by reading Sanskrit. We began by running TRIZ \citep{altshuller1984creativity, altshuller2002innovation, terninko1998triz, savransky2000triz} on a single engineering contradiction in modern LLM agents, and observed --- to our own surprise --- that the resolution drove us out of the LLM literature entirely and into eleventh-century Mithilā.
+
+\subsection{3.1 The TRIZ session}\label{the-triz-session}
+
+Using the \texttt{triz-engine} Cursor plugin \citep{trizengineplugin} (developed by the same author and used here in production from 2025-12), we logged the following primary contradiction:
+
+\begin{quote}
+\textbf{C1.} \emph{We must keep more information in the agent's context window to improve recall, \textbf{but} keeping more information degrades the agent's accuracy on the recall task itself.}
+\end{quote}
+
+In TRIZ terms this is the canonical \emph{technical contradiction} between \textbf{\#26 Quantity of Substance} (context tokens available to attend to) and \textbf{\#27 Reliability} (correct retrieval given the available tokens). The system-improving parameter pushes the system-degrading parameter. The TRIZ contradiction matrix \citep{altshuller2002innovation} for this pair returns the inventive principles \textbf{\#10 (Preliminary Action), \#11 (Cushion in Advance), \#28 (Mechanics Substitution), \#35 (Parameter Change)}. The \texttt{triz-engine} MCP tool \texttt{log\_session\_entry} recorded the matrix lookup, the four candidate principles, and the resulting solution sketches as separate audit entries.
+
+Of the four principles, \textbf{\#10 (Preliminary Action)} dominated: rather than fight the model at retrieval time, \emph{do something to each retrieved item before it enters the visible context}. Specifically, \emph{stamp it with conditions under which it is true and credentials of the source.}
+
+This required a vocabulary we did not have. The standard RAG literature attaches \emph{embeddings} and \emph{similarity scores} but not \emph{typed conditions}. The standard hallucination literature attaches \emph{post-hoc labels} but not \emph{runtime qualifiers}. The standard memory-architecture literature \citep{sumers2024coala, packer2023memgpt} stratifies storage by \emph{recency} and \emph{importance} but does not give those strata an \emph{epistemic} type.
+
+\subsection{3.2 The discovery: classical Indian epistemology already had this vocabulary}\label{the-discovery-classical-indian-epistemology-already-had-this-vocabulary}
+
+A search for ``\emph{typed limitor on a cognition}'' + ``\emph{precision-weighted assertion}'' + ``\emph{supersession of older belief without deletion}'' returned, after several iterations, classical Indian epistemology --- specifically:
+
+\begin{itemize}
+\item
+  \textbf{Nyāya's \emph{avacchedaka}}. Every cognition \(C\) is \emph{of x as y under condition z} --- formally written \emph{aQR} where \emph{a} is the qualificand, \emph{Q} the qualifier, \emph{R} the relation/condition \citep{matilal1986perception, matilal1968navyanyaya, ingalls1951materials, phillips2012epistemology, gangesa14tattvacintamani}. Navya-Nyāya formalized this in the 14th century with operator-precision rivalling modern type theory \citep{ganeri2001philosophy, guha1968navyanyaya, ingalls1951materials}.
+\item
+  \textbf{Advaita Vedānta's \emph{bādha} (sublation)}. A higher-precision cognition does not \emph{erase} a lower-precision one; it \emph{supersedes} it, leaving the original retrievable as a now-rejected qualifier \citep{deutsch1969advaita, dharmaraja17vedantaparibhasa, shaw1990bada, rambachan2006advaita}. This is exactly what we want from a memory store under conflict.
+\item
+  \textbf{The Antaḥkaraṇa duality of \emph{manas} and \emph{buddhi}}. \emph{Manas} is the attentional sense-organ; \emph{buddhi} is the determinative judging faculty \citep{deutsch1969advaita, datta1932advaita, ramprasad2013advaita}. Together they constitute the two-stage attend-then-judge gate we needed.
+\item
+  \textbf{Sākṣī (the witness)}. A non-revisable witness consciousness that records \emph{what was known and when} without itself being the agent of action \citep{ganeri2017concealed, indich1980consciousness, fasching2009witness, sankaraupadesha}. We needed precisely this for cross-turn audit.
+\item
+  \textbf{The six-class \emph{khyātivāda} taxonomy of error}. Six classical theories of error --- \emph{anyathākhyāti} (Nyāya), \emph{ātmakhyāti} (Yogācāra), \emph{anirvacanīyakhyāti} (Advaita), \emph{asatkhyāti} (Mādhyamika), \emph{viparītakhyāti} (Mīmāṃsā), and \emph{akhyāti} (Prabhākara Mīmāṃsā) --- supply, in aggregate, a six-class typology of \emph{how a cognition can be wrong} that is far more discriminating than any LLM hallucination ontology we found in the contemporary literature \citep{ram2007error, matilal1986perception, bhatt1989prabhakara, datta1932advaita, bilimoria2018epistemology, mohanty1992reason}.
+\item
+  \textbf{Pramāṇa-samplava vs.~pramāṇa-vyavasthā}. The Mīmāṃsakas debated whether multiple knowledge-sources can converge on the same object (samplava) or are partitioned (vyavasthā) \citep{guha2016svatahpramanya, dasti2008jayanta, dasti2012perception, bhattacharyya1988svatahprama}. This maps directly onto the agent design decision of whether retrieval, reasoning, and tool-use can be evidence for the same claim --- and whether their reliabilities (\emph{svataḥ-prāmāṇya} / \emph{parataḥ-prāmāṇya}) compose or are partitioned. The Bayesian Beta-Bernoulli aggregator in Section 5.3 is the operational answer.
+\item
+  \textbf{Saṃskāras and vāsanās}. Latent memory traces and dispositional tendencies \citep{deutsch1969advaita, sankaraupadesha, halbfass1991traditioncomparison} that motivate adaptive forgetting (Section 5.7).
+\end{itemize}
+
+It was not a metaphor. Each of these constructs admits a \emph{precise runtime operationalization} on an LLM context window. Section 4 builds the translation table.
+
+\subsection{3.3 Why this method matters}\label{why-this-method-matters}
+
+The deeper claim is methodological. Several recent context-engineering threads resemble \emph{fragments} of an integrated philosophical tradition under different names: scratchpads ≈ \emph{manas}; tool-use selectors ≈ \emph{buddhi}; retrieval rerankers ≈ approximate \emph{avacchedaka}; sleep-time-compute / consolidation ≈ \emph{bādha}-driven memory pruning; provenance tracking ≈ \emph{sākṣī}; hallucination taxonomies in flux ≈ \emph{khyātivāda}. By naming the constructs from a tradition that already integrated them, we (a) get a \emph{coherent} design rather than a bag of mechanisms, and (b) inherit two thousand years of internal critique of the tradition (Mīmāṃsā vs.~Nyāya vs.~Advaita debates) as our \emph{adversarial review}.
+
+The TRIZ session that produced this trajectory took 87 minutes of wall-clock time and consumed 38,512 input tokens / 4,206 output tokens of Claude usage; the full audit trail is preserved in the repository under \texttt{docs/triz-origin-session.md}. We retain this provenance not for vanity but because \textbf{it is the kind of audit trail the harness itself is designed to enforce}.
+
+\subsection{3.4 The two dev-time orchestration tools we used (and excluded from the shipped plugin)}\label{the-two-dev-time-orchestration-tools-we-used-and-excluded-from-the-shipped-plugin}
+
+Two further plugins were used during development and \emph{deliberately excluded from the shipped artefact}:
+
+\begin{itemize}
+\item
+  \textbf{\texttt{attractor-flow}} \citep{attractorflowplugin} --- a dynamical-systems-inspired orchestration loop that drove the long-running validation pipeline through stable basins (e.g.~``P6-A done'', ``P6-B done'', ``Stouffer-Z computed''). It supplied the HALT, RESUME, and basin-detection primitives for the CLI scheduler.
+\item
+  \textbf{\texttt{ralph-loop}} --- a self-referential iterative-development loop used during early prototyping of the harness components.
+\end{itemize}
+
+We treat these as \emph{development-time} tools, analogous to \texttt{make} or \texttt{pytest}, not as runtime dependencies of the harness. The shipped plugin contains zero references to either, and we audit this in Section 6.5 and Appendix B.

@@ -1,0 +1,243 @@
+\section{Appendix B · Full MCP Tool Specifications}\label{appendix-b-full-mcp-tool-specifications}
+
+This appendix gives the full input / output schema and behavioural contract for each of the 15 MCP tools shipped by \texttt{pratyaksha-context-eng-harness} v1.0.0. The canonical source is \texttt{plugin/pratyaksha-context-eng-harness/mcp/server.py}.
+
+All tools share three host-platform invariants:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Audit hook.} Every successful tool call appends a single JSON-line to \texttt{\textasciitilde{}/.cache/pratyaksha/audit.jsonl} (XDG-style cache path; survives plugin reinstall) via the \texttt{\_audit(event,\ payload)} helper.
+\item
+  \textbf{Budget hook.} Every tool call is preceded by the \texttt{pretooluse-budget.sh} lifecycle hook, which consults \texttt{budget\_status} and \textbf{logs} budget pressure by default (\textbf{advisory}). Optional strict refusal is available when \texttt{PRATYAKSHA\_BUDGET\_STRICT=1} and the hook is configured to deny over-threshold calls.
+\item
+  \textbf{Schema-strict I/O.} Every tool's input is validated by a Pydantic v2 model; every output is JSON-serialisable.
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{\texorpdfstring{B.1 \texttt{context\_insert} --- avacchedaka insertion}{B.1 context\_insert --- avacchedaka insertion}}\label{b.1-context_insert-avacchedaka-insertion}
+
+\textbf{Signature.} \texttt{context\_insert(args:\ InsertInput)\ -\textgreater{}\ ContextElementOut}
+
+\begin{verbatim}
+class InsertInput(BaseModel):
+    qualificand: str
+    qualifier: str
+    condition: str = ""
+    precision: float = Field(ge=0.0, le=1.0, default=0.5)
+    source: str = "agent"
+    stale: bool = False
+    superseded_by_id: str | None = None
+\end{verbatim}
+
+\textbf{Behaviour.} Generates a new \texttt{id} (UUIDv4), writes the row to the in-memory \texttt{ContextStore}, returns the serialised row.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{\texorpdfstring{B.2 \texttt{context\_retrieve} --- default avacchedaka query}{B.2 context\_retrieve --- default avacchedaka query}}\label{b.2-context_retrieve-default-avacchedaka-query}
+
+\textbf{Signature.} \texttt{context\_retrieve(args:\ RetrieveInput)\ -\textgreater{}\ \{items:\ list{[}ContextElement{]}\}}
+
+\begin{verbatim}
+class RetrieveInput(BaseModel):
+    qualificand: str | None = None
+    qualifier_substring: str | None = None
+    condition: str | None = None
+    include_bādhita: bool = False
+    include_evicted: bool = False
+    limit: int = 50
+\end{verbatim}
+
+\textbf{Behaviour.} Walks the store, applies the rule engine (Section 5.2), returns matching live items by default.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{\texorpdfstring{B.3 \texttt{context\_get} --- direct id-based fetch}{B.3 context\_get --- direct id-based fetch}}\label{b.3-context_get-direct-id-based-fetch}
+
+\textbf{Signature.} \texttt{context\_get(args:\ GetByIdInput)\ -\textgreater{}\ ContextElement\ \textbar{}\ None}
+
+\begin{verbatim}
+class GetByIdInput(BaseModel):
+    id: str
+\end{verbatim}
+
+\textbf{Behaviour.} Audit/debug surface; returns the element regardless of \texttt{status}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{\texorpdfstring{B.4 \texttt{context\_sublate} --- basic sublation}{B.4 context\_sublate --- basic sublation}}\label{b.4-context_sublate-basic-sublation}
+
+\textbf{Signature.} \texttt{context\_sublate(args:\ SublateInput)\ -\textgreater{}\ ContextElement}
+
+\begin{verbatim}
+class SublateInput(BaseModel):
+    id: str
+    reason: str = ""
+\end{verbatim}
+
+\textbf{Behaviour.} Sets \texttt{status\ =\ "bādhita"} on the target. No \texttt{by\_id} reference. Used when the agent has no specific superseding item to point to (e.g.~policy-driven eviction).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{\texorpdfstring{B.5 \texttt{sublate\_with\_evidence} --- evidence-anchored sublation}{B.5 sublate\_with\_evidence --- evidence-anchored sublation}}\label{b.5-sublate_with_evidence-evidence-anchored-sublation}
+
+\textbf{Signature.} \texttt{sublate\_with\_evidence(args:\ SublateWithEvidenceInput)\ -\textgreater{}\ \{target:\ ContextElement,\ by:\ ContextElement\}}
+
+\begin{verbatim}
+class SublateWithEvidenceInput(BaseModel):
+    target_id: str
+    by_id: str
+    reason: str
+\end{verbatim}
+
+\textbf{Behaviour.} This is the \emph{primary} bādha primitive (Section 4.3). Sets \texttt{target.status\ =\ "bādhita"} and \texttt{target.superseded\_by\_id\ =\ by\_id}, retains the original for audit. Triggers the rule engine's \emph{dominance check} (Section 4.3) automatically against any other live items sharing \texttt{(qualificand,\ condition)} whose precision is dominated by \texttt{by}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{\texorpdfstring{B.6 \texttt{detect\_conflict} --- Bayesian-margin conflict check}{B.6 detect\_conflict --- Bayesian-margin conflict check}}\label{b.6-detect_conflict-bayesian-margin-conflict-check}
+
+\textbf{Signature.} \texttt{detect\_conflict(args:\ RetrieveInput)\ -\textgreater{}\ \{conflicted:\ bool,\ margin:\ float,\ items:\ list{[}ContextElement{]}\}}
+
+\textbf{Behaviour.} Runs the Bayesian Beta-Bernoulli aggregator (Section 5.3) over the matching items. Returns \texttt{conflicted=True} when the posterior margin \(|\bar{H} - 0.5|\) falls below the threshold \(\tau\) (default 0.10).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{\texorpdfstring{B.7 \texttt{list\_qualificands} --- diagnostic surface}{B.7 list\_qualificands --- diagnostic surface}}\label{b.7-list_qualificands-diagnostic-surface}
+
+\textbf{Signature.} \texttt{list\_qualificands()\ -\textgreater{}\ \{qualificands:\ list{[}str{]}\}}
+
+\textbf{Behaviour.} Returns the deduplicated list of \texttt{qualificand}s across the live store. Used by Manas to map ``what topics do I currently know about?''.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{\texorpdfstring{B.8 \texttt{compact} --- adaptive forgetting}{B.8 compact --- adaptive forgetting}}\label{b.8-compact-adaptive-forgetting}
+
+\textbf{Signature.} \texttt{compact(args:\ CompactInput)\ -\textgreater{}\ CompactionReport}
+
+\begin{verbatim}
+class CompactInput(BaseModel):
+    strategy: Literal["adaptive", "lru", "none"] = "adaptive"
+    max_keep: int | None = None
+\end{verbatim}
+
+\textbf{Behaviour.} Applies the \texttt{AdaptiveForgetting} rules (Section 5.7). Evicted items are written to \texttt{evicted\_log.jsonl}. The \texttt{none} strategy is a no-op for ablation studies.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{\texorpdfstring{B.9 \texttt{boundary\_compact} --- event-boundary compaction}{B.9 boundary\_compact --- event-boundary compaction}}\label{b.9-boundary_compact-event-boundary-compaction}
+
+\textbf{Signature.} \texttt{boundary\_compact(args:\ BoundaryCompactInput)\ -\textgreater{}\ \{summarised\_count:\ int,\ summary\_id:\ str\}}
+
+\begin{verbatim}
+class BoundaryCompactInput(BaseModel):
+    surprise_window_size: int = 12
+    surprise_threshold_sigma: float = 2.0
+    backend: Literal["vllm", "hf", "heuristic"] = "heuristic"
+\end{verbatim}
+
+\textbf{Behaviour.} Implements Section 5.6. Runs the configured surprise backend, declares boundaries, summarises closed episodes into single \texttt{episode\_summary} items.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{\texorpdfstring{B.10 \texttt{context\_window} --- visible-context summary for Manas}{B.10 context\_window --- visible-context summary for Manas}}\label{b.10-context_window-visible-context-summary-for-manas}
+
+\textbf{Signature.} \texttt{context\_window(args:\ ContextWindowInput)\ -\textgreater{}\ WindowSnapshot}
+
+\begin{verbatim}
+class ContextWindowInput(BaseModel):
+    max_items: int = 50
+    qualificand: str | None = None
+\end{verbatim}
+
+\textbf{Behaviour.} Returns a token-budget-aware snapshot of the live store, sorted by \texttt{precision} descending, with each item rendered as \texttt{\{id,\ qualificand,\ qualifier,\ condition,\ precision,\ source\}}. Used by \texttt{ManasAgent}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{\texorpdfstring{B.11 \texttt{set\_sakshi} --- pin a session-stable witness invariant}{B.11 set\_sakshi --- pin a session-stable witness invariant}}\label{b.11-set_sakshi-pin-a-session-stable-witness-invariant}
+
+\textbf{Signature.} \texttt{set\_sakshi(args:\ SetSakshiInput)\ -\textgreater{}\ \{ok:\ True\}}
+
+\begin{verbatim}
+class SetSakshiInput(BaseModel):
+    key: str
+    value: str
+\end{verbatim}
+
+\textbf{Behaviour.} Pins one \texttt{(key,\ value)} pair into the witness invariant store. Invoked by \texttt{session-start.sh} to seed \texttt{cwd}, \texttt{git\_sha}, \texttt{model\_id}, \texttt{plugin\_version}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{\texorpdfstring{B.12 \texttt{get\_sakshi} --- retrieve the witness invariants}{B.12 get\_sakshi --- retrieve the witness invariants}}\label{b.12-get_sakshi-retrieve-the-witness-invariants}
+
+\textbf{Signature.} \texttt{get\_sakshi()\ -\textgreater{}\ \{invariants:\ dict{[}str,\ str{]}\}}
+
+\textbf{Behaviour.} Returns the full invariant dict. Used by the \texttt{witness-prefix} skill to wrap every Buddhi prompt with a stable \texttt{\textless{}sakshi\_invariants\textgreater{}} system block.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{\texorpdfstring{B.13 \texttt{classify\_khyativada} --- 7-class hallucination classifier}{B.13 classify\_khyativada --- 7-class hallucination classifier}}\label{b.13-classify_khyativada-7-class-hallucination-classifier}
+
+\textbf{Signature.} \texttt{classify\_khyativada(args:\ ClassifyInput)\ -\textgreater{}\ KhyatiResult}
+
+\begin{verbatim}
+class ClassifyInput(BaseModel):
+    claim: str
+    ground_truth: str
+    context: str = ""
+
+class KhyatiResult(BaseModel):
+    khyati_class: Literal[
+        "anyathākhyāti", "ātmakhyāti", "anirvacanīyakhyāti",
+        "asatkhyāti", "viparītakhyāti", "akhyāti", "none",
+    ]
+    rationale: str
+    confidence: float
+\end{verbatim}
+
+\textbf{Behaviour.} Section 5.5. The \textbf{shipped plugin} path is a \textbf{heuristic classifier with structured JSON output} and the same rule-based guardrails (force \texttt{asatkhyāti} for non-existent qualificands; force \texttt{viparītakhyāti} for inverted-boolean cited items). A \textbf{few-shot Anthropic JSON} variant lives in the experiments harness (\texttt{src/evaluation/khyativada\_fewshot.py}) and is \textbf{not} wired into this MCP tool; both variants are evaluated independently in §8 (H6).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{\texorpdfstring{B.14 \texttt{budget\_status} --- TokenBudgetWatchdog gauge}{B.14 budget\_status --- TokenBudgetWatchdog gauge}}\label{b.14-budget_status-tokenbudgetwatchdog-gauge}
+
+\textbf{Signature.} \texttt{budget\_status(args:\ BudgetStatusInput)\ -\textgreater{}\ BudgetStatus}
+
+\begin{verbatim}
+class BudgetStatusInput(BaseModel):
+    budget_total: int = 16384
+\end{verbatim}
+
+\textbf{Behaviour.} Returns \texttt{\{context\_tokens\_used,\ context\_budget,\ fraction\_used,\ by\_category,\ compaction\_recommended\}}. Reads the running tally from the \texttt{\_budget\_gauge} file written by \texttt{budget\_record}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{\texorpdfstring{B.15 \texttt{budget\_record} --- record consumed tokens per turn}{B.15 budget\_record --- record consumed tokens per turn}}\label{b.15-budget_record-record-consumed-tokens-per-turn}
+
+\textbf{Signature.} \texttt{budget\_record(args:\ BudgetRecordInput)\ -\textgreater{}\ BudgetStatus}
+
+\begin{verbatim}
+class BudgetRecordInput(BaseModel):
+    category: Literal["system", "retrieval", "tool", "completion"]
+    n_tokens: int
+\end{verbatim}
+
+\textbf{Behaviour.} Increments the per-category counter and re-emits the gauge. Called by lifecycle hooks at the boundaries of every host action.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{\texorpdfstring{B.16 Negative claims --- what the plugin does \emph{not} do}{B.16 Negative claims --- what the plugin does not do}}\label{b.16-negative-claims-what-the-plugin-does-not-do}
+
+We assert and audit:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{No reference to \texttt{attractor-flow}, \texttt{ralph-loop}, or \texttt{triz-engine}} anywhere in the shipped plugin tree.
+\item
+  \textbf{No hard dependency on \texttt{vllm}, \texttt{mlflow}, \texttt{chromadb}, or \texttt{huggingface-hub}.} The runtime requirements are \texttt{mcp}, \texttt{pydantic}, \texttt{tiktoken}, \texttt{numpy}, \texttt{anthropic}. The optional \texttt{vllm} / \texttt{transformers} path for the Qwen3 surprise backend (Section 5.6) is loaded only when the user opts in.
+\item
+  \textbf{No model fine-tuning anywhere.} Every ``agent'' in this work is a system-prompted role over an unmodified frontier LLM.
+\end{itemize}
+
+The audit reproducer is \texttt{docs/no\_dev\_deps\_audit.md} in the repository.
