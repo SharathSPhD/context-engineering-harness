@@ -29,6 +29,9 @@ packages = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+markers = [
+    "integration: marks tests that require ANTHROPIC_API_KEY and make live API calls",
+]
 
 [tool.coverage.run]
 source = ["src"]
