@@ -2,8 +2,15 @@
 __pycache__/
 *.pyc
 .venv/
+.coverage
+htmlcov/
+mlruns/
 
-# Project planning docs (plan, spec, PRD, TRIZ, research notes)
-docs/
+# Private planning artifacts — user-facing docs (guide.md, validation_report.md) are tracked
+docs/prd.md
+docs/spec.md
+docs/triz.md
+docs/research.md
+docs/superpowers/
 .triz/
 .DS_Store
