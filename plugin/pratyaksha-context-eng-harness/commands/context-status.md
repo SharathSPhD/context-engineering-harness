@@ -1,3 +1,7 @@
+---
+description: Show current state of the Pratyakṣa context store — qualificand surface, per-bucket counts, mean precisions, witness invariant token count, and recent ledger spend.
+---
+
 # /context-status
 
 Show the current state of the per-session Pratyakṣa context store: the

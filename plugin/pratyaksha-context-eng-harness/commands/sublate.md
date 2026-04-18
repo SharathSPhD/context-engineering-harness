@@ -1,3 +1,8 @@
+---
+description: Manually sublate (bādha) one element by another, or sublate with new evidence. Refuses if newer precision does not strictly exceed older.
+argument-hint: "<older_id> [by <newer_id> | with-evidence \"<content>\" precision=<0..1> qualificand=<...> qualifier=<...> condition=<...>]"
+---
+
 # /sublate
 
 Manually sublate (bādha) one element by another. Use when the agent has

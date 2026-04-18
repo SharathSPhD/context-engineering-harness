@@ -1,3 +1,8 @@
+---
+description: Force a boundary-triggered compaction on the recent conversation window with optional scope (qualificand, task_context) and z-score threshold.
+argument-hint: "[threshold=<float>] [qualificand=<name>] [task_context=\"<AND-tokens>\"]"
+---
+
 # /compact-now
 
 Force a boundary-triggered compaction on the recent conversation window.

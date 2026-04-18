@@ -1,3 +1,8 @@
+---
+description: Show local token budget gauge plus recent cost ledger entries (per-model totals, last N calls). Optionally reset the gauge.
+argument-hint: "[last <n> | reset]"
+---
+
 # /budget
 
 Show the local token budget gauge and recent cost ledger entries for the
