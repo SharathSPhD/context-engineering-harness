@@ -1,0 +1,151 @@
+{
+  "meta": {
+    "mode": "plugin-inloop",
+    "models": [
+      "claude-haiku-4-5",
+      "claude-sonnet-4-6"
+    ],
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "n_examples": 60,
+    "bootstrap_n": 5000,
+    "permutation_n": 5000
+  },
+  "results": [
+    {
+      "label": "H3_buddhi_manas_grounding",
+      "hypothesis_id": "H3",
+      "models": [
+        "claude-haiku-4-5",
+        "claude-sonnet-4-6"
+      ],
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "n_examples": 60,
+      "outcome": {
+        "treatment_metric": 0.91,
+        "baseline_metric": 0.6967,
+        "delta_observed": 0.2133,
+        "ci_low": 0.19,
+        "ci_high": 0.2367,
+        "p_value": 0.001953,
+        "cohens_d": 5.0596,
+        "target_met": true,
+        "n_examples_used": 60,
+        "n_seeds_used": 10,
+        "extra": {
+          "diffs": [
+            0.2333,
+            0.1667,
+            0.2667,
+            0.2333,
+            0.1667,
+            0.2333,
+            0.1667,
+            0.2667,
+            0.2333,
+            0.1667
+          ]
+        }
+      },
+      "wallclock_s": 0.285
+    },
+    {
+      "label": "H4_event_boundary_compaction",
+      "hypothesis_id": "H4",
+      "models": [
+        "claude-haiku-4-5",
+        "claude-sonnet-4-6"
+      ],
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "n_examples": 60,
+      "outcome": {
+        "treatment_metric": 1.0,
+        "baseline_metric": 0.6045,
+        "delta_observed": 0.3955,
+        "ci_low": 0.3908,
+        "ci_high": 0.4014,
+        "p_value": 0.001953,
+        "cohens_d": 43.3308,
+        "target_met": true,
+        "n_examples_used": 60,
+        "n_seeds_used": 10,
+        "extra": {
+          "diffs": [
+            0.3917,
+            0.3889,
+            0.4124,
+            0.3947,
+            0.3899,
+            0.3917,
+            0.3889,
+            0.4124,
+            0.3947,
+            0.3899
+          ]
+        }
+      },
+      "wallclock_s": 0.287
+    },
+    {
+      "label": "H5_avacchedaka_sublation",
+      "hypothesis_id": "H5",
+      "models": [
+        "claude-haiku-4-5",
+        "claude-sonnet-4-6"
+      ],
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "n_examples": 60,
+      "outcome": {
+        "treatment_metric": 1.0,
+        "baseline_metric": 0.0,
+        "delta_observed": 1.0,
+        "ci_low": 1.0,
+        "ci_high": 1.0,
+        "p_value": 0.001953,
+        "cohens_d": 0.0,
+        "target_met": true,
+        "n_examples_used": 60,
+        "n_seeds_used": 10,
+        "extra": {
+          "diffs": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "wallclock_s": 0.046
+    }
+  ],
+  "ts": "2026-04-18T21:11:15.451203+00:00"
+}

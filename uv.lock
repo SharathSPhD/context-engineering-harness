@@ -741,6 +741,7 @@ benchmarks = [
     { name = "huggingface-hub" },
 ]
 dev = [
+    { name = "mcp" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
@@ -761,6 +762,7 @@ requires-dist = [
     { name = "chromadb", specifier = ">=0.5" },
     { name = "datasets", marker = "extra == 'benchmarks'", specifier = ">=2.20" },
     { name = "huggingface-hub", marker = "extra == 'benchmarks'", specifier = ">=0.24" },
+    { name = "mcp", marker = "extra == 'dev'", specifier = ">=1.0" },
     { name = "mlflow", specifier = ">=2.0" },
     { name = "numpy", specifier = ">=1.26" },
     { name = "pandas", specifier = ">=2.0" },

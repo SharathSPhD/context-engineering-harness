@@ -1,0 +1,347 @@
+{
+  "label": "H4_event_boundary_compaction",
+  "spec": {
+    "hypothesis_id": "H4",
+    "description": "Event-boundary compaction (surprise-spike triggered) preserves more post-boundary facts than naive precision-threshold compaction; effect \u2265 10 pts.",
+    "adapter_name": "(plugin-inloop)",
+    "treatment_condition": "harness_on",
+    "baseline_condition": "harness_off",
+    "metric": "post_recall",
+    "direction": "greater",
+    "delta": 0.1,
+    "n_examples": 60,
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "models": [
+      "claude-haiku-4-5",
+      "claude-sonnet-4-6"
+    ],
+    "significance_alpha": 0.05,
+    "notes": "In-process MCP. boundary_compact + scoped pre-wipe vs naive precision threshold."
+  },
+  "outcome": {
+    "treatment_metric": 1.0,
+    "baseline_metric": 0.6045,
+    "delta_observed": 0.3955,
+    "ci_low": 0.3908,
+    "ci_high": 0.4014,
+    "p_value": 0.001953,
+    "cohens_d": 43.3308,
+    "target_met": true,
+    "n_examples_used": 60,
+    "n_seeds_used": 10,
+    "extra": {
+      "diffs": [
+        0.3917,
+        0.3889,
+        0.4124,
+        0.3947,
+        0.3899,
+        0.3917,
+        0.3889,
+        0.4124,
+        0.3947,
+        0.3899
+      ]
+    }
+  },
+  "per_seed_runs": [
+    {
+      "model": "claude-haiku-4-5",
+      "seed": 0,
+      "condition": "harness_on",
+      "n": 60,
+      "mean_score": 1.0,
+      "accuracy": 1.0,
+      "extra": {
+        "post_kept": 302,
+        "pre_kept": 300,
+        "noise_kept": 300,
+        "n_post": 302,
+        "boundary_detected": 0
+      }
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "seed": 0,
+      "condition": "harness_off",
+      "n": 60,
+      "mean_score": 0.6083,
+      "accuracy": 0.9167,
+      "extra": {
+        "post_kept": 183,
+        "pre_kept": 300,
+        "noise_kept": 0,
+        "n_post": 302
+      }
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "seed": 1,
+      "condition": "harness_on",
+      "n": 60,
+      "mean_score": 1.0,
+      "accuracy": 1.0,
+      "extra": {
+        "post_kept": 301,
+        "pre_kept": 300,
+        "noise_kept": 300,
+        "n_post": 301,
+        "boundary_detected": 0
+      }
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "seed": 1,
+      "condition": "harness_off",
+      "n": 60,
+      "mean_score": 0.6111,
+      "accuracy": 0.9,
+      "extra": {
+        "post_kept": 183,
+        "pre_kept": 300,
+        "noise_kept": 0,
+        "n_post": 301
+      }
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "seed": 2,
+      "condition": "harness_on",
+      "n": 60,
+      "mean_score": 1.0,
+      "accuracy": 1.0,
+      "extra": {
+        "post_kept": 290,
+        "pre_kept": 300,
+        "noise_kept": 300,
+        "n_post": 290,
+        "boundary_detected": 0
+      }
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "seed": 2,
+      "condition": "harness_off",
+      "n": 60,
+      "mean_score": 0.5876,
+      "accuracy": 0.8333,
+      "extra": {
+        "post_kept": 168,
+        "pre_kept": 300,
+        "noise_kept": 0,
+        "n_post": 290
+      }
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "seed": 3,
+      "condition": "harness_on",
+      "n": 60,
+      "mean_score": 1.0,
+      "accuracy": 1.0,
+      "extra": {
+        "post_kept": 309,
+        "pre_kept": 300,
+        "noise_kept": 300,
+        "n_post": 309,
+        "boundary_detected": 0
+      }
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "seed": 3,
+      "condition": "harness_off",
+      "n": 60,
+      "mean_score": 0.6053,
+      "accuracy": 0.9,
+      "extra": {
+        "post_kept": 185,
+        "pre_kept": 300,
+        "noise_kept": 0,
+        "n_post": 309
+      }
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "seed": 4,
+      "condition": "harness_on",
+      "n": 60,
+      "mean_score": 1.0,
+      "accuracy": 1.0,
+      "extra": {
+        "post_kept": 291,
+        "pre_kept": 300,
+        "noise_kept": 300,
+        "n_post": 291,
+        "boundary_detected": 0
+      }
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "seed": 4,
+      "condition": "harness_off",
+      "n": 60,
+      "mean_score": 0.6101,
+      "accuracy": 0.9333,
+      "extra": {
+        "post_kept": 176,
+        "pre_kept": 300,
+        "noise_kept": 0,
+        "n_post": 291
+      }
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "seed": 0,
+      "condition": "harness_on",
+      "n": 60,
+      "mean_score": 1.0,
+      "accuracy": 1.0,
+      "extra": {
+        "post_kept": 302,
+        "pre_kept": 300,
+        "noise_kept": 300,
+        "n_post": 302,
+        "boundary_detected": 0
+      }
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "seed": 0,
+      "condition": "harness_off",
+      "n": 60,
+      "mean_score": 0.6083,
+      "accuracy": 0.9167,
+      "extra": {
+        "post_kept": 183,
+        "pre_kept": 300,
+        "noise_kept": 0,
+        "n_post": 302
+      }
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "seed": 1,
+      "condition": "harness_on",
+      "n": 60,
+      "mean_score": 1.0,
+      "accuracy": 1.0,
+      "extra": {
+        "post_kept": 301,
+        "pre_kept": 300,
+        "noise_kept": 300,
+        "n_post": 301,
+        "boundary_detected": 0
+      }
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "seed": 1,
+      "condition": "harness_off",
+      "n": 60,
+      "mean_score": 0.6111,
+      "accuracy": 0.9,
+      "extra": {
+        "post_kept": 183,
+        "pre_kept": 300,
+        "noise_kept": 0,
+        "n_post": 301
+      }
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "seed": 2,
+      "condition": "harness_on",
+      "n": 60,
+      "mean_score": 1.0,
+      "accuracy": 1.0,
+      "extra": {
+        "post_kept": 290,
+        "pre_kept": 300,
+        "noise_kept": 300,
+        "n_post": 290,
+        "boundary_detected": 0
+      }
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "seed": 2,
+      "condition": "harness_off",
+      "n": 60,
+      "mean_score": 0.5876,
+      "accuracy": 0.8333,
+      "extra": {
+        "post_kept": 168,
+        "pre_kept": 300,
+        "noise_kept": 0,
+        "n_post": 290
+      }
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "seed": 3,
+      "condition": "harness_on",
+      "n": 60,
+      "mean_score": 1.0,
+      "accuracy": 1.0,
+      "extra": {
+        "post_kept": 309,
+        "pre_kept": 300,
+        "noise_kept": 300,
+        "n_post": 309,
+        "boundary_detected": 0
+      }
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "seed": 3,
+      "condition": "harness_off",
+      "n": 60,
+      "mean_score": 0.6053,
+      "accuracy": 0.9,
+      "extra": {
+        "post_kept": 185,
+        "pre_kept": 300,
+        "noise_kept": 0,
+        "n_post": 309
+      }
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "seed": 4,
+      "condition": "harness_on",
+      "n": 60,
+      "mean_score": 1.0,
+      "accuracy": 1.0,
+      "extra": {
+        "post_kept": 291,
+        "pre_kept": 300,
+        "noise_kept": 300,
+        "n_post": 291,
+        "boundary_detected": 0
+      }
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "seed": 4,
+      "condition": "harness_off",
+      "n": 60,
+      "mean_score": 0.6101,
+      "accuracy": 0.9333,
+      "extra": {
+        "post_kept": 176,
+        "pre_kept": 300,
+        "noise_kept": 0,
+        "n_post": 291
+      }
+    }
+  ],
+  "ts": "2026-04-18T21:11:15.404768+00:00",
+  "wallclock_s": 0.287
+}

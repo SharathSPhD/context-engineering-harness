@@ -1,0 +1,277 @@
+{
+  "label": "H5_avacchedaka_sublation",
+  "spec": {
+    "hypothesis_id": "H5",
+    "description": "Avacchedaka sublate_with_evidence resolves contradicting facts to the higher-precision value while preserving an audit trail; baseline (no-plugin) cannot disambiguate. Effect \u2265 50 pts.",
+    "adapter_name": "(plugin-inloop)",
+    "treatment_condition": "harness_on",
+    "baseline_condition": "harness_off",
+    "metric": "conflict_resolution_accuracy",
+    "direction": "greater",
+    "delta": 0.5,
+    "n_examples": 60,
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "models": [
+      "claude-haiku-4-5",
+      "claude-sonnet-4-6"
+    ],
+    "significance_alpha": 0.05,
+    "notes": "In-process MCP. sublate_with_evidence vs naive co-existence."
+  },
+  "outcome": {
+    "treatment_metric": 1.0,
+    "baseline_metric": 0.0,
+    "delta_observed": 1.0,
+    "ci_low": 1.0,
+    "ci_high": 1.0,
+    "p_value": 0.001953,
+    "cohens_d": 0.0,
+    "target_met": true,
+    "n_examples_used": 60,
+    "n_seeds_used": 10,
+    "extra": {
+      "diffs": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  },
+  "per_seed_runs": [
+    {
+      "model": "claude-haiku-4-5",
+      "seed": 0,
+      "condition": "harness_on",
+      "n": 60,
+      "mean_score": 1.0,
+      "accuracy": 1.0,
+      "extra": {
+        "avg_active_after": 1.0
+      }
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "seed": 0,
+      "condition": "harness_off",
+      "n": 60,
+      "mean_score": 0.0,
+      "accuracy": 0.0,
+      "extra": {
+        "avg_active_after": 2.0
+      }
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "seed": 1,
+      "condition": "harness_on",
+      "n": 60,
+      "mean_score": 1.0,
+      "accuracy": 1.0,
+      "extra": {
+        "avg_active_after": 1.0
+      }
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "seed": 1,
+      "condition": "harness_off",
+      "n": 60,
+      "mean_score": 0.0,
+      "accuracy": 0.0,
+      "extra": {
+        "avg_active_after": 2.0
+      }
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "seed": 2,
+      "condition": "harness_on",
+      "n": 60,
+      "mean_score": 1.0,
+      "accuracy": 1.0,
+      "extra": {
+        "avg_active_after": 1.0
+      }
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "seed": 2,
+      "condition": "harness_off",
+      "n": 60,
+      "mean_score": 0.0,
+      "accuracy": 0.0,
+      "extra": {
+        "avg_active_after": 2.0
+      }
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "seed": 3,
+      "condition": "harness_on",
+      "n": 60,
+      "mean_score": 1.0,
+      "accuracy": 1.0,
+      "extra": {
+        "avg_active_after": 1.0
+      }
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "seed": 3,
+      "condition": "harness_off",
+      "n": 60,
+      "mean_score": 0.0,
+      "accuracy": 0.0,
+      "extra": {
+        "avg_active_after": 2.0
+      }
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "seed": 4,
+      "condition": "harness_on",
+      "n": 60,
+      "mean_score": 1.0,
+      "accuracy": 1.0,
+      "extra": {
+        "avg_active_after": 1.0
+      }
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "seed": 4,
+      "condition": "harness_off",
+      "n": 60,
+      "mean_score": 0.0,
+      "accuracy": 0.0,
+      "extra": {
+        "avg_active_after": 2.0
+      }
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "seed": 0,
+      "condition": "harness_on",
+      "n": 60,
+      "mean_score": 1.0,
+      "accuracy": 1.0,
+      "extra": {
+        "avg_active_after": 1.0
+      }
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "seed": 0,
+      "condition": "harness_off",
+      "n": 60,
+      "mean_score": 0.0,
+      "accuracy": 0.0,
+      "extra": {
+        "avg_active_after": 2.0
+      }
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "seed": 1,
+      "condition": "harness_on",
+      "n": 60,
+      "mean_score": 1.0,
+      "accuracy": 1.0,
+      "extra": {
+        "avg_active_after": 1.0
+      }
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "seed": 1,
+      "condition": "harness_off",
+      "n": 60,
+      "mean_score": 0.0,
+      "accuracy": 0.0,
+      "extra": {
+        "avg_active_after": 2.0
+      }
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "seed": 2,
+      "condition": "harness_on",
+      "n": 60,
+      "mean_score": 1.0,
+      "accuracy": 1.0,
+      "extra": {
+        "avg_active_after": 1.0
+      }
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "seed": 2,
+      "condition": "harness_off",
+      "n": 60,
+      "mean_score": 0.0,
+      "accuracy": 0.0,
+      "extra": {
+        "avg_active_after": 2.0
+      }
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "seed": 3,
+      "condition": "harness_on",
+      "n": 60,
+      "mean_score": 1.0,
+      "accuracy": 1.0,
+      "extra": {
+        "avg_active_after": 1.0
+      }
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "seed": 3,
+      "condition": "harness_off",
+      "n": 60,
+      "mean_score": 0.0,
+      "accuracy": 0.0,
+      "extra": {
+        "avg_active_after": 2.0
+      }
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "seed": 4,
+      "condition": "harness_on",
+      "n": 60,
+      "mean_score": 1.0,
+      "accuracy": 1.0,
+      "extra": {
+        "avg_active_after": 1.0
+      }
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "seed": 4,
+      "condition": "harness_off",
+      "n": 60,
+      "mean_score": 0.0,
+      "accuracy": 0.0,
+      "extra": {
+        "avg_active_after": 2.0
+      }
+    }
+  ],
+  "ts": "2026-04-18T21:11:15.450978+00:00",
+  "wallclock_s": 0.046
+}
