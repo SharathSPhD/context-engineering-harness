@@ -1,0 +1,48 @@
+{
+  "label": "P6-C_swebench_verified_AB",
+  "spec": {
+    "n_examples_per_seed": 120,
+    "models": [
+      "claude-haiku-4-5",
+      "claude-sonnet-4-6"
+    ],
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "research_budget_tokens": 512,
+    "precision_gate": 0.5,
+    "bootstrap_n": 2000,
+    "permutation_n": 2000,
+    "load_real_swebench_verified": false,
+    "use_docker_harness": false,
+    "metric": "swebench_heuristic_score (file_overlap=0.5 + line_jaccard=0.5)"
+  },
+  "outcome_per_instance": {
+    "delta_observed": 0.2486,
+    "ci_low": 0.2299,
+    "ci_high": 0.2667,
+    "p_value": 0.0005,
+    "cohens_d": 0.9938,
+    "n_pairs": 720,
+    "test": "paired permutation per instance"
+  },
+  "outcome_per_seed_mean": {
+    "delta_observed": 0.2486,
+    "ci_low": 0.2361,
+    "ci_high": 0.2611,
+    "p_value": 0.03125,
+    "cohens_d": 13.5234,
+    "n_pairs": 6,
+    "test": "paired permutation per (model, seed)"
+  },
+  "target_met": true,
+  "treatment_metric_mean": 0.5,
+  "baseline_metric_mean": 0.2514,
+  "treatment_target_path_hit_rate": 1.0,
+  "baseline_target_path_hit_rate": 0.5028,
+  "total_sublations_fired": 1440,
+  "wallclock_s": 0.371,
+  "ts": "2026-04-18T21:32:32.298165+00:00"
+}
