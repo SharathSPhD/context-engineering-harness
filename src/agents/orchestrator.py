@@ -13,12 +13,14 @@ DEFAULT_SAKSHI = SakshiPrefix(
 class ManusBuddhiOrchestrator:
     def __init__(
         self,
-        api_key: str,
-        store: ContextStore,
+        api_key: str = "",
+        store: ContextStore = None,
         sakshi: SakshiPrefix = DEFAULT_SAKSHI,
         manas_model: str = "claude-haiku-4-5",
         buddhi_model: str = "claude-sonnet-4-6",
     ):
+        if store is None:
+            store = ContextStore()
         self.store = store
         self.sakshi = sakshi
         self.manas = ManasAgent(api_key, manas_model)

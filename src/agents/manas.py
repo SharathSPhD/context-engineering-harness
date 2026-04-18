@@ -1,6 +1,6 @@
 import json
 from dataclasses import dataclass, field
-import anthropic
+from src.cli_bridge import get_client
 from src.avacchedaka.query import AvacchedakaQuery
 
 
@@ -23,8 +23,8 @@ class ManasAgent:
         "recommended_queries (list of {qualificand, condition} dicts), reasoning_sketch (str)."
     )
 
-    def __init__(self, api_key: str, model: str = "claude-haiku-4-5"):
-        self.client = anthropic.Anthropic(api_key=api_key)
+    def __init__(self, api_key: str = "", model: str = "claude-haiku-4-5"):
+        self.client = get_client(api_key)
         self.model = model
 
     def run(self, question: str, context_window: str, task_context: str, qualificand: str) -> ManasOutput:

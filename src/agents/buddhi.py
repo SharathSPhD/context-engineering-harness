@@ -1,6 +1,6 @@
 import json
 from dataclasses import dataclass, field
-import anthropic
+from src.cli_bridge import get_client
 
 
 @dataclass
@@ -25,8 +25,8 @@ class BuddhiAgent:
         "If confidence < 0.6 and evidence is weak, set answer to null. Never fabricate."
     )
 
-    def __init__(self, api_key: str, model: str = "claude-sonnet-4-6"):
-        self.client = anthropic.Anthropic(api_key=api_key)
+    def __init__(self, api_key: str = "", model: str = "claude-sonnet-4-6"):
+        self.client = get_client(api_key)
         self.model = model
 
     def run(
