@@ -8,7 +8,8 @@ RANDOM_SEED = int(os.getenv("RANDOM_SEED", 42))
 def run_experiment() -> dict:
     from src.forgetting.distribution_shift import DistributionShiftBenchmark
     from src.forgetting.schedules import (
-        NoForgetting, FixedCompaction, BadhaFirstForgetting
+        NoForgetting, FixedCompaction, RecencyWeightedForgetting,
+        RewardWeightedForgetting, BadhaFirstForgetting,
     )
     from src.avacchedaka.query import AvacchedakaQuery
 
@@ -29,6 +30,8 @@ def run_experiment() -> dict:
     return {
         "no_forgetting": accuracy_after_shift(NoForgetting),
         "fixed_compaction": accuracy_after_shift(FixedCompaction, keep_newest=2),
+        "recency_weighted": accuracy_after_shift(RecencyWeightedForgetting, decay_factor=0.9),
+        "reward_weighted": accuracy_after_shift(RewardWeightedForgetting, keep_threshold=0.3),
         "badha_first": accuracy_after_shift(BadhaFirstForgetting),
     }
 
@@ -41,6 +44,8 @@ if __name__ == "__main__":
         mlflow.log_metrics({
             "no_forgetting_correct": int(results["no_forgetting"]["correct"]),
             "fixed_compaction_correct": int(results["fixed_compaction"]["correct"]),
+            "recency_weighted_correct": int(results["recency_weighted"]["correct"]),
+            "reward_weighted_correct": int(results["reward_weighted"]["correct"]),
             "badha_first_correct": int(results["badha_first"]["correct"]),
         })
         os.makedirs("data/experiments", exist_ok=True)

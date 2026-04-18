@@ -43,10 +43,18 @@ class DistributionShiftBenchmark:
             store.insert(e)
         return store
 
-    def apply_shift(self, store: ContextStore, task: ShiftedTask) -> None:
-        """Apply the distribution shift: sublate pre-shift elements, insert post-shift."""
+    def apply_shift(self, store: ContextStore, task: ShiftedTask | None = None) -> None:
+        """Apply the distribution shift: sublate pre-shift elements, insert post-shift.
+
+        Args:
+            store: The ContextStore to update.
+            task: The ShiftedTask describing the shift. Defaults to the JWT shift task.
+        """
+        if task is None:
+            task = self.build_jwt_shift()
         for post_elem in task.post_shift_elements:
             store.insert(post_elem)
-        for pre_elem in task.pre_shift_elements:
-            matching_post = task.post_shift_elements[0]
+        for i, pre_elem in enumerate(task.pre_shift_elements):
+            # Pair each pre-shift element with its corresponding post-shift element
+            matching_post = task.post_shift_elements[min(i, len(task.post_shift_elements) - 1)]
             store.sublate(pre_elem.id, matching_post.id)

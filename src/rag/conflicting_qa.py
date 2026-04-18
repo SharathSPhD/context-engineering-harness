@@ -7,6 +7,10 @@ class QAExample:
     correct_answer: str
     sources: list[dict]
 
+    def __getitem__(self, key: str):
+        """Support dict-style subscript access for API compatibility."""
+        return getattr(self, key)
+
 
 class ConflictingSourceQA:
     @staticmethod

@@ -62,3 +62,12 @@ def test_reproducible_seed():
     e1 = b1.build_example("x", "web_security", 4, "congruent")
     e2 = b2.build_example("x", "web_security", 4, "congruent")
     assert e1.distractors == e2.distractors
+
+
+def test_benchmark_example_supports_subscript_access():
+    """BenchmarkExample must support dict-style subscript access per API contract."""
+    builder = CongruenceBenchmarkBuilder()
+    example = builder.build_example("JWT tokens expire after 24h.", "web_security", 4, "congruent")
+    assert example["version"] == "congruent"
+    assert example["gold_passage"] == "JWT tokens expire after 24h."
+    assert isinstance(example["distractors"], list)

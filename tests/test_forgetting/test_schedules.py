@@ -33,6 +33,9 @@ def test_fixed_compaction_keeps_newest():
     schedule = FixedCompaction(store, keep_newest=5)
     removed = schedule.apply()
     assert len(removed) == 5
+    # Key invariant: removed elements have precision=0.0 in the store (not deleted)
+    for eid in removed:
+        assert store._elements[eid].precision == 0.0, f"{eid} should have precision=0.0 after compaction"
 
 
 def test_fixed_compaction_keeps_zero_removes_all():
@@ -40,6 +43,10 @@ def test_fixed_compaction_keeps_zero_removes_all():
     schedule = FixedCompaction(store, keep_newest=0)
     removed = schedule.apply()
     assert len(removed) == 5
+    # All elements still exist in store but with precision=0.0 (compaction, not deletion)
+    for eid in removed:
+        assert eid in store._elements, f"{eid} should still exist (bādha: never delete)"
+        assert store._elements[eid].precision == 0.0
 
 
 def test_recency_weighted_removes_old_low_precision():

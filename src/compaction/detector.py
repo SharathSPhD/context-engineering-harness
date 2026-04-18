@@ -18,13 +18,13 @@ class EventBoundaryDetector:
         """Returns True if either signal indicates a boundary."""
         return task_switch or surprise_spike
 
-    def window_average_surprise(self, surprises: list[float], window: int = 5) -> list[float]:
+    def window_average_surprise(self, surprises: list[float], window_size: int = 5) -> list[float]:
         """Sliding window average for smoothed boundary detection."""
         if not surprises:
             return []
         averaged = []
         for i in range(len(surprises)):
-            start = max(0, i - window // 2)
-            end = min(len(surprises), i + window // 2 + 1)
+            start = max(0, i - window_size // 2)
+            end = min(len(surprises), i + window_size // 2 + 1)
             averaged.append(sum(surprises[start:end]) / (end - start))
         return averaged

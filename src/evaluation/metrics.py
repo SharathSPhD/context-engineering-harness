@@ -24,7 +24,9 @@ def expected_calibration_error(confidences: list[float], correctness: list[bool]
     bin_edges = np.linspace(0, 1, n_bins + 1)
     ece = 0.0
     for i in range(n_bins):
-        mask = (confs >= bin_edges[i]) & (confs < bin_edges[i + 1])
+        # Use <= for the last bin's upper edge so confidence=1.0 is captured
+        upper = (confs <= bin_edges[i + 1]) if i == n_bins - 1 else (confs < bin_edges[i + 1])
+        mask = (confs >= bin_edges[i]) & upper
         if mask.sum() == 0:
             continue
         bin_acc = correct[mask].mean()

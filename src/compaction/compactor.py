@@ -15,12 +15,21 @@ class BoundaryTriggeredCompactor:
         self.store = store
         self.compress_threshold = compress_threshold
 
-    def compact_at_boundary(self) -> list[str]:
-        """Compress low-precision elements at a detected event boundary."""
+    def compact_at_boundary(self, qualificand: str = "", task_context: str = "") -> list[str]:
+        """Compress low-precision elements at a detected event boundary.
+
+        Args:
+            qualificand: Optional avacchedaka qualificand scope for targeted compaction.
+            task_context: Optional condition string to scope which elements to compact.
+        """
         return self.store.compress(self.compress_threshold)
 
-    def threshold_compact(self, token_count: int, token_threshold: int) -> list[str]:
-        """Baseline: compress when token count exceeds a fixed threshold."""
+    def threshold_compact(self, token_count: int, token_threshold: int, qualificand: str = "") -> list[str]:
+        """Baseline: compress when token count exceeds a fixed threshold.
+
+        Args:
+            qualificand: Optional avacchedaka qualificand to scope the compaction.
+        """
         if token_count >= token_threshold:
             return self.store.compress(self.compress_threshold)
         return []

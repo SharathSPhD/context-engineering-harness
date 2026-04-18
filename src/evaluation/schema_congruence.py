@@ -41,6 +41,10 @@ class BenchmarkExample:
     distractors: list[str] = field(default_factory=list)
     target_length_k: int = 4
 
+    def __getitem__(self, key: str):
+        """Support dict-style subscript access for API compatibility."""
+        return getattr(self, key)
+
 
 class CongruenceBenchmarkBuilder:
     def __init__(self, seed: int = 42):

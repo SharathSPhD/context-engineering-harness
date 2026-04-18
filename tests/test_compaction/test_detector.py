@@ -46,7 +46,7 @@ def test_invalid_threshold_raises():
 def test_window_average_smooths():
     detector = EventBoundaryDetector()
     surprises = [0.0, 0.0, 1.0, 0.0, 0.0]
-    averaged = detector.window_average_surprise(surprises, window=4)
+    averaged = detector.window_average_surprise(surprises, window_size=4)
     assert len(averaged) == len(surprises)
     assert max(averaged) < 1.0
 
