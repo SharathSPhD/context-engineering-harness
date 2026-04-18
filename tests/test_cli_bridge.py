@@ -75,7 +75,15 @@ def test_get_client_returns_cli_bridge_when_no_key():
 
 
 def test_get_client_returns_anthropic_when_key_provided():
+    from unittest.mock import patch, MagicMock
     from src.cli_bridge import get_client
-    import anthropic
-    client = get_client(api_key="sk-ant-test-key-xxx")
-    assert isinstance(client, anthropic.Anthropic)
+    mock_anthropic_module = MagicMock()
+    mock_client = MagicMock()
+    mock_anthropic_module.Anthropic.return_value = mock_client
+    with patch.dict("sys.modules", {"anthropic": mock_anthropic_module}):
+        import importlib
+        import src.cli_bridge as bridge_mod
+        importlib.reload(bridge_mod)
+        client = bridge_mod.get_client(api_key="sk-ant-test-key-xxx")
+    mock_anthropic_module.Anthropic.assert_called_once_with(api_key="sk-ant-test-key-xxx")
+    assert client is mock_client
