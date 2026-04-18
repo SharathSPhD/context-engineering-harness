@@ -27,6 +27,15 @@ benchmarks = [
     "datasets>=2.20",
     "huggingface-hub>=0.24",
 ]
+surprise = [
+    "torch>=2.2",
+    "transformers>=4.45",
+]
+surprise-vllm = [
+    "vllm>=0.6.0",
+    "torch>=2.2",
+    "transformers>=4.45",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src"]
