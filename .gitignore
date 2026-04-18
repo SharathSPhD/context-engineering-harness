@@ -2,3 +2,8 @@
 __pycache__/
 *.pyc
 .venv/
+
+# Project planning docs (plan, spec, PRD, TRIZ, research notes)
+docs/
+.triz/
+.DS_Store
