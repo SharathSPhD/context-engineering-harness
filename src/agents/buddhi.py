@@ -35,16 +35,19 @@ class BuddhiAgent:
         context_window: str,
         manas_sketch: str,
         uncertainty: float,
+        candidate_ids: list[str] | None = None,
     ) -> BuddhiOutput:
+        content = (
+            f"Context:\n{context_window}\n\n"
+            f"Candidate element IDs surfaced by manas: {candidate_ids or []}\n\n"
+            f"Manas sketch (uncommitted):\n{manas_sketch}\n\n"
+            f"Manas uncertainty: {uncertainty:.2f}\n\n"
+            f"Question: {question}"
+        )
         messages = [
             {
                 "role": "user",
-                "content": (
-                    f"Context:\n{context_window}\n\n"
-                    f"Manas sketch (uncommitted):\n{manas_sketch}\n\n"
-                    f"Manas uncertainty: {uncertainty:.2f}\n\n"
-                    f"Question: {question}"
-                ),
+                "content": content,
             }
         ]
         response = self.client.messages.create(

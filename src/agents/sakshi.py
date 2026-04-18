@@ -10,4 +10,4 @@ class SakshiPrefix:
         return self._content
 
     def as_system_message(self) -> dict:
-        return {"role": "user", "content": f"<sakshi_prefix>\n{self._content}\n</sakshi_prefix>"}
+        return {"role": "system", "content": f"<sakshi_prefix>\n{self._content}\n</sakshi_prefix>"}

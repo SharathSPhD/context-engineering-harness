@@ -69,7 +69,7 @@ def test_orchestrator_passes_enriched_context_to_buddhi(store_with_auth_doc):
         orch.run(question="Q?", task_context="task_type=qa", qualificand="auth")
 
         buddhi_call_kwargs = MockBuddhi.return_value.run.call_args
-        context_window = buddhi_call_kwargs[1].get("context_window") or buddhi_call_kwargs[0][1]
+        context_window = buddhi_call_kwargs.kwargs["context_window"]
         assert "JWT tokens" in context_window
 
 

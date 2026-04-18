@@ -23,7 +23,7 @@ class ManasAgent:
         "recommended_queries (list of {qualificand, condition} dicts), reasoning_sketch (str)."
     )
 
-    def __init__(self, api_key: str, model: str = "claude-haiku-4-5-20251001"):
+    def __init__(self, api_key: str, model: str = "claude-haiku-4-5"):
         self.client = anthropic.Anthropic(api_key=api_key)
         self.model = model
 
