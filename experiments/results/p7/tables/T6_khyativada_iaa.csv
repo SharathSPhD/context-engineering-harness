@@ -1,0 +1,12 @@
+metric,value
+overall_kappa,0.7360969266627998
+overall_kappa_band,substantial
+percent_agreement,0.7736666666666666
+n_examples,3000
+kappa[akhyati],0.7882639325136857
+kappa[anirvacaniyakhyati],0.736868120046288
+kappa[anyathakhyati],0.7705975229658794
+kappa[asatkhyati],0.7710598473379422
+kappa[atmakhyati],0.6199469916542166
+kappa[none],0.6110220164193847
+kappa[viparitakhyati],0.8595015876784285

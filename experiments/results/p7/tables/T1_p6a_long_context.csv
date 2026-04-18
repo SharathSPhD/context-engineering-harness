@@ -1,0 +1,5 @@
+label,treatment,baseline,delta,ci_low,ci_high,p_value,cohens_d,n_pairs,target_met
+H1_ruler_8192,0.8444,0.4722,0.3722,0.2833,0.4557,0.0005,0.6222,180,True
+H1_ruler_32768,0.8889,0.5,0.3889,0.3,0.4722,0.0005,0.6786,180,True
+H2_helmet_recall_8192,0.8811,0.5189,0.3622,0.3244,0.4011,0.0005,1.419,180,True
+H2_helmet_recall_32768,0.8689,0.5122,0.3567,0.3167,0.3989,0.0005,1.2854,180,True

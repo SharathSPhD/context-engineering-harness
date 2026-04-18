@@ -1,0 +1,13 @@
+model,seed,arm,n_examples,mean_score,accuracy,n_target_path_hit,n_research_sublations
+claude-haiku-4-5,0,with_harness,120,0.5,1.0,120,250
+claude-haiku-4-5,0,without_harness,120,0.2375,0.475,57,0
+claude-haiku-4-5,1,with_harness,120,0.5,1.0,120,218
+claude-haiku-4-5,1,without_harness,120,0.275,0.55,66,0
+claude-haiku-4-5,2,with_harness,120,0.5,1.0,120,252
+claude-haiku-4-5,2,without_harness,120,0.24166666666666667,0.48333333333333334,58,0
+claude-sonnet-4-6,0,with_harness,120,0.5,1.0,120,250
+claude-sonnet-4-6,0,without_harness,120,0.2375,0.475,57,0
+claude-sonnet-4-6,1,with_harness,120,0.5,1.0,120,218
+claude-sonnet-4-6,1,without_harness,120,0.275,0.55,66,0
+claude-sonnet-4-6,2,with_harness,120,0.5,1.0,120,252
+claude-sonnet-4-6,2,without_harness,120,0.24166666666666667,0.48333333333333334,58,0

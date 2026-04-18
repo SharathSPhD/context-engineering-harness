@@ -1,0 +1,13 @@
+| metric | value |
+| --- | --- |
+| overall_kappa | 0.7361 |
+| overall_kappa_band | substantial |
+| percent_agreement | 0.7737 |
+| n_examples | 3000 |
+| kappa[akhyati] | 0.7883 |
+| kappa[anirvacaniyakhyati] | 0.7369 |
+| kappa[anyathakhyati] | 0.7706 |
+| kappa[asatkhyati] | 0.7711 |
+| kappa[atmakhyati] | 0.6199 |
+| kappa[none] | 0.6110 |
+| kappa[viparitakhyati] | 0.8595 |

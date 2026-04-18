@@ -1,0 +1,16 @@
+metric,value
+treatment_metric_mean,0.5
+baseline_metric_mean,0.2514
+per_instance_delta,0.2486
+per_instance_ci,"[0.2299, 0.2667]"
+per_instance_p_value,0.0005
+per_instance_cohens_d,0.9938
+per_instance_n_pairs,720
+"per_(model,seed)_delta",0.2486
+"per_(model,seed)_ci","[0.2361, 0.2611]"
+"per_(model,seed)_p_value",0.03125
+"per_(model,seed)_n_pairs",6
+treatment_target_path_hit_rate,1.0
+baseline_target_path_hit_rate,0.5028
+total_sublations_fired,1440
+target_met,True
