@@ -1,4 +1,4 @@
-"""End-to-end tests for the H3/H4/H5 plugin-in-loop runner.
+"""End-to-end tests for the H3–H7 plugin-in-loop runner.
 
 These run the full pipeline against the in-process plugin client and
 assert the directional, structural, and statistical contracts every
@@ -103,7 +103,32 @@ def test_h5_runner_emits_unanimous_perfect_resolution(tmp_out: Path) -> None:
     assert out["target_met"] is True
 
 
-def test_summary_file_aggregates_all_three(tmp_out: Path) -> None:
+def test_h6_runner_classifier_beats_random(tmp_out: Path) -> None:
+    payloads = _run("H6", tmp_out, n_examples=49)
+    payload = payloads["H6_khyativada_classifier"]
+    _assert_payload_shape(payload, hypothesis_id="H6")
+    out = payload["outcome"]
+    # Plugin classifier must comfortably beat uniform-random (1/7 ≈ 0.143).
+    assert out["treatment_metric"] >= 0.40
+    assert out["baseline_metric"] < 0.30
+    assert out["delta_observed"] > 0.0
+    assert out["cohens_d"] > 0.0
+    assert out["target_met"] is True
+
+
+def test_h7_runner_adaptive_forgetting_beats_no_forgetting(tmp_out: Path) -> None:
+    payloads = _run("H7", tmp_out, n_examples=24)
+    payload = payloads["H7_adaptive_forgetting"]
+    _assert_payload_shape(payload, hypothesis_id="H7")
+    out = payload["outcome"]
+    # bādha-first should resolve every shift cleanly, baseline never resolves.
+    assert out["treatment_metric"] >= 0.95
+    assert out["baseline_metric"] <= 0.10
+    assert out["delta_observed"] > 0.30
+    assert out["target_met"] is True
+
+
+def test_summary_file_aggregates_all_five(tmp_out: Path) -> None:
     rc = main([
         "--hypotheses", "all",
         "--models", "claude-haiku-4-5",
@@ -118,5 +143,5 @@ def test_summary_file_aggregates_all_three(tmp_out: Path) -> None:
     assert summary_path.exists()
     summary = json.loads(summary_path.read_text())
     ids = sorted(r["hypothesis_id"] for r in summary["results"])
-    assert ids == ["H3", "H4", "H5"]
+    assert ids == ["H3", "H4", "H5", "H6", "H7"]
     assert summary["meta"]["mode"] == "plugin-inloop"

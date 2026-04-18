@@ -12,7 +12,7 @@
       3,
       4
     ],
-    "n_examples": 60,
+    "n_examples": 70,
     "bootstrap_n": 5000,
     "permutation_n": 5000
   },
@@ -31,34 +31,34 @@
         3,
         4
       ],
-      "n_examples": 60,
+      "n_examples": 70,
       "outcome": {
-        "treatment_metric": 0.91,
-        "baseline_metric": 0.6967,
-        "delta_observed": 0.2133,
-        "ci_low": 0.19,
-        "ci_high": 0.2367,
+        "treatment_metric": 0.8971,
+        "baseline_metric": 0.7143,
+        "delta_observed": 0.1829,
+        "ci_low": 0.1471,
+        "ci_high": 0.2143,
         "p_value": 0.001953,
-        "cohens_d": 5.0596,
+        "cohens_d": 3.227,
         "target_met": true,
-        "n_examples_used": 60,
+        "n_examples_used": 70,
         "n_seeds_used": 10,
         "extra": {
           "diffs": [
-            0.2333,
-            0.1667,
-            0.2667,
-            0.2333,
-            0.1667,
-            0.2333,
-            0.1667,
-            0.2667,
-            0.2333,
-            0.1667
+            0.2429,
+            0.1714,
+            0.2143,
+            0.2,
+            0.0857,
+            0.2429,
+            0.1714,
+            0.2143,
+            0.2,
+            0.0857
           ]
         }
       },
-      "wallclock_s": 0.285
+      "wallclock_s": 0.275
     },
     {
       "label": "H4_event_boundary_compaction",
@@ -74,34 +74,34 @@
         3,
         4
       ],
-      "n_examples": 60,
+      "n_examples": 70,
       "outcome": {
         "treatment_metric": 1.0,
-        "baseline_metric": 0.6045,
-        "delta_observed": 0.3955,
-        "ci_low": 0.3908,
-        "ci_high": 0.4014,
+        "baseline_metric": 0.6018,
+        "delta_observed": 0.3982,
+        "ci_low": 0.3947,
+        "ci_high": 0.4022,
         "p_value": 0.001953,
-        "cohens_d": 43.3308,
+        "cohens_d": 61.6198,
         "target_met": true,
-        "n_examples_used": 60,
+        "n_examples_used": 70,
         "n_seeds_used": 10,
         "extra": {
           "diffs": [
-            0.3917,
-            0.3889,
-            0.4124,
-            0.3947,
-            0.3899,
-            0.3917,
-            0.3889,
-            0.4124,
-            0.3947,
-            0.3899
+            0.3983,
+            0.3919,
+            0.4097,
+            0.3945,
+            0.3965,
+            0.3983,
+            0.3919,
+            0.4097,
+            0.3945,
+            0.3965
           ]
         }
       },
-      "wallclock_s": 0.287
+      "wallclock_s": 0.51
     },
     {
       "label": "H5_avacchedaka_sublation",
@@ -117,7 +117,7 @@
         3,
         4
       ],
-      "n_examples": 60,
+      "n_examples": 70,
       "outcome": {
         "treatment_metric": 1.0,
         "baseline_metric": 0.0,
@@ -127,7 +127,7 @@
         "p_value": 0.001953,
         "cohens_d": 0.0,
         "target_met": true,
-        "n_examples_used": 60,
+        "n_examples_used": 70,
         "n_seeds_used": 10,
         "extra": {
           "diffs": [
@@ -144,8 +144,94 @@
           ]
         }
       },
-      "wallclock_s": 0.046
+      "wallclock_s": 0.063
+    },
+    {
+      "label": "H6_khyativada_classifier",
+      "hypothesis_id": "H6",
+      "models": [
+        "claude-haiku-4-5",
+        "claude-sonnet-4-6"
+      ],
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "n_examples": 70,
+      "outcome": {
+        "treatment_metric": 0.5714,
+        "baseline_metric": 0.1229,
+        "delta_observed": 0.4486,
+        "ci_low": 0.41,
+        "ci_high": 0.4829,
+        "p_value": 0.001953,
+        "cohens_d": 7.1331,
+        "target_met": true,
+        "n_examples_used": 70,
+        "n_seeds_used": 10,
+        "extra": {
+          "diffs": [
+            0.4714,
+            0.4286,
+            0.4857,
+            0.5143,
+            0.3429,
+            0.4714,
+            0.4286,
+            0.4857,
+            0.5143,
+            0.3429
+          ]
+        }
+      },
+      "wallclock_s": 0.008
+    },
+    {
+      "label": "H7_adaptive_forgetting",
+      "hypothesis_id": "H7",
+      "models": [
+        "claude-haiku-4-5",
+        "claude-sonnet-4-6"
+      ],
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "n_examples": 70,
+      "outcome": {
+        "treatment_metric": 1.0,
+        "baseline_metric": 0.0,
+        "delta_observed": 1.0,
+        "ci_low": 1.0,
+        "ci_high": 1.0,
+        "p_value": 0.001953,
+        "cohens_d": 0.0,
+        "target_met": true,
+        "n_examples_used": 70,
+        "n_seeds_used": 10,
+        "extra": {
+          "diffs": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "wallclock_s": 0.314
     }
   ],
-  "ts": "2026-04-18T21:11:15.451203+00:00"
+  "ts": "2026-04-18T21:20:22.350511+00:00"
 }

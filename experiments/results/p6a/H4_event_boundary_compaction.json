@@ -9,7 +9,7 @@
     "metric": "post_recall",
     "direction": "greater",
     "delta": 0.1,
-    "n_examples": 60,
+    "n_examples": 70,
     "seeds": [
       0,
       1,
@@ -26,27 +26,27 @@
   },
   "outcome": {
     "treatment_metric": 1.0,
-    "baseline_metric": 0.6045,
-    "delta_observed": 0.3955,
-    "ci_low": 0.3908,
-    "ci_high": 0.4014,
+    "baseline_metric": 0.6018,
+    "delta_observed": 0.3982,
+    "ci_low": 0.3947,
+    "ci_high": 0.4022,
     "p_value": 0.001953,
-    "cohens_d": 43.3308,
+    "cohens_d": 61.6198,
     "target_met": true,
-    "n_examples_used": 60,
+    "n_examples_used": 70,
     "n_seeds_used": 10,
     "extra": {
       "diffs": [
-        0.3917,
-        0.3889,
-        0.4124,
-        0.3947,
-        0.3899,
-        0.3917,
-        0.3889,
-        0.4124,
-        0.3947,
-        0.3899
+        0.3983,
+        0.3919,
+        0.4097,
+        0.3945,
+        0.3965,
+        0.3983,
+        0.3919,
+        0.4097,
+        0.3945,
+        0.3965
       ]
     }
   },
@@ -55,14 +55,14 @@
       "model": "claude-haiku-4-5",
       "seed": 0,
       "condition": "harness_on",
-      "n": 60,
+      "n": 70,
       "mean_score": 1.0,
       "accuracy": 1.0,
       "extra": {
-        "post_kept": 302,
-        "pre_kept": 300,
-        "noise_kept": 300,
-        "n_post": 302,
+        "post_kept": 350,
+        "pre_kept": 350,
+        "noise_kept": 350,
+        "n_post": 350,
         "boundary_detected": 0
       }
     },
@@ -70,28 +70,28 @@
       "model": "claude-haiku-4-5",
       "seed": 0,
       "condition": "harness_off",
-      "n": 60,
-      "mean_score": 0.6083,
-      "accuracy": 0.9167,
+      "n": 70,
+      "mean_score": 0.6017,
+      "accuracy": 0.9286,
       "extra": {
-        "post_kept": 183,
-        "pre_kept": 300,
+        "post_kept": 210,
+        "pre_kept": 350,
         "noise_kept": 0,
-        "n_post": 302
+        "n_post": 350
       }
     },
     {
       "model": "claude-haiku-4-5",
       "seed": 1,
       "condition": "harness_on",
-      "n": 60,
+      "n": 70,
       "mean_score": 1.0,
       "accuracy": 1.0,
       "extra": {
-        "post_kept": 301,
-        "pre_kept": 300,
-        "noise_kept": 300,
-        "n_post": 301,
+        "post_kept": 349,
+        "pre_kept": 350,
+        "noise_kept": 350,
+        "n_post": 349,
         "boundary_detected": 0
       }
     },
@@ -99,28 +99,28 @@
       "model": "claude-haiku-4-5",
       "seed": 1,
       "condition": "harness_off",
-      "n": 60,
-      "mean_score": 0.6111,
-      "accuracy": 0.9,
+      "n": 70,
+      "mean_score": 0.6081,
+      "accuracy": 0.9143,
       "extra": {
-        "post_kept": 183,
-        "pre_kept": 300,
+        "post_kept": 211,
+        "pre_kept": 350,
         "noise_kept": 0,
-        "n_post": 301
+        "n_post": 349
       }
     },
     {
       "model": "claude-haiku-4-5",
       "seed": 2,
       "condition": "harness_on",
-      "n": 60,
+      "n": 70,
       "mean_score": 1.0,
       "accuracy": 1.0,
       "extra": {
-        "post_kept": 290,
-        "pre_kept": 300,
-        "noise_kept": 300,
-        "n_post": 290,
+        "post_kept": 335,
+        "pre_kept": 350,
+        "noise_kept": 350,
+        "n_post": 335,
         "boundary_detected": 0
       }
     },
@@ -128,28 +128,28 @@
       "model": "claude-haiku-4-5",
       "seed": 2,
       "condition": "harness_off",
-      "n": 60,
-      "mean_score": 0.5876,
-      "accuracy": 0.8333,
+      "n": 70,
+      "mean_score": 0.5903,
+      "accuracy": 0.8429,
       "extra": {
-        "post_kept": 168,
-        "pre_kept": 300,
+        "post_kept": 195,
+        "pre_kept": 350,
         "noise_kept": 0,
-        "n_post": 290
+        "n_post": 335
       }
     },
     {
       "model": "claude-haiku-4-5",
       "seed": 3,
       "condition": "harness_on",
-      "n": 60,
+      "n": 70,
       "mean_score": 1.0,
       "accuracy": 1.0,
       "extra": {
-        "post_kept": 309,
-        "pre_kept": 300,
-        "noise_kept": 300,
-        "n_post": 309,
+        "post_kept": 365,
+        "pre_kept": 350,
+        "noise_kept": 350,
+        "n_post": 365,
         "boundary_detected": 0
       }
     },
@@ -157,28 +157,28 @@
       "model": "claude-haiku-4-5",
       "seed": 3,
       "condition": "harness_off",
-      "n": 60,
-      "mean_score": 0.6053,
+      "n": 70,
+      "mean_score": 0.6055,
       "accuracy": 0.9,
       "extra": {
-        "post_kept": 185,
-        "pre_kept": 300,
+        "post_kept": 219,
+        "pre_kept": 350,
         "noise_kept": 0,
-        "n_post": 309
+        "n_post": 365
       }
     },
     {
       "model": "claude-haiku-4-5",
       "seed": 4,
       "condition": "harness_on",
-      "n": 60,
+      "n": 70,
       "mean_score": 1.0,
       "accuracy": 1.0,
       "extra": {
-        "post_kept": 291,
-        "pre_kept": 300,
-        "noise_kept": 300,
-        "n_post": 291,
+        "post_kept": 343,
+        "pre_kept": 350,
+        "noise_kept": 350,
+        "n_post": 343,
         "boundary_detected": 0
       }
     },
@@ -186,28 +186,28 @@
       "model": "claude-haiku-4-5",
       "seed": 4,
       "condition": "harness_off",
-      "n": 60,
-      "mean_score": 0.6101,
-      "accuracy": 0.9333,
+      "n": 70,
+      "mean_score": 0.6035,
+      "accuracy": 0.9429,
       "extra": {
-        "post_kept": 176,
-        "pre_kept": 300,
+        "post_kept": 205,
+        "pre_kept": 350,
         "noise_kept": 0,
-        "n_post": 291
+        "n_post": 343
       }
     },
     {
       "model": "claude-sonnet-4-6",
       "seed": 0,
       "condition": "harness_on",
-      "n": 60,
+      "n": 70,
       "mean_score": 1.0,
       "accuracy": 1.0,
       "extra": {
-        "post_kept": 302,
-        "pre_kept": 300,
-        "noise_kept": 300,
-        "n_post": 302,
+        "post_kept": 350,
+        "pre_kept": 350,
+        "noise_kept": 350,
+        "n_post": 350,
         "boundary_detected": 0
       }
     },
@@ -215,28 +215,28 @@
       "model": "claude-sonnet-4-6",
       "seed": 0,
       "condition": "harness_off",
-      "n": 60,
-      "mean_score": 0.6083,
-      "accuracy": 0.9167,
+      "n": 70,
+      "mean_score": 0.6017,
+      "accuracy": 0.9286,
       "extra": {
-        "post_kept": 183,
-        "pre_kept": 300,
+        "post_kept": 210,
+        "pre_kept": 350,
         "noise_kept": 0,
-        "n_post": 302
+        "n_post": 350
       }
     },
     {
       "model": "claude-sonnet-4-6",
       "seed": 1,
       "condition": "harness_on",
-      "n": 60,
+      "n": 70,
       "mean_score": 1.0,
       "accuracy": 1.0,
       "extra": {
-        "post_kept": 301,
-        "pre_kept": 300,
-        "noise_kept": 300,
-        "n_post": 301,
+        "post_kept": 349,
+        "pre_kept": 350,
+        "noise_kept": 350,
+        "n_post": 349,
         "boundary_detected": 0
       }
     },
@@ -244,28 +244,28 @@
       "model": "claude-sonnet-4-6",
       "seed": 1,
       "condition": "harness_off",
-      "n": 60,
-      "mean_score": 0.6111,
-      "accuracy": 0.9,
+      "n": 70,
+      "mean_score": 0.6081,
+      "accuracy": 0.9143,
       "extra": {
-        "post_kept": 183,
-        "pre_kept": 300,
+        "post_kept": 211,
+        "pre_kept": 350,
         "noise_kept": 0,
-        "n_post": 301
+        "n_post": 349
       }
     },
     {
       "model": "claude-sonnet-4-6",
       "seed": 2,
       "condition": "harness_on",
-      "n": 60,
+      "n": 70,
       "mean_score": 1.0,
       "accuracy": 1.0,
       "extra": {
-        "post_kept": 290,
-        "pre_kept": 300,
-        "noise_kept": 300,
-        "n_post": 290,
+        "post_kept": 335,
+        "pre_kept": 350,
+        "noise_kept": 350,
+        "n_post": 335,
         "boundary_detected": 0
       }
     },
@@ -273,28 +273,28 @@
       "model": "claude-sonnet-4-6",
       "seed": 2,
       "condition": "harness_off",
-      "n": 60,
-      "mean_score": 0.5876,
-      "accuracy": 0.8333,
+      "n": 70,
+      "mean_score": 0.5903,
+      "accuracy": 0.8429,
       "extra": {
-        "post_kept": 168,
-        "pre_kept": 300,
+        "post_kept": 195,
+        "pre_kept": 350,
         "noise_kept": 0,
-        "n_post": 290
+        "n_post": 335
       }
     },
     {
       "model": "claude-sonnet-4-6",
       "seed": 3,
       "condition": "harness_on",
-      "n": 60,
+      "n": 70,
       "mean_score": 1.0,
       "accuracy": 1.0,
       "extra": {
-        "post_kept": 309,
-        "pre_kept": 300,
-        "noise_kept": 300,
-        "n_post": 309,
+        "post_kept": 365,
+        "pre_kept": 350,
+        "noise_kept": 350,
+        "n_post": 365,
         "boundary_detected": 0
       }
     },
@@ -302,28 +302,28 @@
       "model": "claude-sonnet-4-6",
       "seed": 3,
       "condition": "harness_off",
-      "n": 60,
-      "mean_score": 0.6053,
+      "n": 70,
+      "mean_score": 0.6055,
       "accuracy": 0.9,
       "extra": {
-        "post_kept": 185,
-        "pre_kept": 300,
+        "post_kept": 219,
+        "pre_kept": 350,
         "noise_kept": 0,
-        "n_post": 309
+        "n_post": 365
       }
     },
     {
       "model": "claude-sonnet-4-6",
       "seed": 4,
       "condition": "harness_on",
-      "n": 60,
+      "n": 70,
       "mean_score": 1.0,
       "accuracy": 1.0,
       "extra": {
-        "post_kept": 291,
-        "pre_kept": 300,
-        "noise_kept": 300,
-        "n_post": 291,
+        "post_kept": 343,
+        "pre_kept": 350,
+        "noise_kept": 350,
+        "n_post": 343,
         "boundary_detected": 0
       }
     },
@@ -331,17 +331,17 @@
       "model": "claude-sonnet-4-6",
       "seed": 4,
       "condition": "harness_off",
-      "n": 60,
-      "mean_score": 0.6101,
-      "accuracy": 0.9333,
+      "n": 70,
+      "mean_score": 0.6035,
+      "accuracy": 0.9429,
       "extra": {
-        "post_kept": 176,
-        "pre_kept": 300,
+        "post_kept": 205,
+        "pre_kept": 350,
         "noise_kept": 0,
-        "n_post": 291
+        "n_post": 343
       }
     }
   ],
-  "ts": "2026-04-18T21:11:15.404768+00:00",
-  "wallclock_s": 0.287
+  "ts": "2026-04-18T21:20:21.964483+00:00",
+  "wallclock_s": 0.51
 }

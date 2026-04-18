@@ -9,7 +9,7 @@
     "metric": "accuracy",
     "direction": "greater",
     "delta": 0.1,
-    "n_examples": 60,
+    "n_examples": 70,
     "seeds": [
       0,
       1,
@@ -25,28 +25,28 @@
     "notes": "In-process MCP plugin. Buckets: 60% high-grounded, 10% low-grounded, 30% ungrounded."
   },
   "outcome": {
-    "treatment_metric": 0.91,
-    "baseline_metric": 0.6967,
-    "delta_observed": 0.2133,
-    "ci_low": 0.19,
-    "ci_high": 0.2367,
+    "treatment_metric": 0.8971,
+    "baseline_metric": 0.7143,
+    "delta_observed": 0.1829,
+    "ci_low": 0.1471,
+    "ci_high": 0.2143,
     "p_value": 0.001953,
-    "cohens_d": 5.0596,
+    "cohens_d": 3.227,
     "target_met": true,
-    "n_examples_used": 60,
+    "n_examples_used": 70,
     "n_seeds_used": 10,
     "extra": {
       "diffs": [
-        0.2333,
-        0.1667,
-        0.2667,
-        0.2333,
-        0.1667,
-        0.2333,
-        0.1667,
-        0.2667,
-        0.2333,
-        0.1667
+        0.2429,
+        0.1714,
+        0.2143,
+        0.2,
+        0.0857,
+        0.2429,
+        0.1714,
+        0.2143,
+        0.2,
+        0.0857
       ]
     }
   },
@@ -55,15 +55,15 @@
       "model": "claude-haiku-4-5",
       "seed": 0,
       "condition": "harness_on",
-      "n": 60,
-      "mean_score": 0.9667,
-      "accuracy": 0.9667,
+      "n": 70,
+      "mean_score": 0.9714,
+      "accuracy": 0.9714,
       "extra": {
-        "store_size": 43,
-        "n_active": 43,
+        "store_size": 50,
+        "n_active": 50,
         "n_sublated": 0,
-        "n_grounded": 43,
-        "n_ungrounded": 17,
+        "n_grounded": 50,
+        "n_ungrounded": 20,
         "model": "claude-haiku-4-5"
       }
     },
@@ -71,30 +71,14 @@
       "model": "claude-haiku-4-5",
       "seed": 0,
       "condition": "harness_off",
-      "n": 60,
-      "mean_score": 0.7333,
-      "accuracy": 0.7333,
+      "n": 70,
+      "mean_score": 0.7286,
+      "accuracy": 0.7286,
       "extra": {
         "store_size": 0,
         "n_active": 0,
         "n_sublated": 0,
-        "n_grounded": 43,
-        "n_ungrounded": 17,
-        "model": "claude-haiku-4-5"
-      }
-    },
-    {
-      "model": "claude-haiku-4-5",
-      "seed": 1,
-      "condition": "harness_on",
-      "n": 60,
-      "mean_score": 0.9167,
-      "accuracy": 0.9167,
-      "extra": {
-        "store_size": 40,
-        "n_active": 40,
-        "n_sublated": 0,
-        "n_grounded": 40,
+        "n_grounded": 50,
         "n_ungrounded": 20,
         "model": "claude-haiku-4-5"
       }
@@ -102,16 +86,32 @@
     {
       "model": "claude-haiku-4-5",
       "seed": 1,
+      "condition": "harness_on",
+      "n": 70,
+      "mean_score": 0.9143,
+      "accuracy": 0.9143,
+      "extra": {
+        "store_size": 47,
+        "n_active": 47,
+        "n_sublated": 0,
+        "n_grounded": 47,
+        "n_ungrounded": 23,
+        "model": "claude-haiku-4-5"
+      }
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "seed": 1,
       "condition": "harness_off",
-      "n": 60,
-      "mean_score": 0.75,
-      "accuracy": 0.75,
+      "n": 70,
+      "mean_score": 0.7429,
+      "accuracy": 0.7429,
       "extra": {
         "store_size": 0,
         "n_active": 0,
         "n_sublated": 0,
-        "n_grounded": 40,
-        "n_ungrounded": 20,
+        "n_grounded": 47,
+        "n_ungrounded": 23,
         "model": "claude-haiku-4-5"
       }
     },
@@ -119,15 +119,15 @@
       "model": "claude-haiku-4-5",
       "seed": 2,
       "condition": "harness_on",
-      "n": 60,
-      "mean_score": 0.9167,
-      "accuracy": 0.9167,
+      "n": 70,
+      "mean_score": 0.9,
+      "accuracy": 0.9,
       "extra": {
-        "store_size": 36,
-        "n_active": 36,
+        "store_size": 45,
+        "n_active": 45,
         "n_sublated": 0,
-        "n_grounded": 36,
-        "n_ungrounded": 24,
+        "n_grounded": 45,
+        "n_ungrounded": 25,
         "model": "claude-haiku-4-5"
       }
     },
@@ -135,14 +135,30 @@
       "model": "claude-haiku-4-5",
       "seed": 2,
       "condition": "harness_off",
-      "n": 60,
-      "mean_score": 0.65,
-      "accuracy": 0.65,
+      "n": 70,
+      "mean_score": 0.6857,
+      "accuracy": 0.6857,
       "extra": {
         "store_size": 0,
         "n_active": 0,
         "n_sublated": 0,
-        "n_grounded": 36,
+        "n_grounded": 45,
+        "n_ungrounded": 25,
+        "model": "claude-haiku-4-5"
+      }
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "seed": 3,
+      "condition": "harness_on",
+      "n": 70,
+      "mean_score": 0.8571,
+      "accuracy": 0.8571,
+      "extra": {
+        "store_size": 46,
+        "n_active": 46,
+        "n_sublated": 0,
+        "n_grounded": 46,
         "n_ungrounded": 24,
         "model": "claude-haiku-4-5"
       }
@@ -150,32 +166,16 @@
     {
       "model": "claude-haiku-4-5",
       "seed": 3,
-      "condition": "harness_on",
-      "n": 60,
-      "mean_score": 0.8667,
-      "accuracy": 0.8667,
-      "extra": {
-        "store_size": 38,
-        "n_active": 38,
-        "n_sublated": 0,
-        "n_grounded": 38,
-        "n_ungrounded": 22,
-        "model": "claude-haiku-4-5"
-      }
-    },
-    {
-      "model": "claude-haiku-4-5",
-      "seed": 3,
       "condition": "harness_off",
-      "n": 60,
-      "mean_score": 0.6333,
-      "accuracy": 0.6333,
+      "n": 70,
+      "mean_score": 0.6571,
+      "accuracy": 0.6571,
       "extra": {
         "store_size": 0,
         "n_active": 0,
         "n_sublated": 0,
-        "n_grounded": 38,
-        "n_ungrounded": 22,
+        "n_grounded": 46,
+        "n_ungrounded": 24,
         "model": "claude-haiku-4-5"
       }
     },
@@ -183,15 +183,15 @@
       "model": "claude-haiku-4-5",
       "seed": 4,
       "condition": "harness_on",
-      "n": 60,
-      "mean_score": 0.8833,
-      "accuracy": 0.8833,
+      "n": 70,
+      "mean_score": 0.8429,
+      "accuracy": 0.8429,
       "extra": {
-        "store_size": 42,
-        "n_active": 42,
+        "store_size": 51,
+        "n_active": 51,
         "n_sublated": 0,
-        "n_grounded": 42,
-        "n_ungrounded": 18,
+        "n_grounded": 51,
+        "n_ungrounded": 19,
         "model": "claude-haiku-4-5"
       }
     },
@@ -199,15 +199,15 @@
       "model": "claude-haiku-4-5",
       "seed": 4,
       "condition": "harness_off",
-      "n": 60,
-      "mean_score": 0.7167,
-      "accuracy": 0.7167,
+      "n": 70,
+      "mean_score": 0.7571,
+      "accuracy": 0.7571,
       "extra": {
         "store_size": 0,
         "n_active": 0,
         "n_sublated": 0,
-        "n_grounded": 42,
-        "n_ungrounded": 18,
+        "n_grounded": 51,
+        "n_ungrounded": 19,
         "model": "claude-haiku-4-5"
       }
     },
@@ -215,15 +215,15 @@
       "model": "claude-sonnet-4-6",
       "seed": 0,
       "condition": "harness_on",
-      "n": 60,
-      "mean_score": 0.9667,
-      "accuracy": 0.9667,
+      "n": 70,
+      "mean_score": 0.9714,
+      "accuracy": 0.9714,
       "extra": {
-        "store_size": 43,
-        "n_active": 43,
+        "store_size": 50,
+        "n_active": 50,
         "n_sublated": 0,
-        "n_grounded": 43,
-        "n_ungrounded": 17,
+        "n_grounded": 50,
+        "n_ungrounded": 20,
         "model": "claude-sonnet-4-6"
       }
     },
@@ -231,30 +231,14 @@
       "model": "claude-sonnet-4-6",
       "seed": 0,
       "condition": "harness_off",
-      "n": 60,
-      "mean_score": 0.7333,
-      "accuracy": 0.7333,
+      "n": 70,
+      "mean_score": 0.7286,
+      "accuracy": 0.7286,
       "extra": {
         "store_size": 0,
         "n_active": 0,
         "n_sublated": 0,
-        "n_grounded": 43,
-        "n_ungrounded": 17,
-        "model": "claude-sonnet-4-6"
-      }
-    },
-    {
-      "model": "claude-sonnet-4-6",
-      "seed": 1,
-      "condition": "harness_on",
-      "n": 60,
-      "mean_score": 0.9167,
-      "accuracy": 0.9167,
-      "extra": {
-        "store_size": 40,
-        "n_active": 40,
-        "n_sublated": 0,
-        "n_grounded": 40,
+        "n_grounded": 50,
         "n_ungrounded": 20,
         "model": "claude-sonnet-4-6"
       }
@@ -262,16 +246,32 @@
     {
       "model": "claude-sonnet-4-6",
       "seed": 1,
+      "condition": "harness_on",
+      "n": 70,
+      "mean_score": 0.9143,
+      "accuracy": 0.9143,
+      "extra": {
+        "store_size": 47,
+        "n_active": 47,
+        "n_sublated": 0,
+        "n_grounded": 47,
+        "n_ungrounded": 23,
+        "model": "claude-sonnet-4-6"
+      }
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "seed": 1,
       "condition": "harness_off",
-      "n": 60,
-      "mean_score": 0.75,
-      "accuracy": 0.75,
+      "n": 70,
+      "mean_score": 0.7429,
+      "accuracy": 0.7429,
       "extra": {
         "store_size": 0,
         "n_active": 0,
         "n_sublated": 0,
-        "n_grounded": 40,
-        "n_ungrounded": 20,
+        "n_grounded": 47,
+        "n_ungrounded": 23,
         "model": "claude-sonnet-4-6"
       }
     },
@@ -279,15 +279,15 @@
       "model": "claude-sonnet-4-6",
       "seed": 2,
       "condition": "harness_on",
-      "n": 60,
-      "mean_score": 0.9167,
-      "accuracy": 0.9167,
+      "n": 70,
+      "mean_score": 0.9,
+      "accuracy": 0.9,
       "extra": {
-        "store_size": 36,
-        "n_active": 36,
+        "store_size": 45,
+        "n_active": 45,
         "n_sublated": 0,
-        "n_grounded": 36,
-        "n_ungrounded": 24,
+        "n_grounded": 45,
+        "n_ungrounded": 25,
         "model": "claude-sonnet-4-6"
       }
     },
@@ -295,14 +295,30 @@
       "model": "claude-sonnet-4-6",
       "seed": 2,
       "condition": "harness_off",
-      "n": 60,
-      "mean_score": 0.65,
-      "accuracy": 0.65,
+      "n": 70,
+      "mean_score": 0.6857,
+      "accuracy": 0.6857,
       "extra": {
         "store_size": 0,
         "n_active": 0,
         "n_sublated": 0,
-        "n_grounded": 36,
+        "n_grounded": 45,
+        "n_ungrounded": 25,
+        "model": "claude-sonnet-4-6"
+      }
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "seed": 3,
+      "condition": "harness_on",
+      "n": 70,
+      "mean_score": 0.8571,
+      "accuracy": 0.8571,
+      "extra": {
+        "store_size": 46,
+        "n_active": 46,
+        "n_sublated": 0,
+        "n_grounded": 46,
         "n_ungrounded": 24,
         "model": "claude-sonnet-4-6"
       }
@@ -310,32 +326,16 @@
     {
       "model": "claude-sonnet-4-6",
       "seed": 3,
-      "condition": "harness_on",
-      "n": 60,
-      "mean_score": 0.8667,
-      "accuracy": 0.8667,
-      "extra": {
-        "store_size": 38,
-        "n_active": 38,
-        "n_sublated": 0,
-        "n_grounded": 38,
-        "n_ungrounded": 22,
-        "model": "claude-sonnet-4-6"
-      }
-    },
-    {
-      "model": "claude-sonnet-4-6",
-      "seed": 3,
       "condition": "harness_off",
-      "n": 60,
-      "mean_score": 0.6333,
-      "accuracy": 0.6333,
+      "n": 70,
+      "mean_score": 0.6571,
+      "accuracy": 0.6571,
       "extra": {
         "store_size": 0,
         "n_active": 0,
         "n_sublated": 0,
-        "n_grounded": 38,
-        "n_ungrounded": 22,
+        "n_grounded": 46,
+        "n_ungrounded": 24,
         "model": "claude-sonnet-4-6"
       }
     },
@@ -343,15 +343,15 @@
       "model": "claude-sonnet-4-6",
       "seed": 4,
       "condition": "harness_on",
-      "n": 60,
-      "mean_score": 0.8833,
-      "accuracy": 0.8833,
+      "n": 70,
+      "mean_score": 0.8429,
+      "accuracy": 0.8429,
       "extra": {
-        "store_size": 42,
-        "n_active": 42,
+        "store_size": 51,
+        "n_active": 51,
         "n_sublated": 0,
-        "n_grounded": 42,
-        "n_ungrounded": 18,
+        "n_grounded": 51,
+        "n_ungrounded": 19,
         "model": "claude-sonnet-4-6"
       }
     },
@@ -359,19 +359,19 @@
       "model": "claude-sonnet-4-6",
       "seed": 4,
       "condition": "harness_off",
-      "n": 60,
-      "mean_score": 0.7167,
-      "accuracy": 0.7167,
+      "n": 70,
+      "mean_score": 0.7571,
+      "accuracy": 0.7571,
       "extra": {
         "store_size": 0,
         "n_active": 0,
         "n_sublated": 0,
-        "n_grounded": 42,
-        "n_ungrounded": 18,
+        "n_grounded": 51,
+        "n_ungrounded": 19,
         "model": "claude-sonnet-4-6"
       }
     }
   ],
-  "ts": "2026-04-18T21:11:15.117244+00:00",
-  "wallclock_s": 0.285
+  "ts": "2026-04-18T21:20:21.453941+00:00",
+  "wallclock_s": 0.275
 }

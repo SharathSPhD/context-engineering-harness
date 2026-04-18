@@ -1,4 +1,4 @@
-"""Tests for the H3/H4/H5 scenario generators.
+"""Tests for the H3–H7 scenario generators.
 
 Generators must be (a) deterministic per seed, (b) produce the
 documented bucket distribution, (c) emit non-degenerate samples that
@@ -7,9 +7,12 @@ exercise every code path the runner depends on.
 from __future__ import annotations
 
 from experiments.v2.p6a.scenarios import (
+    KHYATIVADA_CLASSES,
     make_h3_cases,
     make_h4_scenarios,
     make_h5_conflicts,
+    make_h6_cases,
+    make_h7_scenarios,
 )
 
 
@@ -77,3 +80,53 @@ def test_h5_precision_ordering_strict() -> None:
     for seed in range(5):
         for c in make_h5_conflicts(n=20, seed=seed):
             assert c.newer_precision > c.older_precision
+
+
+def test_h6_is_deterministic_per_seed() -> None:
+    a = make_h6_cases(n=21, seed=4)
+    b = make_h6_cases(n=21, seed=4)
+    assert [c.item_id for c in a] == [c.item_id for c in b]
+    assert [c.gold_label for c in a] == [c.gold_label for c in b]
+
+
+def test_h6_seeds_diverge() -> None:
+    a = make_h6_cases(n=49, seed=1)
+    b = make_h6_cases(n=49, seed=2)
+    assert [c.gold_label for c in a] != [c.gold_label for c in b]
+
+
+def test_h6_covers_all_seven_classes() -> None:
+    cases = make_h6_cases(n=49, seed=0)
+    labels = {c.gold_label for c in cases}
+    for cls in KHYATIVADA_CLASSES:
+        assert cls in labels, f"missing class {cls!r} in {labels}"
+
+
+def test_h7_is_deterministic_per_seed() -> None:
+    a = make_h7_scenarios(n=8, seed=10)
+    b = make_h7_scenarios(n=8, seed=10)
+    assert [s.sid for s in a] == [s.sid for s in b]
+    assert [len(s.pre_items) for s in a] == [len(s.pre_items) for s in b]
+    assert [len(s.post_items) for s in a] == [len(s.post_items) for s in b]
+
+
+def test_h7_post_overrides_have_strict_precision() -> None:
+    """Each paired post item must strictly exceed the precision of the
+    pre item it overrides — sublate_with_evidence requires it."""
+    for seed in range(4):
+        for sc in make_h7_scenarios(n=8, seed=seed):
+            pre_by_id = {it.id: it for it in sc.pre_items}
+            for post in sc.post_items:
+                if post.older_target_id is None:
+                    continue
+                pre = pre_by_id[post.older_target_id]
+                assert post.precision > pre.precision
+
+
+def test_h7_has_pre_only_and_post_only_distractors() -> None:
+    scenarios = make_h7_scenarios(n=10, seed=3)
+    for sc in scenarios:
+        assert sc.n_distractor_pre >= 1
+        assert sc.n_distractor_post >= 1
+        # The probe value must appear in at least one post item content.
+        assert any(sc.probe_value in p.content for p in sc.post_items)

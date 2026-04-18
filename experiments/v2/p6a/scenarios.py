@@ -1,4 +1,4 @@
-"""Multi-seed scenario generators for H3, H4, H5 with the plugin in-loop.
+"""Multi-seed scenario generators for H3–H7 with the plugin in-loop.
 
 Every generator is *deterministic* per seed, returns a list of cases in
 the schema each hypothesis runner expects, and is large enough that we
@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass
+from typing import Sequence
 
 
 # --- H3: grounded-vs-ungrounded QA tasks --------------------------------
@@ -289,6 +290,218 @@ def make_h5_conflicts(*, n: int, seed: int) -> list[H5Conflict]:
                 newer_id=f"{cid}-newer",
                 newer_value=newer_v,
                 newer_precision=round(rng.uniform(0.85, 0.97), 3),
+            )
+        )
+    return out
+
+
+# --- H6: Khyātivāda classifier on a 7-class hallucination corpus --------
+
+
+@dataclass(frozen=True)
+class H6Case:
+    """One Khyātivāda classification example.
+
+    `gold_label` is the hand-engineered template label (the same field
+    `khyativada_corpus.CorpusRow` exposes). `corpus_row_id` lets us
+    re-derive provenance against the P4 annotation artefact when we want
+    end-to-end traceability.
+    """
+    item_id: str
+    claim: str
+    ground_truth: str
+    context: str
+    gold_label: str
+    corpus_row_id: str
+    template_id: str
+
+
+# The 7 labels come from `src.evaluation.khyativada_corpus._GENERATORS`.
+# We list them here once so the scenario generator and the runner agree
+# on iteration order without importing the corpus module at call time.
+KHYATIVADA_CLASSES: tuple[str, ...] = (
+    "anyathakhyati",
+    "atmakhyati",
+    "anirvacaniyakhyati",
+    "asatkhyati",
+    "viparitakhyati",
+    "akhyati",
+    "none",
+)
+
+
+def make_h6_cases(*, n: int, seed: int) -> list[H6Case]:
+    """Generate `n` Khyātivāda classification examples per seed.
+
+    Uses the P4 corpus generator so the *exact same templates* the
+    annotation kappa is reported on are scored here. Per-seed shuffling
+    is the source of variance for the paired test (the plugin classifier
+    is deterministic given input).
+    """
+    # Local import to avoid circular dependency surface and keep the
+    # scenarios module dependency-light for unit tests.
+    from src.evaluation.khyativada_corpus import generate_corpus
+
+    rows = generate_corpus(n=n, seed=seed)
+    rng = random.Random(seed * 7919 + 113)
+    rng.shuffle(rows)
+    out: list[H6Case] = []
+    for i, row in enumerate(rows):
+        out.append(
+            H6Case(
+                item_id=f"h6-{seed:02d}-{i:04d}",
+                claim=row.claim,
+                ground_truth=row.ground_truth,
+                context=row.context,
+                gold_label=row.gold_label,
+                corpus_row_id=row.id,
+                template_id=row.template_id,
+            )
+        )
+    return out
+
+
+# --- H7: distribution shift + adaptive forgetting ----------------------
+
+
+@dataclass(frozen=True)
+class H7Item:
+    """One element to insert into the store before / after a shift."""
+    id: str
+    content: str
+    precision: float
+    qualificand: str
+    qualifier: str
+    condition: str
+    bucket: str   # "pre" | "post"
+    older_target_id: str | None = None  # only set on post items that sublate a specific pre
+
+
+@dataclass(frozen=True)
+class H7Scenario:
+    """One distribution-shift scenario.
+
+    The agent sees `pre_items` then a shift event, then `post_items`.
+    Each post item is paired (by index) with the pre item it overrides
+    via `older_target_id`. The probe asks for the current value of the
+    qualificand under the post-shift condition; correctness = retrieval
+    returns ONLY the post value.
+    """
+    sid: str
+    qualificand: str
+    qualifier: str
+    condition: str   # the SHARED condition both pre and post elements live under
+    pre_items: list[H7Item]
+    post_items: list[H7Item]
+    probe_value: str   # post value the agent must surface (e.g. "JWT TTL is 1 hour")
+    stale_value: str   # pre value the agent must NOT surface (e.g. "JWT TTL is 24 hours")
+    n_distractor_pre: int   # pre items not overridden by any post item
+    n_distractor_post: int  # post items not paired to any pre (additive shifts)
+
+
+_H7_TOPICS: tuple[tuple[str, str, str, str], ...] = (
+    ("auth",          "ttl",     "JWT TTL is 24 hours",            "JWT TTL is 1 hour"),
+    ("rate_limiting", "rps",     "rate limit is 100 req/min",      "rate limit is 50 req/min"),
+    ("cache",         "version", "cache backend is Redis 6",       "cache backend is Redis 7"),
+    ("database",      "version", "database is PostgreSQL 14",      "database is PostgreSQL 16"),
+    ("endpoints",     "version", "API surface is v2",              "API surface is v3"),
+    ("storage",       "tier",    "storage tier is spinning disk",  "storage tier is NVMe SSD"),
+    ("queue",         "engine",  "queue engine is RabbitMQ",       "queue engine is Kafka"),
+    ("permissions",   "policy",  "policy is RBAC v1",              "policy is ABAC v1"),
+)
+
+
+def make_h7_scenarios(*, n: int, seed: int) -> list[H7Scenario]:
+    """Generate `n` shift scenarios with paired pre/post overrides plus distractors.
+
+    Per-seed RNG controls:
+      * the *count* of paired overrides (so per-seed means vary),
+      * the *count* of unpaired pre-only distractors,
+      * the *count* of unpaired post-only additive shifts,
+      * pre / post precision (post is always strictly higher).
+
+    The probe always asks for `post_value`; success = exactly one active
+    element retrieves that contains `post_value`.
+    """
+    rng = random.Random(seed * 41947 + 19)
+    out: list[H7Scenario] = []
+    for s in range(n):
+        topic, qual, pre_v, post_v = _H7_TOPICS[s % len(_H7_TOPICS)]
+        sid = f"h7-{seed:02d}-{s:04d}"
+        cond = f"case={sid}"
+
+        n_paired = rng.randint(2, 4)
+        n_pre_only = rng.randint(1, 3)
+        n_post_only = rng.randint(1, 2)
+
+        pre_items: list[H7Item] = []
+        post_items: list[H7Item] = []
+
+        for k in range(n_paired):
+            pre_id = f"{sid}-pre-{k:02d}"
+            post_id = f"{sid}-post-{k:02d}"
+            pre_items.append(
+                H7Item(
+                    id=pre_id,
+                    content=f"Old setting #{k}: {pre_v}.",
+                    precision=round(rng.uniform(0.55, 0.78), 3),
+                    qualificand=topic,
+                    qualifier=qual,
+                    condition=cond,
+                    bucket="pre",
+                )
+            )
+            post_items.append(
+                H7Item(
+                    id=post_id,
+                    content=f"New setting #{k}: {post_v}.",
+                    precision=round(rng.uniform(0.85, 0.97), 3),
+                    qualificand=topic,
+                    qualifier=qual,
+                    condition=cond,
+                    bucket="post",
+                    older_target_id=pre_id,
+                )
+            )
+
+        for k in range(n_pre_only):
+            pre_items.append(
+                H7Item(
+                    id=f"{sid}-pre-only-{k:02d}",
+                    content=f"Pre-only orphan note #{k}.",
+                    precision=round(rng.uniform(0.40, 0.60), 3),
+                    qualificand=topic,
+                    qualifier="legacy_note",
+                    condition=cond,
+                    bucket="pre",
+                )
+            )
+
+        for k in range(n_post_only):
+            post_items.append(
+                H7Item(
+                    id=f"{sid}-post-only-{k:02d}",
+                    content=f"New addition #{k} after shift.",
+                    precision=round(rng.uniform(0.80, 0.95), 3),
+                    qualificand=topic,
+                    qualifier="post_addendum",
+                    condition=cond,
+                    bucket="post",
+                )
+            )
+
+        out.append(
+            H7Scenario(
+                sid=sid,
+                qualificand=topic,
+                qualifier=qual,
+                condition=cond,
+                pre_items=pre_items,
+                post_items=post_items,
+                probe_value=post_v,
+                stale_value=pre_v,
+                n_distractor_pre=n_pre_only,
+                n_distractor_post=n_post_only,
             )
         )
     return out

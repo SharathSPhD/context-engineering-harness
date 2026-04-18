@@ -1,13 +1,15 @@
-"""P6-A re-runs of H3, H4, H5 with the `pratyaksha-context-eng-harness`
+"""P6-A re-runs of H3–H7 with the `pratyaksha-context-eng-harness`
 plugin in the loop.
 
 Unlike H1/H2 (which exercise registered BenchmarkAdapters end-to-end via
-`MultiSeedRunner`), H3/H4/H5 exercise the *behaviour of the plugin
+`MultiSeedRunner`), H3–H7 exercise the *behaviour of the plugin
 itself* — Buddhi/Manas grounding (H3), event-boundary compaction (H4),
-and Avacchedaka sublation (H5). For all three we re-use the same
-plugin code path Claude Code calls into via MCP, but in-process for
-speed and reproducibility (see `plugin_client.PratyakshaPluginClient`
-for the import-once-snapshot-state-each-trial pattern).
+Avacchedaka sublation (H5), Khyātivāda classification (H6), and
+adaptive (bādha-first) forgetting under distribution shift (H7). For
+all five we re-use the same plugin code path Claude Code calls into via
+MCP, but in-process for speed and reproducibility (see
+`plugin_client.PratyakshaPluginClient` for the
+import-once-snapshot-state-each-trial pattern).
 
 Each hypothesis runs:
     for model in models:
@@ -21,7 +23,7 @@ and does not call any LLM). We keep it because the live-mode SWE-bench
 re-run will need the same partition for paired tests against real Claude
 calls.
 
-Output: experiments/results/p6a/H{3,4,5}*.json plus _summary_plugin.json.
+Output: experiments/results/p6a/H{3,4,5,6,7}*.json plus _summary_plugin.json.
 These are the inputs P7 hands to the figure/table generators.
 """
 from __future__ import annotations
@@ -29,6 +31,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import random
 import time
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
@@ -40,12 +43,17 @@ from src.benchmarks.stats import bootstrap_ci, cohens_d, paired_permutation_test
 
 from .plugin_client import PratyakshaPluginClient
 from .scenarios import (
+    KHYATIVADA_CLASSES,
     H3Case,
     H4Scenario,
     H5Conflict,
+    H6Case,
+    H7Scenario,
     make_h3_cases,
     make_h4_scenarios,
     make_h5_conflicts,
+    make_h6_cases,
+    make_h7_scenarios,
 )
 
 logger = logging.getLogger(__name__)
@@ -132,6 +140,7 @@ def _run_h3_single(
     *, cases: list[H3Case], with_harness: bool, model: str
 ) -> tuple[list[float], dict[str, Any]]:
     client = PratyakshaPluginClient()
+    client.reset()
     if with_harness:
         client.set_sakshi(
             "Decline to answer when retrieved precision < 0.5. Never invent values."
@@ -219,6 +228,11 @@ def _h4_score_one(
 ) -> tuple[float, dict[str, Any]]:
     """Recall of post-boundary facts after compaction.
 
+    NOTE: the plugin keeps a module-level STATE, so two
+    `PratyakshaPluginClient` instances share storage. Every scoring
+    function MUST call `client.reset()` first to isolate this trial
+    from the previous one.
+
     `with_harness`:
         1. Insert all items into typed store.
         2. `boundary_compact(text_window, threshold_z=2.0,
@@ -233,6 +247,7 @@ def _h4_score_one(
         Naive uniform `compact(precision_threshold=0.50)` — drops noise
         AND drops the low-precision "post-fresh" items, hurting recall.
     """
+    client.reset()
     for it in scenario.items:
         client.insert(
             id=it.id,
@@ -390,6 +405,7 @@ def _h5_score_one(
     conflict: H5Conflict, *, with_harness: bool, client: PratyakshaPluginClient
 ) -> tuple[float, dict[str, Any]]:
     """1.0 iff exactly one active element is retrieved AND it carries the newer value."""
+    client.reset()
     client.insert(
         id=conflict.older_id,
         content=conflict.older_value,
@@ -507,6 +523,351 @@ def _run_h5(
 
     return _outcome_payload(
         label="H5_avacchedaka_sublation",
+        spec=spec,
+        on_means=on_means,
+        off_means=off_means,
+        per_seed_rows=per_seed_rows,
+        bootstrap_n=bootstrap_n,
+        permutation_n=permutation_n,
+    )
+
+
+# --- H6: Khyātivāda classifier ------------------------------------------
+
+
+def _h6_score_one(
+    case: H6Case, *, with_harness: bool, client: PratyakshaPluginClient, rng: random.Random
+) -> tuple[float, str]:
+    """Returns (correct, predicted_label).
+
+    `with_harness` (treatment): plugin's `classify_khyativada` MCP tool
+        — the same code path Claude Code would call into. It implements
+        the few-shot guardrail heuristic offline (no Anthropic call).
+    `without_harness` (baseline): uniform random over the 7 classes.
+        This is the legitimate null baseline for "the plugin classifier
+        is better than chance on the P4 hallucination corpus".
+    """
+    if with_harness:
+        out = client.classify_khyativada(
+            claim=case.claim,
+            ground_truth=case.ground_truth,
+            context=case.context,
+        )
+        predicted = out.get("class", "atmakhyati")
+    else:
+        predicted = rng.choice(KHYATIVADA_CLASSES)
+    return (1.0 if predicted == case.gold_label else 0.0), predicted
+
+
+def _confusion_summary(per_class_correct: dict[str, int], per_class_total: dict[str, int]) -> dict[str, Any]:
+    out: dict[str, Any] = {}
+    for cls in KHYATIVADA_CLASSES:
+        tot = per_class_total.get(cls, 0)
+        cor = per_class_correct.get(cls, 0)
+        out[cls] = {
+            "n": tot,
+            "correct": cor,
+            "recall": (cor / tot) if tot else 0.0,
+        }
+    return out
+
+
+def _run_h6(
+    *,
+    n_per_seed: int,
+    seeds: tuple[int, ...],
+    models: tuple[str, ...],
+    bootstrap_n: int,
+    permutation_n: int,
+) -> dict[str, Any]:
+    spec = HypothesisSpec(
+        hypothesis_id="H6",
+        description=(
+            "Plugin's Khyātivāda classifier (heuristic backend exposed by "
+            "the MCP tool) classifies hallucination types on the P4 "
+            "balanced 7-class corpus with accuracy ≥ uniform-random + 20pp."
+        ),
+        adapter_name="(plugin-inloop)",
+        treatment_condition="harness_on",
+        baseline_condition="harness_off",
+        metric="accuracy",
+        direction=TargetDirection.GREATER,
+        delta=0.20,
+        n_examples=n_per_seed,
+        seeds=seeds,
+        models=models,
+        significance_alpha=0.05,
+        notes=(
+            "Treatment: plugin classify_khyativada (in-process, deterministic). "
+            "Baseline: uniform random over 7 classes (per-seed RNG so paired test sees variance)."
+        ),
+    )
+
+    per_seed_rows: list[_PerSeedRun] = []
+    on_means: list[float] = []
+    off_means: list[float] = []
+
+    for model in models:
+        for seed in seeds:
+            cases = make_h6_cases(n=n_per_seed, seed=seed)
+
+            on_client = PratyakshaPluginClient()
+            on_client.reset()
+            off_rng = random.Random(seed * 88017 + 13)
+
+            on_correct = 0
+            off_correct = 0
+            on_per_class_correct: dict[str, int] = {c: 0 for c in KHYATIVADA_CLASSES}
+            off_per_class_correct: dict[str, int] = {c: 0 for c in KHYATIVADA_CLASSES}
+            per_class_total: dict[str, int] = {c: 0 for c in KHYATIVADA_CLASSES}
+
+            on_scores: list[float] = []
+            off_scores: list[float] = []
+            for c in cases:
+                per_class_total[c.gold_label] = per_class_total.get(c.gold_label, 0) + 1
+                s_on, _ = _h6_score_one(c, with_harness=True, client=on_client, rng=off_rng)
+                s_off, _ = _h6_score_one(c, with_harness=False, client=on_client, rng=off_rng)
+                on_scores.append(s_on)
+                off_scores.append(s_off)
+                if s_on > 0.5:
+                    on_correct += 1
+                    on_per_class_correct[c.gold_label] = on_per_class_correct.get(c.gold_label, 0) + 1
+                if s_off > 0.5:
+                    off_correct += 1
+                    off_per_class_correct[c.gold_label] = off_per_class_correct.get(c.gold_label, 0) + 1
+
+            n = len(cases)
+            on_acc = on_correct / max(1, n)
+            off_acc = off_correct / max(1, n)
+
+            per_seed_rows.append(
+                _PerSeedRun(
+                    model=model, seed=seed, condition="harness_on",
+                    n=n, mean_score=on_acc, accuracy=on_acc,
+                    extra={
+                        "per_class": _confusion_summary(on_per_class_correct, per_class_total),
+                    },
+                )
+            )
+            per_seed_rows.append(
+                _PerSeedRun(
+                    model=model, seed=seed, condition="harness_off",
+                    n=n, mean_score=off_acc, accuracy=off_acc,
+                    extra={
+                        "per_class": _confusion_summary(off_per_class_correct, per_class_total),
+                    },
+                )
+            )
+            on_means.append(on_acc)
+            off_means.append(off_acc)
+
+    return _outcome_payload(
+        label="H6_khyativada_classifier",
+        spec=spec,
+        on_means=on_means,
+        off_means=off_means,
+        per_seed_rows=per_seed_rows,
+        bootstrap_n=bootstrap_n,
+        permutation_n=permutation_n,
+    )
+
+
+# --- H7: Adaptive (bādha-first) forgetting under distribution shift ----
+
+
+def _h7_score_one(
+    scenario: H7Scenario, *, with_harness: bool, client: PratyakshaPluginClient
+) -> tuple[float, dict[str, Any]]:
+    """Score one shift scenario.
+
+    `with_harness` (bādha-first):
+        1. Insert all pre items.
+        2. For each paired post item, call `sublate_with_evidence` on
+           its target so the older element is marked sublated and given
+           precision=0.0.
+        3. Insert the unpaired post-only items normally.
+        4. `compact(precision_threshold=0.30)` — note: compact already
+           skips sublated elements (no-op there), but also drops any
+           lingering low-precision pre-only orphans.
+        5. Retrieve under the post-shift condition; success = exactly
+           one active element contains `probe_value` *and* no active
+           element contains the obsolete pre value text.
+
+    `without_harness` (no forgetting):
+        1. Insert all pre items.
+        2. Insert all post items as new ids (no sublation, no compaction).
+        3. Retrieve. Success = unique active element with `probe_value`
+           AND no surviving pre value. Multiple actives ⇒ ambiguous,
+           score 0.
+    """
+    client.reset()
+    # "Stale value" = the pre-shift topic value text (e.g. "JWT TTL is 24
+    # hours"). Pre-only orphan items deliberately do NOT carry this
+    # substring, so they don't trigger a false stale-value lingering
+    # signal — they're noise the agent is allowed to keep.
+    paired_pre_ids = {it.older_target_id for it in scenario.post_items if it.older_target_id}
+
+    for it in scenario.pre_items:
+        client.insert(
+            id=it.id,
+            content=it.content,
+            precision=it.precision,
+            qualificand=it.qualificand,
+            qualifier=it.qualifier,
+            condition=it.condition,
+            relation="inherence",
+            provenance="h7-pre",
+        )
+
+    if with_harness:
+        for it in scenario.post_items:
+            if it.older_target_id and it.older_target_id in paired_pre_ids:
+                client.sublate_with_evidence(
+                    older_id=it.older_target_id,
+                    newer_content=it.content,
+                    newer_precision=it.precision,
+                    qualificand=it.qualificand,
+                    qualifier=it.qualifier,
+                    condition=it.condition,
+                    provenance="h7-post-sublate",
+                )
+            else:
+                client.insert(
+                    id=it.id,
+                    content=it.content,
+                    precision=it.precision,
+                    qualificand=it.qualificand,
+                    qualifier=it.qualifier,
+                    condition=it.condition,
+                    relation="inherence",
+                    provenance="h7-post-additive",
+                )
+        client.compact(precision_threshold=0.30)
+    else:
+        for it in scenario.post_items:
+            client.insert(
+                id=it.id,
+                content=it.content,
+                precision=it.precision,
+                qualificand=it.qualificand,
+                qualifier=it.qualifier,
+                condition=it.condition,
+                relation="inherence",
+                provenance="h7-post-naive",
+            )
+
+    res = client.retrieve(
+        qualificand=scenario.qualificand,
+        condition=scenario.condition,
+        precision_threshold=0.30,
+        max_elements=200,
+    )
+    actives = res.get("elements", [])
+
+    has_post_value = any(scenario.probe_value in (e.get("content") or "") for e in actives)
+    has_stale_value = any(scenario.stale_value in (e.get("content") or "") for e in actives)
+
+    success = bool(has_post_value and not has_stale_value)
+    extra = {
+        "n_active": len(actives),
+        "has_post_value": has_post_value,
+        "has_stale_value": has_stale_value,
+        "n_paired": len(paired_pre_ids),
+    }
+    return (1.0 if success else 0.0), extra
+
+
+def _run_h7(
+    *,
+    n_per_seed: int,
+    seeds: tuple[int, ...],
+    models: tuple[str, ...],
+    bootstrap_n: int,
+    permutation_n: int,
+) -> dict[str, Any]:
+    spec = HypothesisSpec(
+        hypothesis_id="H7",
+        description=(
+            "Adaptive (bādha-first) forgetting via sublate_with_evidence + "
+            "low-precision compaction outperforms the no-forgetting baseline "
+            "on post-distribution-shift retrieval; effect ≥ 30 pts."
+        ),
+        adapter_name="(plugin-inloop)",
+        treatment_condition="harness_on",
+        baseline_condition="harness_off",
+        metric="post_shift_resolution_accuracy",
+        direction=TargetDirection.GREATER,
+        delta=0.30,
+        n_examples=n_per_seed,
+        seeds=seeds,
+        models=models,
+        significance_alpha=0.05,
+        notes=(
+            "In-process MCP. sublate_with_evidence + compact(0.30) vs "
+            "naive co-existence of pre+post under same condition."
+        ),
+    )
+
+    per_seed_rows: list[_PerSeedRun] = []
+    on_means: list[float] = []
+    off_means: list[float] = []
+
+    for model in models:
+        for seed in seeds:
+            scenarios = make_h7_scenarios(n=n_per_seed, seed=seed)
+            on_scores: list[float] = []
+            off_scores: list[float] = []
+            on_extra_agg: dict[str, Any] = {
+                "n_active_total": 0,
+                "n_post_correct": 0,
+                "n_stale_lingering": 0,
+            }
+            off_extra_agg: dict[str, Any] = {
+                "n_active_total": 0,
+                "n_post_correct": 0,
+                "n_stale_lingering": 0,
+            }
+            for sc in scenarios:
+                on_client = PratyakshaPluginClient()
+                off_client = PratyakshaPluginClient()
+                s_on, ex_on = _h7_score_one(sc, with_harness=True, client=on_client)
+                s_off, ex_off = _h7_score_one(sc, with_harness=False, client=off_client)
+                on_scores.append(s_on)
+                off_scores.append(s_off)
+                on_extra_agg["n_active_total"] += ex_on["n_active"]
+                off_extra_agg["n_active_total"] += ex_off["n_active"]
+                if ex_on["has_post_value"]:
+                    on_extra_agg["n_post_correct"] += 1
+                if ex_off["has_post_value"]:
+                    off_extra_agg["n_post_correct"] += 1
+                if ex_on["has_stale_value"]:
+                    on_extra_agg["n_stale_lingering"] += 1
+                if ex_off["has_stale_value"]:
+                    off_extra_agg["n_stale_lingering"] += 1
+
+            n = len(scenarios)
+            on_mean = sum(on_scores) / max(1, n)
+            off_mean = sum(off_scores) / max(1, n)
+
+            per_seed_rows.append(
+                _PerSeedRun(
+                    model=model, seed=seed, condition="harness_on",
+                    n=n, mean_score=on_mean, accuracy=on_mean,
+                    extra=on_extra_agg,
+                )
+            )
+            per_seed_rows.append(
+                _PerSeedRun(
+                    model=model, seed=seed, condition="harness_off",
+                    n=n, mean_score=off_mean, accuracy=off_mean,
+                    extra=off_extra_agg,
+                )
+            )
+            on_means.append(on_mean)
+            off_means.append(off_mean)
+
+    return _outcome_payload(
+        label="H7_adaptive_forgetting",
         spec=spec,
         on_means=on_means,
         off_means=off_means,
@@ -657,7 +1018,7 @@ def main(argv: list[str] | None = None) -> int:
         "--hypotheses",
         nargs="+",
         default=["all"],
-        choices=["H3", "H4", "H5", "all"],
+        choices=["H3", "H4", "H5", "H6", "H7", "all"],
     )
     p.add_argument(
         "--models",
@@ -683,7 +1044,7 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     if "all" in args.hypotheses:
-        selected = ["H3", "H4", "H5"]
+        selected = ["H3", "H4", "H5", "H6", "H7"]
     else:
         selected = list(args.hypotheses)
 
@@ -695,7 +1056,13 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     payloads: list[dict[str, Any]] = []
-    runners = {"H3": _run_h3, "H4": _run_h4, "H5": _run_h5}
+    runners = {
+        "H3": _run_h3,
+        "H4": _run_h4,
+        "H5": _run_h5,
+        "H6": _run_h6,
+        "H7": _run_h7,
+    }
     for h in selected:
         logger.info("running %s ...", h)
         t0 = time.perf_counter()
