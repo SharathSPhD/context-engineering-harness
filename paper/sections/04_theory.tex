@@ -1,0 +1,175 @@
+\section{4 · Theoretical Foundations: Vedic Epistemology Mapped to LLM Context Engineering}\label{theoretical-foundations-vedic-epistemology-mapped-to-llm-context-engineering}
+
+This section constructs a precise translation table from seven classical Indian epistemic constructs to seven runtime operations on an LLM agent's context. Each row is a falsifiable design commitment, and each is operationalized in Section 5 and tested in Sections 8--10.
+
+\subsection{4.1 Pratyakṣa --- direct perception as the harness's grounding pramāṇa}\label{pratyakux1e63a-direct-perception-as-the-harnesss-grounding-pramux101ux1e47a}
+
+In Nyāya \citep{aksapada200nyayasutra, matilal1986perception, phillips2012epistemology} and Advaita \citep{dharmaraja17vedantaparibhasa, datta1932advaita}, \emph{pratyakṣa} (direct perception) is the \emph{first} of the \emph{pramāṇas} --- the means of valid cognition --- and the \emph{foundational} one against which inference (\emph{anumāna}), comparison (\emph{upamāna}), testimony (\emph{śabda}), implication (\emph{arthāpatti}), and non-cognition (\emph{anupalabdhi}) are measured.
+
+\textbf{LLM operationalization.} We treat \emph{pratyakṣa} as the agent's \textbf{direct read of its current context window} --- what it can in-fact attend to right now --- and demote all upstream operations (RAG retrieval, tool outputs, prior-turn summaries) to the status of \emph{secondary pramāṇas} whose claims must be entered into the visible context with their own qualifiers. The harness's name, \emph{Pratyakṣa}, is therefore a methodological commitment: \emph{if it is not in the visible, witness-tracked context, it is not direct evidence for the agent's next action}. Hidden hot caches, opaque rerankers, and ``system memories'' the agent cannot inspect are, in this discipline, \textbf{not allowed to ground a claim} without first entering the \emph{pratyakṣa} surface.
+
+\subsection{4.2 Avacchedaka --- qualifier-conditioned cognition as typed limitor}\label{avacchedaka-qualifier-conditioned-cognition-as-typed-limitor}
+
+In Navya-Nyāya \citep{matilal1968navyanyaya, ingalls1951materials, gangesa14tattvacintamani, phillips2012epistemology}, every cognition is structurally a triple:
+
+\[
+C = \langle a,\; Q,\; R \rangle \quad\text{read as ``}a\text{ as qualified by }Q\text{ under relation/condition }R\text{''.}
+\]
+
+Here \(a\) is the \emph{qualificand} (viśeṣya), \(Q\) the \emph{qualifier} (prakāra), and \(R\) the \emph{limitor} (avacchedaka) under which the qualification holds. Crucially, \emph{R} is part of the cognition; ``the pot is blue \emph{under daylight}'' is a different cognition from ``the pot is blue \emph{under candlelight}'', and the two can co-exist without contradiction.
+
+\textbf{LLM operationalization.} Every item entered into the harness's \texttt{ContextStore} carries the four-tuple
+
+\[
+\texttt{Item} = \big\langle \texttt{qualificand},\; \texttt{qualifier},\; \texttt{condition},\; \texttt{precision}\in[0,1] \big\rangle.
+\]
+
+\texttt{condition} is a free-text string like \texttt{"as\ of\ 2024-09-Django-5.0"} or \texttt{"on\ POSIX,\ Python\ ≥\ 3.11"}. The MCP tool \texttt{insert(qualificand,\ qualifier,\ condition,\ precision,\ source)} is the only way evidence enters the store. Two items that share \texttt{qualificand} but differ in \texttt{condition} \emph{do not conflict}; two items that share \texttt{qualificand} \emph{and} \texttt{condition} but disagree on \texttt{qualifier} \emph{do}. This is the operational definition of a contradiction the harness can act on (Section 4.3).
+
+\subsection{4.3 Bādha --- sublation as supersede-with-provenance}\label{bux101dha-sublation-as-supersede-with-provenance}
+
+In Advaita Vedānta \citep{deutsch1969advaita, shaw1990bada, dharmaraja17vedantaparibhasa, sankaraupadesha}, a higher-precision cognition \emph{sublates} (bādhita) a lower-precision one. The classical example is mistaking a rope for a snake: the \emph{snake-cognition} is not erased on closer inspection --- the agent must remember it, because \emph{that error is itself an object of subsequent reflection} --- but its qualifier is now stamped \emph{bādhita} and it no longer grounds action.
+
+\textbf{LLM operationalization.} The MCP tool \texttt{sublate\_with\_evidence(target\_id,\ by\_id,\ reason)} rewrites the target item's \texttt{status} to \texttt{bādhita}, annotates it with a pointer to the superseding item, and \emph{retains} the original under that status. Subsequent retrievals filter by \texttt{status\ ==\ "live"} for normal use but can be opted-in for audit. Sublation is triggered by two rules:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Explicit pointer}: the newly-arriving item names a prior item via \texttt{superseded\_by\_id}.
+\item
+  \textbf{Dominance rule}: the newly-arriving item shares \texttt{qualificand} and \texttt{condition} with an existing item, has \emph{strictly higher} precision, and the older item is \texttt{stale=True} while the newer is not.
+\end{enumerate}
+
+The dominance rule is the operational form of the Advaita commitment that \emph{higher pramāṇa supersedes lower pramāṇa} under shared limitor; the explicit pointer is the form used when an LLM-side classifier or external evidence has detected a stale-fresh pair.
+
+\subsection{4.4 Buddhi and Manas --- the two-stage attend-then-judge gate}\label{buddhi-and-manas-the-two-stage-attend-then-judge-gate}
+
+The Antaḥkaraṇa quartet of \emph{manas, buddhi, citta, ahaṃkāra} \citep{deutsch1969advaita, ramprasad2013advaita, datta1932advaita} distinguishes the \emph{attentional sense-organ} (\emph{manas}) from the \emph{determinative judging faculty} (\emph{buddhi}). Manas selects and presents; Buddhi decides. The two are sequential and cannot be collapsed without losing the gate.
+
+\textbf{LLM operationalization.} The harness defines two sub-agent prompts (Section 6.3):
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{\texttt{ManasAgent}} receives the user query and the \texttt{ContextStore} snapshot, and returns \emph{which items it has elected to attend to and under which conditions}. Its output is structured JSON: \texttt{\{attended:\ {[}item\_id,\ ...{]},\ conditions:\ {[}str,\ ...{]},\ filter\_reasons:\ {[}str,\ ...{]}\}}. Manas is \emph{forbidden} from emitting a final answer.
+\item
+  \textbf{\texttt{BuddhiAgent}} receives the user query, the Manas output, and re-reads the attended items from the \texttt{ContextStore}, and returns the final answer plus its own \texttt{khyāti\_class} (Section 4.6) for the answer. Buddhi is the only agent that may emit a user-visible answer.
+\end{itemize}
+
+This two-stage gate is identical in shape to dual-process accounts of human cognition \citep{evans2003duality, kahneman2011thinking, sloman1996two} and to classic AI cognitive architectures \citep{laird1987soar, anderson1996actr, newell1990unified}, but the names --- and the surrounding philosophical apparatus --- are Vedic. Critically, \emph{Manas can be wrong without Buddhi being wrong}: if Manas mis-selects, Buddhi's job is to detect and call for re-selection rather than to answer.
+
+\subsection{4.5 Sākṣī --- the witness as model-invariant audit frame}\label{sux101kux1e63ux12b-the-witness-as-model-invariant-audit-frame}
+
+In Advaita Vedānta \citep{indich1980consciousness, fasching2009witness, ganeri2017concealed, sankaraupadesha}, \emph{sākṣī} --- the witness consciousness --- is the \emph{non-revisable, non-acting} observer that \emph{records} what is cognised without itself being the agent of cognition or action. It supplies the stable reference frame against which changes of cognition are intelligible at all.
+
+\textbf{LLM operationalization.} The harness instantiates a \texttt{SakshiKeeperAgent} (Section 6.3) and a \texttt{SakshiPrefix} skill (Section 6.2). On every turn, the keeper appends to a persistent JSON-lines \texttt{witness\_log.jsonl} an immutable record of:
+
+\begin{itemize}
+\tightlist
+\item
+  The user query.
+\item
+  The Manas selection (which items, under which conditions).
+\item
+  The Buddhi judgment (final answer, khyāti class, calibrated posterior).
+\item
+  All sublations fired this turn (target\_id, by\_id, reason).
+\item
+  The token budget consumed, by category (system, retrieval, tool, completion).
+\end{itemize}
+
+Crucially, the witness is \emph{write-once-per-turn} and \emph{read-only} to all agents in the next turn. It is the harness's source of truth for cross-turn provenance, and it is \emph{invariant under model swaps}: the witness log written under Claude 3.5 Sonnet is fully readable, fully diffable, and fully auditable when the agent is later switched to Claude 4.5 Sonnet, GPT-4o, or Qwen-3-72B. The model is replaceable; the witness is not.
+
+\subsection{4.6 Khyātivāda --- six-class typology of error}\label{khyux101tivux101da-six-class-typology-of-error}
+
+Six classical schools of Indian philosophy proposed six theories of erroneous cognition \citep{ram2007error, matilal1986perception, datta1932advaita, bhatt1989prabhakara, bilimoria2018epistemology, mohanty1992reason}. Each names a specific \emph{kind} of error:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Class
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+School
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Kernel definition
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Modern LLM analogue
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Anyathākhyāti} & Nyāya & ``Apprehension of one thing as another \emph{of the same general type}.'' & Wrong API name (right module, wrong function); citing the right paper but wrong year. \\
+\textbf{Ātmakhyāti} & Yogācāra & ``Projection of an internal cognition onto the external object.'' & Inventing helper functions / config keys the framework never exposed; hallucinated TODOs the user did not write. \\
+\textbf{Anirvacanīyakhyāti} & Advaita & ``Apprehension of an object that is \emph{neither real nor unreal}; sui generis indeterminate.'' & Hedged hallucinations: ``you might consider X-or-similar'' where X is plausible but ungrounded. \\
+\textbf{Asatkhyāti} & Mādhyamika & ``Apprehension of a non-existent object.'' & Citing a CVE, a person, a paper, or a commit hash that simply does not exist. \\
+\textbf{Viparītakhyāti} & Mīmāṃsā & ``Apprehension of the contrary.'' & Inverting a boolean flag's semantics; recommending the \emph{opposite} of the documented best practice. \\
+\textbf{Akhyāti} & Prabhākara Mīmāṃsā & ``Failure of correct apprehension by mere conflation of two adjacent cognitions.'' & Mixing two adjacent functions / two near-duplicate config schemas / two adjacent versions. \\
+\end{longtable}
+}
+
+This is not a post-hoc relabelling of an existing modern taxonomy. It is the \emph{original} taxonomy from the Indian philosophical tradition, jointly developed by debating schools over roughly a thousand years. We adopt it directly because (a) it carves the space cleanly along \emph{epistemic} (not merely surface-textual) lines, (b) the six classes are mutually exclusive in the tradition's own usage, and (c) it gives us a \emph{typed signal} the harness can act on (different remediation strategies for different classes).
+
+\textbf{LLM operationalization.} A few-shot Claude-side \texttt{KhyativadaClassifier} (Section 5.5) tags every Buddhi output with one of seven labels (six classes plus \texttt{none}). The classifier is grounded by a 3,000-example, two-rater annotated corpus (Section 11.2 / Appendix E) at Cohen's κ = 0.736 (``substantial'').
+
+\subsection{4.7 Saṃskāras and vāsanās --- adaptive forgetting}\label{saux1e43skux101ras-and-vux101sanux101s-adaptive-forgetting}
+
+In Advaita and Yoga, \emph{saṃskāras} are residual mental impressions and \emph{vāsanās} are dispositional tendencies that survive the immediate occasion of a cognition \citep{deutsch1969advaita, sankaraupadesha, halbfass1991traditioncomparison}. They explain why we are drawn to the same patterns of thought and why some impressions decay quickly while others persist indefinitely. The Advaitin practice prescribes \emph{removal of obstructive vāsanās} --- adaptive forgetting of patterns that no longer ground correct cognition.
+
+\textbf{LLM operationalization.} The \texttt{AdaptiveForgetting} module (Section 5.7) applies an exponential-decay schedule to non-witnessed items in the \texttt{ContextStore}, with three explicit rules:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Witnessed items never decay.} If \texttt{sākṣī.witnessed\ ==\ True} for an item-id, its precision floor is fixed.
+\item
+  \textbf{Sublated items decay faster.} Items with \texttt{status\ ==\ bādhita} halve their precision every time they survive a budget-pressure compaction event.
+\item
+  \textbf{High-recency, low-precision items decay slowest among the rest} --- the item is too new to know whether it will become a vāsanā or a saṃskāra.
+\end{enumerate}
+
+This avoids both the catastrophic-forgetting failure mode of naive context pruning \citep{french1999catastrophic, kirkpatrick2017overcoming, parisi2019continual} and the ``everything is forever'' failure mode of unconstrained external memory \citep{packer2023memgpt}.
+
+\subsection{4.8 The translation table, summarised}\label{the-translation-table-summarised}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Vedic construct
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+LLM operationalization
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+MCP tool / module
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Tested by
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Pratyakṣa & Visible-context-only grounding discipline & All \texttt{retrieve\_*} tools & All hypotheses (architectural commitment) \\
+Avacchedaka & Typed limitor \texttt{(qualificand,\ qualifier,\ condition,\ precision)} & \texttt{insert}, \texttt{retrieve\_by\_qualifier} & H2, H5 \\
+Bādha & Supersede-with-provenance under shared limitor & \texttt{sublate\_with\_evidence} & H4, H5, P6-B, P6-C \\
+Manas & Pre-judgment attention-selection sub-agent & \texttt{ManasAgent} skill & H3 \\
+Buddhi & Determinative judgment + khyāti tagging sub-agent & \texttt{BuddhiAgent} skill & H3, H6 \\
+Sākṣī & Write-once cross-turn witness log & \texttt{SakshiKeeperAgent}, \texttt{SakshiPrefix} & All (audit invariant) \\
+Khyātivāda & 6-class hallucination classifier & \texttt{classify\_khyati} & H6 \\
+Saṃskāra/vāsanā & Adaptive forgetting with witness-protected items & \texttt{AdaptiveForgetting} & H7 \\
+\end{longtable}
+}
+
+\subsection{\texorpdfstring{4.9 What is \emph{not} being claimed}{4.9 What is not being claimed}}\label{what-is-not-being-claimed}
+
+We are \emph{not} claiming that the historical authors had LLMs in mind, nor that our operationalizations are textually faithful in the way a Sanskrit philologist would require. We are claiming the weaker, falsifiable thing: that the \emph{type signatures} the tradition developed for cognition turn out to \emph{fit} the type signatures we need for an LLM context-engineering harness, and that fitting them produces measurable downstream gains. The next six sections defend that claim empirically.

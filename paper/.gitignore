@@ -1,0 +1,8 @@
+# Build artifacts only — keep .tex sources for reviewer inspection
+*.aux
+*.log
+*.out
+*.toc
+*.bbl
+*.blg
+generated/

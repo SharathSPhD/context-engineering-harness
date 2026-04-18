@@ -1,0 +1,55 @@
+\section{Appendix A · Glossary of Sanskrit Terms with English Operationalizations}\label{appendix-a-glossary-of-sanskrit-terms-with-english-operationalizations}
+
+This glossary fixes the technical vocabulary used throughout the paper. Each entry gives the IAST transliteration, the literal Sanskrit gloss, the school of origin (where one dominates), the operational definition we adopt in the harness, and a primary scholarly reference. Entries are alphabetised by IAST.
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+IAST term
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Literal gloss
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+School
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Operationalization in Pratyakṣa
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Reference
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Akhyāti} & ``Non-apprehension.'' & Prabhākara Mīmāṃsā & Hallucination by \emph{conflation} of two adjacent cognitions (e.g.~mixing two near-duplicate functions). One of the seven \texttt{khyati\_class} labels. & \citep{bhatt1989prabhakara, datta1932advaita} \\
+\textbf{Anirvacanīyakhyāti} & ``Apprehension of the indeterminate; \emph{neither real nor unreal}.'' & Advaita Vedānta & Hallucination that \emph{hedges} --- ``you might consider X-or-similar''. One of the seven \texttt{khyati\_class} labels. & \citep{ram2007error, deutsch1969advaita} \\
+\textbf{Antaḥkaraṇa} & ``Inner instrument.'' & Advaita & The four-fold internal organ (manas, buddhi, citta, ahaṃkāra). We operationalize the \emph{manas/buddhi} dyad as the two-stage attend-then-judge gate. & \citep{deutsch1969advaita, datta1932advaita} \\
+\textbf{Anumāna} & ``Inference.'' & Nyāya & Demoted to a secondary pramāṇa; inferred claims must enter the \emph{pratyakṣa} surface to ground the next action. & \citep{aksapada200nyayasutra, matilal1986perception} \\
+\textbf{Anyathākhyāti} & ``Apprehension of one thing as another.'' & Nyāya & Hallucination that names the \emph{wrong} member of the right type (wrong API, right module). One of the seven \texttt{khyati\_class} labels. & \citep{ram2007error, matilal1986perception} \\
+\textbf{Asatkhyāti} & ``Apprehension of the non-existent.'' & Mādhyamika & Hallucination of an entity that simply does not exist (fabricated CVE, fabricated commit hash). One of the seven \texttt{khyati\_class} labels. & \citep{ram2007error, mohanty1992reason} \\
+\textbf{Ātmakhyāti} & ``Apprehension of the self as the object.'' & Yogācāra & Hallucination by \emph{projection} of internal state (inventing helper functions the framework never exposed). One of the seven \texttt{khyati\_class} labels. & \citep{ram2007error, fasching2009witness} \\
+\textbf{Avacchedaka} & ``Limitor; that-which-conditions.'' & Navya-Nyāya & The \texttt{condition} field in every \texttt{ContextItem}. Two cognitions that share \texttt{qualificand} and disagree on \texttt{qualifier} are \emph{not yet} in conflict if their \texttt{condition}s differ. & \citep{matilal1968navyanyaya, ingalls1951materials, gangesa14tattvacintamani} \\
+\textbf{Bādha} & ``Sublation; supersession of a lower cognition by a higher one without erasure.'' & Advaita & The MCP tool \texttt{sublate\_with\_evidence}. Rewrites a target item's \texttt{status} to \texttt{bādhita} and retains it for audit. & \citep{deutsch1969advaita, dharmaraja17vedantaparibhasa, shaw1990bada} \\
+\textbf{Buddhi} & ``Determinative intellect; the judging faculty.'' & Advaita / Sāṃkhya & The \texttt{BuddhiAgent} sub-agent. The only agent permitted to emit a user-visible answer. & \citep{deutsch1969advaita, datta1932advaita, ramprasad2013advaita} \\
+\textbf{Khyātivāda} & ``Theory of error; the doctrine of how cognition can be wrong.'' & Pan-Indian & The 7-class hallucination taxonomy and its classifier. & \citep{ram2007error, matilal1986perception, bilimoria2018epistemology} \\
+\textbf{Manas} & ``The attentional sense-organ.'' & Advaita / Sāṃkhya & The \texttt{ManasAgent} sub-agent. Selects which \texttt{ContextStore} items to attend to and under which conditions; \emph{forbidden} from emitting a final answer. & \citep{deutsch1969advaita, datta1932advaita} \\
+\textbf{Pramāṇa} & ``Means of valid cognition.'' & Pan-Indian & Categorical label on the source of a \texttt{ContextItem} (perception, inference, testimony, etc.). & \citep{phillips2012epistemology, mohanty1992reason} \\
+\textbf{Pramāṇa-samplava / pramāṇa-vyavasthā} & ``Convergence vs.~partition of pramāṇas on the same object.'' & Mīmāṃsā / Nyāya & The Bayesian Beta-Bernoulli aggregator (Section 5.3) operationalizes the \emph{samplava} commitment that multiple sources can witness the same claim with combinable reliabilities. & \citep{guha2016svatahpramanya, dasti2008jayanta, bhattacharyya1988svatahprama} \\
+\textbf{Prakāra} & ``Mode; the \emph{qualifier} in a Navya-Nyāya cognition.'' & Navya-Nyāya & The \texttt{qualifier} field of every \texttt{ContextItem}. & \citep{matilal1968navyanyaya} \\
+\textbf{Pratyakṣa} & ``Direct perception.'' & Pan-Indian, Nyāya systematised & The harness's \emph{visible-context} surface. \emph{If it is not in the visible, witness-tracked context, it is not direct evidence for the next action.} The harness is named for this commitment. & \citep{matilal1986perception, aksapada200nyayasutra, dharmaraja17vedantaparibhasa} \\
+\textbf{Sākṣī} & ``The witness; the non-acting observer that records.'' & Advaita Vedānta & The \texttt{SakshiKeeperAgent} and the immutable \texttt{witness\_log.jsonl}. Write-once-per-turn, read-only-next-turn. Model-invariant. & \citep{indich1980consciousness, fasching2009witness, ganeri2017concealed} \\
+\textbf{Saṃskāra} & ``Latent impression that conditions future cognition.'' & Advaita / Yoga & A non-witnessed \texttt{ContextItem} whose precision the harness's \texttt{AdaptiveForgetting} may decay. & \citep{deutsch1969advaita, sankaraupadesha} \\
+\textbf{Svataḥ-prāmāṇya / parataḥ-prāmāṇya} & ``Self-validity vs.~external-validity of a cognition.'' & Mīmāṃsā vs.~Nyāya & Influences the \emph{prior} on a Bayesian aggregation: a \texttt{source=user} claim is treated as approximately svataḥ-prāmāṇya; a \texttt{source=tool:rag} claim is parataḥ-prāmāṇya and must be witnessed. & \citep{guha2016svatahpramanya, bhattacharyya1988svatahprama} \\
+\textbf{Vāsanā} & ``Dispositional tendency; \emph{latent disposition} arising from saṃskāras.'' & Advaita / Yoga & An obstructive non-witnessed item that the \texttt{AdaptiveForgetting} policy may evict if it survives multiple compaction events. & \citep{deutsch1969advaita, halbfass1991traditioncomparison} \\
+\textbf{Vedānta} & ``End-of-the-Veda; the Upaniṣadic philosophical tradition.'' & Pan-Indian & The school from which we draw bādha and sākṣī. & \citep{deutsch1969advaita, rambachan2006advaita} \\
+\textbf{Vedic epistemology} & (English umbrella term.) & --- & Shorthand for the integrated pramāṇa-and-error theory of Nyāya, Mīmāṃsā, Advaita Vedānta and adjacent schools. & \citep{matilal1986perception, ganeri2001philosophy, mohanty1992reason, phillips2012epistemology, bilimoria2018epistemology} \\
+\textbf{Viparītakhyāti} & ``Apprehension of the contrary.'' & Mīmāṃsā & Hallucination that \emph{inverts} (boolean flag, recommended-vs-deprecated). One of the seven \texttt{khyati\_class} labels. & \citep{ram2007error, datta1932advaita} \\
+\textbf{Viśeṣya} & ``\emph{Qualificand}; the substrate of qualification.'' & Navya-Nyāya & The \texttt{qualificand} field of every \texttt{ContextItem}. & \citep{matilal1968navyanyaya, ingalls1951materials} \\
+\end{longtable}
+}
+
+\textbf{Diacritics convention.} Throughout the paper we use IAST diacritics for Sanskrit terms when the term carries technical weight (\emph{bādha}, \emph{avacchedaka}, \emph{sākṣī}) and plain ASCII when the term has been adopted as an English-orthography identifier in the codebase (\texttt{khyati\_class}, \texttt{sakshi\_keeper}). The two refer to the same construct.

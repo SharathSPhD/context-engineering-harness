@@ -1,0 +1,14 @@
+| model | seed | arm | n_examples | mean_score | accuracy | n_target_path_hit | n_research_sublations |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| claude-haiku-4-5 | 0 | with_harness | 120 | 0.5000 | 1.0000 | 120 | 250 |
+| claude-haiku-4-5 | 0 | without_harness | 120 | 0.2375 | 0.4750 | 57 | 0 |
+| claude-haiku-4-5 | 1 | with_harness | 120 | 0.5000 | 1.0000 | 120 | 218 |
+| claude-haiku-4-5 | 1 | without_harness | 120 | 0.2750 | 0.5500 | 66 | 0 |
+| claude-haiku-4-5 | 2 | with_harness | 120 | 0.5000 | 1.0000 | 120 | 252 |
+| claude-haiku-4-5 | 2 | without_harness | 120 | 0.2417 | 0.4833 | 58 | 0 |
+| claude-sonnet-4-6 | 0 | with_harness | 120 | 0.5000 | 1.0000 | 120 | 250 |
+| claude-sonnet-4-6 | 0 | without_harness | 120 | 0.2375 | 0.4750 | 57 | 0 |
+| claude-sonnet-4-6 | 1 | with_harness | 120 | 0.5000 | 1.0000 | 120 | 218 |
+| claude-sonnet-4-6 | 1 | without_harness | 120 | 0.2750 | 0.5500 | 66 | 0 |
+| claude-sonnet-4-6 | 2 | with_harness | 120 | 0.5000 | 1.0000 | 120 | 252 |
+| claude-sonnet-4-6 | 2 | without_harness | 120 | 0.2417 | 0.4833 | 58 | 0 |
