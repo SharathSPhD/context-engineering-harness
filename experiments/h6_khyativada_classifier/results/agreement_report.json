@@ -1,0 +1,124 @@
+{
+  "config": {
+    "n": 3000,
+    "seed": 0,
+    "judge_seed": 1,
+    "judge_accuracy": 0.85
+  },
+  "class_distribution": {
+    "none": 428,
+    "anyathakhyati": 429,
+    "viparitakhyati": 428,
+    "atmakhyati": 429,
+    "asatkhyati": 429,
+    "anirvacaniyakhyati": 429,
+    "akhyati": 428
+  },
+  "agreement": {
+    "n": 3000,
+    "labels": [
+      "akhyati",
+      "anirvacaniyakhyati",
+      "anyathakhyati",
+      "asatkhyati",
+      "atmakhyati",
+      "none",
+      "viparitakhyati"
+    ],
+    "percent_agreement": 0.7736666666666666,
+    "kappa": 0.7360969266627998,
+    "kappa_band": "substantial",
+    "per_class_kappa": {
+      "akhyati": 0.7882639325136857,
+      "anirvacaniyakhyati": 0.736868120046288,
+      "anyathakhyati": 0.7705975229658794,
+      "asatkhyati": 0.7710598473379422,
+      "atmakhyati": 0.6199469916542166,
+      "none": 0.6110220164193847,
+      "viparitakhyati": 0.8595015876784285
+    },
+    "confusion": {
+      "akhyati": {
+        "akhyati": 338,
+        "anirvacaniyakhyati": 0,
+        "anyathakhyati": 48,
+        "asatkhyati": 0,
+        "atmakhyati": 0,
+        "none": 23,
+        "viparitakhyati": 19
+      },
+      "anirvacaniyakhyati": {
+        "akhyati": 0,
+        "anirvacaniyakhyati": 305,
+        "anyathakhyati": 0,
+        "asatkhyati": 24,
+        "atmakhyati": 17,
+        "none": 8,
+        "viparitakhyati": 0
+      },
+      "anyathakhyati": {
+        "akhyati": 30,
+        "anirvacaniyakhyati": 0,
+        "anyathakhyati": 371,
+        "asatkhyati": 0,
+        "atmakhyati": 0,
+        "none": 7,
+        "viparitakhyati": 21
+      },
+      "asatkhyati": {
+        "akhyati": 0,
+        "anirvacaniyakhyati": 112,
+        "anyathakhyati": 0,
+        "asatkhyati": 355,
+        "atmakhyati": 25,
+        "none": 12,
+        "viparitakhyati": 0
+      },
+      "atmakhyati": {
+        "akhyati": 3,
+        "anirvacaniyakhyati": 16,
+        "anyathakhyati": 19,
+        "asatkhyati": 0,
+        "atmakhyati": 290,
+        "none": 105,
+        "viparitakhyati": 0
+      },
+      "none": {
+        "akhyati": 9,
+        "anirvacaniyakhyati": 4,
+        "anyathakhyati": 21,
+        "asatkhyati": 0,
+        "atmakhyati": 95,
+        "none": 295,
+        "viparitakhyati": 0
+      },
+      "viparitakhyati": {
+        "akhyati": 19,
+        "anirvacaniyakhyati": 0,
+        "anyathakhyati": 33,
+        "asatkhyati": 0,
+        "atmakhyati": 0,
+        "none": 9,
+        "viparitakhyati": 367
+      }
+    },
+    "marginal_a": {
+      "akhyati": 428,
+      "anirvacaniyakhyati": 354,
+      "anyathakhyati": 429,
+      "asatkhyati": 504,
+      "atmakhyati": 433,
+      "none": 424,
+      "viparitakhyati": 428
+    },
+    "marginal_b": {
+      "akhyati": 399,
+      "anirvacaniyakhyati": 437,
+      "anyathakhyati": 492,
+      "asatkhyati": 379,
+      "atmakhyati": 427,
+      "none": 459,
+      "viparitakhyati": 407
+    }
+  }
+}
