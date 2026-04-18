@@ -2,6 +2,7 @@ import json
 from dataclasses import dataclass, field
 from src.cli_bridge import get_client
 from src.avacchedaka.query import AvacchedakaQuery
+from src.config import config
 
 
 @dataclass
@@ -23,9 +24,9 @@ class ManasAgent:
         "recommended_queries (list of {qualificand, condition} dicts), reasoning_sketch (str)."
     )
 
-    def __init__(self, api_key: str = "", model: str = "claude-haiku-4-5"):
+    def __init__(self, api_key: str = "", model: str = ""):
         self.client = get_client(api_key)
-        self.model = model
+        self.model = model or config.fast_model
 
     def run(self, question: str, context_window: str, task_context: str, qualificand: str) -> ManasOutput:
         messages = [

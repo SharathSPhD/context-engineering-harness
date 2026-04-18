@@ -1,6 +1,7 @@
 import json
 from dataclasses import dataclass, field
 from src.cli_bridge import get_client
+from src.config import config
 
 
 @dataclass
@@ -25,9 +26,9 @@ class BuddhiAgent:
         "If confidence < 0.6 and evidence is weak, set answer to null. Never fabricate."
     )
 
-    def __init__(self, api_key: str = "", model: str = "claude-sonnet-4-6"):
+    def __init__(self, api_key: str = "", model: str = ""):
         self.client = get_client(api_key)
-        self.model = model
+        self.model = model or config.smart_model
 
     def run(
         self,

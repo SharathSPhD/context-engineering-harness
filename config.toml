@@ -1,0 +1,28 @@
+# Context Engineering Harness — Configuration
+# Edit this file to change model names, thresholds, and other parameters.
+# All values shown are defaults; remove any line to revert to default.
+
+[models]
+# fast: used for ManasAgent, H1/H2/H3/H7 validation LLM calls (lower latency/cost)
+fast = "claude-haiku-4-5"
+# smart: used for BuddhiAgent, KhyativadaClassifier (higher accuracy)
+smart = "claude-sonnet-4-6"
+
+[tokens]
+fast_max  = 256   # max_tokens for fast-model calls
+smart_max = 1024  # max_tokens for smart-model calls
+
+[avacchedaka]
+compress_threshold          = 0.3   # elements below this are compressed at session end
+default_precision_threshold = 0.3   # default lower-bound for query results
+
+[compaction]
+surprise_threshold = 0.75   # surprise spike magnitude that triggers event boundary
+token_threshold    = 500    # threshold-compaction fires when token_count >= this
+
+[forgetting]
+decay_factor    = 0.9   # recency-weighted: older elements decay by this factor each step
+keep_threshold  = 0.3   # reward-weighted: keep elements with reward >= this
+keep_newest     = 4     # fixed compaction: keep this many newest elements
+
+random_seed = 42   # INVARIANT — do not change (required by CLAUDE.md)
