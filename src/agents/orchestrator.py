@@ -3,6 +3,7 @@ from src.agents.buddhi import BuddhiAgent, BuddhiOutput
 from src.agents.sakshi import SakshiPrefix
 from src.avacchedaka.store import ContextStore
 from src.avacchedaka.query import AvacchedakaQuery
+from src.config import config
 
 DEFAULT_SAKSHI = SakshiPrefix(
     "This system conducts rigorous, grounded reasoning. "
@@ -13,16 +14,18 @@ DEFAULT_SAKSHI = SakshiPrefix(
 class ManusBuddhiOrchestrator:
     def __init__(
         self,
-        api_key: str,
-        store: ContextStore,
+        api_key: str = "",
+        store: ContextStore = None,
         sakshi: SakshiPrefix = DEFAULT_SAKSHI,
-        manas_model: str = "claude-haiku-4-5",
-        buddhi_model: str = "claude-sonnet-4-6",
+        manas_model: str = "",
+        buddhi_model: str = "",
     ):
+        if store is None:
+            store = ContextStore()
         self.store = store
         self.sakshi = sakshi
-        self.manas = ManasAgent(api_key, manas_model)
-        self.buddhi = BuddhiAgent(api_key, buddhi_model)
+        self.manas = ManasAgent(api_key, manas_model or config.fast_model)
+        self.buddhi = BuddhiAgent(api_key, buddhi_model or config.smart_model)
 
     def run(self, question: str, task_context: str, qualificand: str) -> BuddhiOutput:
         query = AvacchedakaQuery(qualificand=qualificand, condition=task_context)

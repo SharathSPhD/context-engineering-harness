@@ -1,0 +1,152 @@
+# Context Engineering Harness
+
+A research framework for precision context management in LLM systems, grounded in cognitive neuroscience and Vedic epistemology (Nyāya / Advaita Vedānta).
+
+> **No API key required.** All LLM calls route through the `claude` CLI (Claude Code subscription auth).
+
+---
+
+## What it is
+
+The harness implements and validates 7 falsifiable hypotheses (H1–H7) about how context structure affects LLM accuracy. Core concepts:
+
+| Concept | Origin | Implementation |
+|---|---|---|
+| **Avacchedaka** | Navya-Nyāya | Typed limitor conditions on every context element |
+| **Sublation (bādha)** | Advaita Vedānta | `store.sublate()` — never delete, always audit |
+| **Buddhi / Manas** | Advaita antaḥkaraṇa | Two-stage agent: broad surfacing → decisive commit |
+| **Sākṣī** | Witness consciousness | Frozen system prefix, never rewritten |
+| **Khyātivāda** | Classical error taxonomy | 6-class hallucination classifier |
+| **CLS mapping** | McClelland et al. 1995 | External store (hippocampus) + active window (neocortex) |
+| **Event segmentation** | Zacks et al. 2007 | Compact at prediction-failure boundaries, not token counts |
+
+---
+
+## Install
+
+```bash
+git clone https://github.com/SharathSPhD/context-engineering-harness
+cd context-engineering-harness
+uv venv --python 3.11 && source .venv/bin/activate
+uv pip install -e ".[dev]"
+```
+
+Requires: `claude` CLI authenticated (`claude --version` should print version).
+
+---
+
+## Configuration
+
+Edit `config.toml` at the repo root to change models or thresholds:
+
+```toml
+[models]
+fast  = "claude-haiku-4-5"    # ManasAgent, validation H1/H2/H3/H7
+smart = "claude-sonnet-4-6"   # BuddhiAgent, KhyativadaClassifier
+
+[tokens]
+fast_max  = 256
+smart_max = 1024
+```
+
+All parameters have defaults — `config.toml` only needs to contain values you want to override.
+
+---
+
+## Quick Start
+
+```python
+from src.agents.orchestrator import ManusBuddhiOrchestrator
+from src.avacchedaka.store import ContextStore
+from src.avacchedaka.element import ContextElement, AvacchedakaConditions
+
+# Build a typed context store
+store = ContextStore()
+store.insert(ContextElement(
+    id="doc-001",
+    content="JWT tokens expire after 1 hour.",
+    precision=0.95,
+    avacchedaka=AvacchedakaConditions(
+        qualificand="auth", qualifier="expiry", condition="task_type=code_review"
+    ),
+))
+
+# Run the two-stage reasoning pipeline (no API key needed)
+orch = ManusBuddhiOrchestrator(store=store)
+result = orch.run(
+    question="How long are JWT tokens valid?",
+    task_context="task_type=code_review",
+    qualificand="auth",
+)
+print(result.answer)      # "1 hour"
+print(result.confidence)  # 0.9+
+```
+
+---
+
+## Running Experiments
+
+```bash
+# Run full H1-H7 validation suite and generate report
+make validate
+
+# Run individual hypothesis
+make validate-h1   # Schema congruence
+make validate-h2   # Precision RAG
+make validate-h3   # Buddhi/Manas two-stage
+make validate-h4   # Event-boundary compaction
+make validate-h5   # Multi-agent coordination
+make validate-h6   # Khyātivāda classifier
+make validate-h7   # Adaptive forgetting
+
+# Reproduce original MLflow experiments (requires ANTHROPIC_API_KEY)
+make reproduce-h1
+```
+
+---
+
+## Hypothesis Summary
+
+| ID | Hypothesis | Status |
+|---|---|---|
+| H1 | Schema-congruence predicts context rot better than length | See `docs/validation_report.md` |
+| H2 | Precision-weighted RAG outperforms top-k on conflicting sources | See report |
+| H3 | Buddhi/manas two-stage outperforms single-stage | See report |
+| H4 | Event-boundary compaction outperforms threshold compaction | See report |
+| H5 | Avacchedaka reduces multi-agent conflict rate ≥30% | See report |
+| H6 | Khyātivāda classifier identifies error types accurately | See report |
+| H7 | Adaptive forgetting outperforms fixed on post-shift tasks | See report |
+
+Full results: [`docs/validation_report.md`](docs/validation_report.md)
+
+---
+
+## Project Structure
+
+```
+config.toml          # User-editable: model names, thresholds
+src/
+  config.py          # Config loader (reads config.toml, falls back to defaults)
+  avacchedaka/       # ContextElement, ContextStore, AvacchedakaQuery, schema
+  agents/            # ManasAgent, BuddhiAgent, ManusBuddhiOrchestrator, SakshiPrefix
+  evaluation/        # KhyativadaClassifier, CongruenceBenchmarkBuilder, metrics
+  rag/               # PrecisionWeightedRAG, VanillaRAG, ConflictingSourceQA
+  compaction/        # EventBoundaryDetector, BoundaryTriggeredCompactor
+  forgetting/        # 5 schedule variants, DistributionShiftBenchmark
+  cli_bridge.py      # ClaudeCLIClient — routes calls to claude CLI
+
+experiments/
+  h{1-7}_*/run.py    # MLflow-instrumented runners (uses ANTHROPIC_API_KEY)
+  validate/          # Validation suite (uses claude CLI subscription auth)
+
+tests/               # 100+ unit tests
+docs/
+  guide.md           # User guide and architecture reference
+  validation_report.md  # Generated by make validate
+```
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE).

@@ -54,11 +54,9 @@ class KhyativadaClassifier:
         }
 
     def classify(self, claim: str, context: str, ground_truth: str, api_key: str = "") -> dict:
-        """LLM-based classifier using Claude. Falls back to heuristic if no api_key."""
-        if not api_key:
-            return self.classify_heuristic(claim, ground_truth)
-        import anthropic
-        client = anthropic.Anthropic(api_key=api_key)
+        """LLM-based classifier. Uses claude CLI when api_key is empty."""
+        from src.cli_bridge import get_client
+        client = get_client(api_key)
         prompt = f"""Classify this hallucination into exactly one of these 6 khyātivāda types:
 - anyathakhyati: real entity misidentified as another real entity
 - atmakhyati: internal pattern projected as external fact
@@ -77,13 +75,14 @@ Respond with JSON only: {{"class": "<type>", "confidence": <0-1>, "rationale": "
             max_tokens=200,
             messages=[{"role": "user", "content": prompt}],
         )
+        import json as _json
         try:
-            result = json.loads(response.content[0].text)
+            result = _json.loads(response.content[0].text)
             required = {"class", "confidence", "rationale"}
             if not required.issubset(result.keys()):
-                raise ValueError(f"LLM response missing keys: {result}")
+                raise ValueError("missing keys")
             return result
-        except (json.JSONDecodeError, ValueError, KeyError):
+        except Exception:
             return self.classify_heuristic(claim, ground_truth)
 
     def batch_classify(self, examples: list[dict], api_key: str = "") -> list[dict]:
