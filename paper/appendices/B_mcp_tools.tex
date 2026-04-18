@@ -7,9 +7,9 @@ All tools share three host-platform invariants:
 \begin{itemize}
 \tightlist
 \item
-  \textbf{Audit hook.} Every successful tool call appends a single JSON-line to \texttt{\$\{CLAUDE\_PLUGIN\_ROOT\}/witness\_log.jsonl} via the \texttt{\_audit(event,\ payload)} helper.
+  \textbf{Audit hook.} Every successful tool call appends a single JSON-line to \texttt{\textasciitilde{}/.cache/pratyaksha/audit.jsonl} (XDG-style cache path; survives plugin reinstall) via the \texttt{\_audit(event,\ payload)} helper.
 \item
-  \textbf{Budget hook.} Every tool call is preceded by the \texttt{pretooluse-budget.sh} lifecycle hook, which consults \texttt{budget\_status} and refuses execution if the gauge exceeds the configured hard threshold.
+  \textbf{Budget hook.} Every tool call is preceded by the \texttt{pretooluse-budget.sh} lifecycle hook, which consults \texttt{budget\_status} and \textbf{logs} budget pressure by default (\textbf{advisory}). Optional strict refusal is available when \texttt{PRATYAKSHA\_BUDGET\_STRICT=1} and the hook is configured to deny over-threshold calls.
 \item
   \textbf{Schema-strict I/O.} Every tool's input is validated by a Pydantic v2 model; every output is JSON-serialisable.
 \end{itemize}
@@ -195,7 +195,7 @@ class KhyatiResult(BaseModel):
     confidence: float
 \end{verbatim}
 
-\textbf{Behaviour.} Section 5.5. Few-shot Claude-side classifier with structured JSON output and rule-based guardrails (force \texttt{asatkhyāti} for non-existent qualificands; force \texttt{viparītakhyāti} for inverted-boolean cited items).
+\textbf{Behaviour.} Section 5.5. The \textbf{shipped plugin} path is a \textbf{heuristic classifier with structured JSON output} and the same rule-based guardrails (force \texttt{asatkhyāti} for non-existent qualificands; force \texttt{viparītakhyāti} for inverted-boolean cited items). A \textbf{few-shot Anthropic JSON} variant lives in the experiments harness (\texttt{src/evaluation/khyativada\_fewshot.py}) and is \textbf{not} wired into this MCP tool; both variants are evaluated independently in §8 (H6).
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 

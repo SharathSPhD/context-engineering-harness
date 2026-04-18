@@ -20,7 +20,7 @@ The generator is fully deterministic given `(instance_id, seed)`; its tests live
 
 ## E.3 The two arms
 
-Both arms operate under the same hard token budget $B = 8192$ on the size of the *research block* that the patch-generator sees. Both arms use the same `PatchSimulator` (see E.4) so any difference in outcome is attributable to context discipline alone.
+Both arms operate under the same hard token budget on the size of the *research block* that the patch-generator sees. **Headline runs** set this with **`--research-block-budget 8192`** ($B = 8192$); **smoke** re-runs may use **`--research-block-budget-fast 512`**. Both arms use the same `PatchSimulator` (see E.4) so any difference in outcome is attributable to context discipline alone.
 
 ### `without_harness` (baseline)
 

@@ -795,9 +795,14 @@ def aggregate(out_dir: Path = P7) -> dict[str, Any]:
             path = None
         figs[name] = str(path.relative_to(out_dir)) if path else None
 
-    tabs: dict[str, dict[str, str]] = {}
+    tabs: dict[str, dict[str, str] | None] = {}
     for name, fn in _TABLES:
-        md, csv_p = fn(artifacts)
+        try:
+            md, csv_p = fn(artifacts)
+        except Exception as exc:  # pragma: no cover — surface at call site
+            logger.exception("table %s failed: %s", name, exc)
+            tabs[name] = None
+            continue
         tabs[name] = {
             "md": str(md.relative_to(out_dir)),
             "csv": str(csv_p.relative_to(out_dir)),
@@ -840,7 +845,10 @@ def aggregate(out_dir: Path = P7) -> dict[str, Any]:
     summary_md.append("")
     summary_md.append("## Tables")
     for name, files in tabs.items():
-        summary_md.append(f"- **{name}**: `{files['md']}` / `{files['csv']}`")
+        if files is None:
+            summary_md.append(f"- **{name}**: _missing input artifacts_")
+        else:
+            summary_md.append(f"- **{name}**: `{files['md']}` / `{files['csv']}`")
     summary_md.append("")
     (out_dir / "_summary.md").write_text("\n".join(summary_md))
     return headline

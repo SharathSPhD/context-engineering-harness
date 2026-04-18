@@ -138,3 +138,92 @@ def test_budget_record_then_status(client: PratyakshaPluginClient) -> None:
     assert s["ok"]
     assert s["budget_used"] >= 123
     assert s["ledger_n_calls"] >= 1
+
+
+# --- P9 critical-fix regressions: B1 idempotence, B2 ID collision, B3 qualifier ---
+
+def test_sublate_with_evidence_is_idempotent(client: PratyakshaPluginClient) -> None:
+    """B1: a second sublation of an already-sublated element must be a no-op
+    rather than silently creating a second sublator (which would corrupt the
+    audit trail and inflate state.elements)."""
+    client.insert(
+        id="old", content="OLD", precision=0.6,
+        qualificand="auth", qualifier="ttl", condition="case=X",
+    )
+    first = client.sublate_with_evidence(
+        older_id="old", newer_content="NEW1", newer_precision=0.95,
+        qualificand="auth", qualifier="ttl", condition="case=X",
+    )
+    assert first["ok"] and not first.get("already_sublated")
+    size_after_first = client.state_size
+
+    second = client.sublate_with_evidence(
+        older_id="old", newer_content="NEW2", newer_precision=0.99,
+        qualificand="auth", qualifier="ttl", condition="case=X",
+    )
+    assert second["ok"]
+    assert second.get("already_sublated") is True
+    assert second["by"] == first["newer_id"]
+    assert client.state_size == size_after_first
+
+
+def test_sublate_with_evidence_no_id_collision_within_one_ms(
+    client: PratyakshaPluginClient,
+) -> None:
+    """B2: rapid back-to-back sublations of *different* older elements within
+    the same millisecond must produce distinct newer_ids — otherwise the
+    second one would overwrite the first in STATE.elements."""
+    seen: set[str] = set()
+    for i in range(50):
+        client.insert(
+            id=f"old-{i}", content=f"v{i}", precision=0.5,
+            qualificand="cfg", qualifier="param", condition=f"case={i}",
+        )
+        out = client.sublate_with_evidence(
+            older_id=f"old-{i}", newer_content=f"v{i}+1", newer_precision=0.9,
+            qualificand="cfg", qualifier="param", condition=f"case={i}",
+        )
+        assert out["ok"] and not out.get("already_sublated")
+        assert out["newer_id"] not in seen
+        seen.add(out["newer_id"])
+
+
+def test_retrieve_respects_qualifier(client: PratyakshaPluginClient) -> None:
+    """B3: two elements that share a (qualificand, condition) but differ in
+    qualifier must not collide. Retrieval scoped to a specific qualifier
+    must return only the matching element."""
+    client.insert(
+        id="ttl", content="TTL=60s", precision=0.9,
+        qualificand="cache", qualifier="ttl", condition="case=A",
+    )
+    client.insert(
+        id="size", content="SIZE=1MB", precision=0.9,
+        qualificand="cache", qualifier="size", condition="case=A",
+    )
+
+    res_ttl = client._mod.context_retrieve(  # type: ignore[attr-defined]
+        client._mod.RetrieveInput(  # type: ignore[attr-defined]
+            qualificand="cache", qualifier="ttl",
+            condition="case=A", precision_threshold=0.0, max_elements=20,
+        )
+    )
+    assert res_ttl["ok"]
+    assert [e["id"] for e in res_ttl["elements"]] == ["ttl"]
+
+    res_size = client._mod.context_retrieve(  # type: ignore[attr-defined]
+        client._mod.RetrieveInput(  # type: ignore[attr-defined]
+            qualificand="cache", qualifier="size",
+            condition="case=A", precision_threshold=0.0, max_elements=20,
+        )
+    )
+    assert res_size["ok"]
+    assert [e["id"] for e in res_size["elements"]] == ["size"]
+
+    res_any = client._mod.context_retrieve(  # type: ignore[attr-defined]
+        client._mod.RetrieveInput(  # type: ignore[attr-defined]
+            qualificand="cache", qualifier="",
+            condition="case=A", precision_threshold=0.0, max_elements=20,
+        )
+    )
+    assert res_any["ok"]
+    assert sorted(e["id"] for e in res_any["elements"]) == ["size", "ttl"]

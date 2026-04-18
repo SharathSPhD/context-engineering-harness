@@ -37,6 +37,7 @@ import logging
 import os
 import re
 import time
+import uuid
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field, replace
 from pathlib import Path
@@ -96,17 +97,25 @@ _ENCODER = None
 
 
 def _count_tokens(text: str, *, encoding: str = "o200k_base") -> int:
+    """Tokenizer-exact count (G12) using tiktoken's `o200k_base`.
+
+    Falls back to a `len(text) // 4` heuristic only when tiktoken is
+    unavailable or its vocabulary cannot be loaded (typical in air-gapped
+    CI). Network and disk errors during the one-time vocabulary load are
+    caught explicitly; bugs in our own code are not silently swallowed.
+    """
     global _ENCODER
     if not text:
         return 0
-    try:
-        if _ENCODER is None:
+    if _ENCODER is None:
+        try:
             import tiktoken
+
             _ENCODER = tiktoken.get_encoding(encoding)
-        return len(_ENCODER.encode(text, disallowed_special=()))
-    except Exception:
-        # Conservative fallback: assume ~4 chars/token (GPT-4 family heuristic).
-        return max(1, len(text) // 4)
+        except (ImportError, OSError, ValueError) as exc:
+            logger.debug("tiktoken init failed (%s); using heuristic fallback", exc)
+            return max(1, len(text) // 4)
+    return len(_ENCODER.encode(text, disallowed_special=()))
 
 
 # ----------------------------------------------------------------------
@@ -231,6 +240,11 @@ class BudgetStatusInput(BaseModel):
 def _matches(query: RetrieveInput, e: ContextElement) -> bool:
     if e.avacchedaka.qualificand != query.qualificand:
         return False
+    if query.qualifier:
+        # Substring match honours the typed (qualificand, qualifier, condition) contract
+        # promised by the public schema. Empty qualifier means "any qualifier".
+        if query.qualifier.lower() not in e.avacchedaka.qualifier.lower():
+            return False
     if not query.condition:
         return True
     have = {t.strip() for t in e.avacchedaka.condition.split(" AND ")}
@@ -420,12 +434,27 @@ def sublate_with_evidence(args: SublateWithEvidenceInput) -> dict[str, Any]:
     if args.older_id not in STATE.elements:
         return {"ok": False, "error": f"older element {args.older_id!r} not found"}
     older = STATE.elements[args.older_id]
+    # B1 idempotence: short-circuit if the older element has already been sublated.
+    # Without this guard, a second call with any positive newer_precision would
+    # slip through the precision check (since older.precision was zeroed by the
+    # first sublation) and create another sublator silently.
+    if older.sublated_by is not None:
+        return {
+            "ok": True,
+            "already_sublated": True,
+            "older_id": args.older_id,
+            "by": older.sublated_by,
+            "note": "no-op; older element was already sublated",
+        }
     if args.newer_precision <= older.precision:
         return {
             "ok": False,
             "error": f"newer precision {args.newer_precision} must exceed older {older.precision} to justify sublation",
         }
-    new_id = f"{args.older_id}__sublator__{int(time.time() * 1000)}"
+    # B2 ID collision: combine ms-timestamp with a uuid4 suffix so two sublations
+    # in the same millisecond produce distinct ids and never overwrite each other
+    # in STATE.elements.
+    new_id = f"{args.older_id}__sublator__{int(time.time() * 1000)}_{uuid.uuid4().hex[:8]}"
     newer = ContextElement(
         id=new_id,
         content=args.newer_content,

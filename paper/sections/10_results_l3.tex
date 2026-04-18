@@ -1,6 +1,6 @@
 \section{10 · Results --- Layer 3: SWE-bench Verified A/B Head-to-Head (P6-C)}\label{results-layer-3-swe-bench-verified-ab-head-to-head-p6-c}
 
-Layer 3 supplies the most ecologically valid evidence in the paper: a head-to-head A/B test on \textbf{120 real SWE-bench Verified \citep{openai2024sweverified, jimenez2024swebench}} instances, \textbf{3 seeds × 2 models} (= \textbf{720 paired runs}), under a \emph{fixed} 8 K-token research-block budget. Both arms see the same instances, the same evidence trail, and the same model; the only difference is whether the harness is in the loop. The numbers below come from \texttt{experiments/results/p6c/swebench\_ab.json} and are aggregated in tables \textbf{T4} (headline) and \textbf{T5} (per-seed breakdown) and figures \textbf{F10} (paired-difference histogram), \textbf{F11} (target-path-hit rate).
+Layer 3 supplies the most ecologically valid \emph{coding-context} evidence in the paper: a head-to-head A/B test on \textbf{120 real SWE-bench Verified \citep{openai2024sweverified, jimenez2024swebench}} instances, \textbf{3 seeds × 2 models} (= \textbf{720 paired runs}), under a \emph{fixed} research-block budget. Both arms see the same instances, the same \textbf{synthetic} evidence trail, and the same model; the only difference is whether the harness is in the loop. \textbf{On synthetic research trails over the SWE-bench Verified instance set}, with patch generation deterministically anchored on the first plausible file path of the research block, we compare harness vs.~baseline; the optional Docker scorer agreement is reported on a 30-instance sub-sample (κ = 0.97). Headline runs set \textbf{\texttt{-\/-research-block-budget\ 8192}} (8 K tokens); smoke re-runs may use \textbf{\texttt{-\/-research-block-budget-fast\ 512}}. The numbers below come from \texttt{experiments/results/p6c/swebench\_ab.json} and are aggregated in tables \textbf{T4} (headline) and \textbf{T5} (per-seed breakdown) and figures \textbf{F10} (paired-difference histogram), \textbf{F11} (target-path-hit rate).
 
 \subsection{10.1 Design}\label{design}
 
@@ -11,7 +11,7 @@ For each SWE-bench Verified instance we:
 \item
   \textbf{Generate a research trail of four snippets.} Two are \emph{stale} (low precision in \([0.20, 0.45]\), point at \emph{wrong} file paths constructed by perturbing the correct path with a synthetic typo, and reference superseded API names typical of pre-issue Stack Overflow / blog answers). Two are \emph{fresh} (precision in \([0.80, 0.97]\), point at the \emph{correct} file path, reference the current API). Stale items carry \texttt{superseded\_by\_id} pointers to fresh items; the four are then \emph{shuffled} so the agent cannot use ordering as a signal. (Implementation: \texttt{experiments/v2/p6c/research\_evidence.py}, deterministic per-seed.)
 \item
-  \textbf{Build a research block under a fixed token budget} (default 8 K, configurable):
+  \textbf{Build a research block under a fixed token budget} (headline runs: \textbf{\texttt{-\/-research-block-budget\ 8192}}; smoke tests: \textbf{\texttt{-\/-research-block-budget-fast\ 512}}):
 
   \begin{itemize}
   \tightlist
@@ -31,9 +31,15 @@ For each SWE-bench Verified instance we:
 \subsection{10.2 Headline result}\label{headline-result}
 
 {\def\LTcaptype{none} % do not increment counter
-\begin{longtable}[]{@{}ll@{}}
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
 \toprule\noalign{}
-metric & value \\
+\begin{minipage}[b]{\linewidth}\raggedright
+metric
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+value
+\end{minipage} \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
@@ -47,16 +53,16 @@ per\_instance\_Cohen's d & \textbf{0.994} \\
 per\_instance\_n\_pairs & 720 \\
 per\_(model, seed)\_delta & +0.2486 \\
 per\_(model, seed)\_CI 95\% & {[}0.2361, 0.2611{]} \\
-per\_(model, seed)\_p\_value & \textbf{0.0312} \\
+per\_(model, seed)\_p\_value & \textbf{0.03125} (= \(1/32\), the discrete test floor) \\
 per\_(model, seed)\_n\_pairs & 6 \\
-\textbf{treatment\_target\_path\_hit\_rate} & \textbf{1.0000 (720 / 720)} \\
+\textbf{treatment\_target\_path\_hit\_rate} & \textbf{1.0000 --- 100\% in all 6 (model × seed) cells, 720 / 720 paired runs} \\
 baseline\_target\_path\_hit\_rate & 0.5028 (362 / 720) \\
 total\_sublations\_fired & \textbf{1,440} \\
 target\_met & \textbf{True} \\
 \end{longtable}
 }
 
-Source: \texttt{experiments/results/p6c/\_summary.json} and table T4. Visualised by figures F10 (paired difference histogram, all positive) and F11 (target-path-hit-rate bars).
+Source: \texttt{experiments/results/p6c/\_summary.json} and table T4. Visualised by figures F10 (paired difference histogram, all positive) and F11 (target-path-hit-rate bars). The per-instance permutation \(p = 0.0005\) and the per-(model, seed) \(p = 0.03125\) are both load-bearing: the latter is the \textbf{floor} of the exact permutation distribution on six cells, so we supplement it with bootstrap CIs as in Section 7.4.
 
 \subsection{10.3 Per-(model, seed) breakdown}\label{per-model-seed-breakdown}
 
@@ -72,7 +78,7 @@ The default budget is 8 K tokens. We additionally swept budgets ∈ \{2 K, 4 K, 
 
 \subsection{10.6 What the harness contributes, in one sentence}\label{what-the-harness-contributes-in-one-sentence}
 
-\emph{Under a fixed token budget, on a real-world distribution of stale-vs-fresh evidence trails, the harness anchors the downstream agent on the correct file in 100\% of cases versus 50.3\% for the budgeted baseline}. This is not a benchmark-specific quirk; it is the operational expression of \emph{avacchedaka} + \emph{bādha} + the \emph{first-seen-wins} failure mode of unaided agents.
+\emph{Under a fixed token budget, on synthetic research trails over the SWE-bench Verified instance set (patch generation deterministically anchored on the first plausible file path of the research block), the harness anchors the stub patch on the correct file in \textbf{100\% of the 6 (model × seed) cells (720 / 720 paired runs)} versus \textbf{50.3\%} for the budgeted baseline}, with per-instance permutation \(p = 0.0005\) and per-(model, seed) \(p = 0.03125\) as in Section 10.2. This is not a claim about unconstrained LLM patch generation on the full upstream harness; it is the operational expression of \emph{avacchedaka} + \emph{bādha} + the \emph{first-seen-wins} failure mode of unaided agents under the stated simulator.
 
 \subsection{10.7 Aggregate across all studies}\label{aggregate-across-all-studies}
 
@@ -95,4 +101,4 @@ mean Cohen's d (excluding the two structural-100\% studies) & 9.62 \\
 \end{longtable}
 }
 
-The single combined statistic crosses \emph{every} conventional significance threshold by orders of magnitude. We discuss the appropriate epistemic weight to give this number, and the limitations that temper it, in Section 11.
+The single combined statistic crosses \emph{every} conventional significance threshold by orders of magnitude. Because several stacked rows share generators and model families, we also report a correlation-corrected Stouffer variant alongside the naïve 10-study value (\textbf{Table T7}). We discuss the appropriate epistemic weight to give these numbers, and the limitations that temper them, in Section 11.

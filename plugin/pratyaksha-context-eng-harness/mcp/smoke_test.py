@@ -102,7 +102,7 @@ async def run_smoke(cache_dir: Path) -> None:
                 "budget_status", "budget_record",
             ])
             check(tool_names == expected, f"tool name mismatch:\n  got      {tool_names}\n  expected {expected}")
-            print(f"[1/9] tools/list: 15 tools ✓")
+            print("[1/9] tools/list: 15 tools ✓")
 
             # ---- 2. context_insert / get / retrieve / list_qualificands ----
             r = await session.call_tool("context_insert", {"args": {
@@ -111,7 +111,8 @@ async def run_smoke(cache_dir: Path) -> None:
                 "qualifier": "is", "condition": "lang=en AND year=2026",
                 "provenance": "smoke_test"
             }})
-            d = _content_to_dict(r); check(d["ok"] is True, f"insert failed: {d}")
+            d = _content_to_dict(r)
+            check(d["ok"] is True, f"insert failed: {d}")
 
             r = await session.call_tool("context_insert", {"args": {
                 "id": "claim_v1", "content": "duplicate", "precision": 0.5,
@@ -134,7 +135,7 @@ async def run_smoke(cache_dir: Path) -> None:
             d = _content_to_dict(r)
             check(any(row["qualificand"] == "uv_version" for row in d["qualificands"]),
                   f"list_qualificands missing uv_version: {d}")
-            print(f"[2/9] insert / get / retrieve / list_qualificands ✓")
+            print("[2/9] insert / get / retrieve / list_qualificands ✓")
 
             # ---- 3. sublate_with_evidence ----
             r = await session.call_tool("sublate_with_evidence", {"args": {
@@ -161,7 +162,7 @@ async def run_smoke(cache_dir: Path) -> None:
             d = _content_to_dict(r)
             check(d["count"] == 1 and d["elements"][0]["id"] == newer_id,
                   f"retrieve should return only newer: {d}")
-            print(f"[3/9] sublate_with_evidence + retrieval-invisible older ✓")
+            print("[3/9] sublate_with_evidence + retrieval-invisible older ✓")
 
             # ---- 4. context_sublate (manual id-by-id) ----
             await session.call_tool("context_insert", {"args": {
@@ -177,7 +178,7 @@ async def run_smoke(cache_dir: Path) -> None:
             }})
             d = _content_to_dict(r)
             check(d["ok"] is True, f"context_sublate failed: {d}")
-            print(f"[4/9] context_sublate ✓")
+            print("[4/9] context_sublate ✓")
 
             # ---- 5. detect_conflict ----
             await session.call_tool("context_insert", {"args": {
@@ -195,7 +196,7 @@ async def run_smoke(cache_dir: Path) -> None:
             }})
             d = _content_to_dict(r)
             check(len(d["conflict_pairs"]) >= 1, f"detect_conflict missed pair: {d}")
-            print(f"[5/9] detect_conflict surfaces low-Jaccard pair ✓")
+            print("[5/9] detect_conflict surfaces low-Jaccard pair ✓")
 
             # ---- 6. compact / boundary_compact / context_window ----
             await session.call_tool("context_insert", {"args": {
@@ -226,7 +227,7 @@ async def run_smoke(cache_dir: Path) -> None:
             d = _content_to_dict(r)
             check(d["n_included"] >= 1 and "uv version" in d["context_window"].lower(),
                   f"context_window missing materialised content: {d}")
-            print(f"[6/9] compact + boundary_compact + context_window ✓")
+            print("[6/9] compact + boundary_compact + context_window ✓")
 
             # ---- 7. set_sakshi / get_sakshi ----
             r = await session.call_tool("set_sakshi", {"args": {
@@ -243,7 +244,7 @@ async def run_smoke(cache_dir: Path) -> None:
             r = await session.call_tool("get_sakshi", {})
             d = _content_to_dict(r)
             check(d["sakshi"] is not None, f"get_sakshi did not retain set value: {d}")
-            print(f"[7/9] set_sakshi + get_sakshi (with token guardrail) ✓")
+            print("[7/9] set_sakshi + get_sakshi (with token guardrail) ✓")
 
             # ---- 8. classify_khyativada ----
             r = await session.call_tool("classify_khyativada", {"args": {
@@ -259,7 +260,7 @@ async def run_smoke(cache_dir: Path) -> None:
             }})
             d = _content_to_dict(r)
             check(d["class"] == "viparitakhyati", f"viparitakhyati misclassified: {d}")
-            print(f"[8/9] classify_khyativada (asat + viparita) ✓")
+            print("[8/9] classify_khyativada (asat + viparita) ✓")
 
             # ---- 9. budget_record + budget_status + on-disk gauge ----
             r = await session.call_tool("budget_record", {"args": {
@@ -291,7 +292,7 @@ async def run_smoke(cache_dir: Path) -> None:
                   f"audit log missing/empty at {audit_path}")
             check(ledger_path.exists() and ledger_path.stat().st_size > 0,
                   f"cost ledger missing/empty at {ledger_path}")
-            print(f"[9/9] budget_record + budget_status + gauge mirror + audit/ledger ✓")
+            print("[9/9] budget_record + budget_status + gauge mirror + audit/ledger ✓")
 
 
 def main() -> int:

@@ -65,11 +65,11 @@ Every tool is typed via Pydantic v2 input/output models, returns JSON-serializab
 \begin{itemize}
 \tightlist
 \item
-  \textbf{\texttt{agents/manas.md}} --- defines the \emph{attentional sense-organ} sub-agent. System prompt instructs the model to call \texttt{context\_window} and \texttt{context\_retrieve}, return a structured JSON of \texttt{\{attended\_ids,\ conditions,\ filter\_reasons\}}, and \emph{never} to emit a final answer.
+  \textbf{\texttt{agents/manas.md}} --- defines the \emph{attentional sense-organ} \textbf{sub-agent}. System prompt instructs the model to call \texttt{get\_sakshi}, \texttt{context\_retrieve}, \texttt{context\_window}, \texttt{classify\_khyativada}, and \texttt{budget\_record}, and to return structured JSON of the form \texttt{\{\ "draft":\ "...",\ "grounding":\ {[}"\textless{}element\_id\textgreater{}",\ ...{]},\ "uncertain\_claims":\ {[}"..."{]},\ "needs\_buddhi":\ true\ \textbar{}\ false\ \}} (verbatim contract in the repository file). Manas must \emph{never} emit a user-visible final answer.
 \item
   \textbf{\texttt{agents/buddhi.md}} --- the \emph{determinative judging} sub-agent. May call \texttt{sublate\_with\_evidence}, \texttt{detect\_conflict}, and \texttt{classify\_khyativada}. Emits the user-visible answer and its self-classified \texttt{khyati\_class} and \texttt{confidence}.
 \item
-  \textbf{\texttt{agents/sakshi-keeper.md}} --- the \emph{witness keeper}. Read-only on the live store; write-only on \texttt{witness\_log.jsonl}. Invoked from the lifecycle hooks (Section 6.5).
+  \textbf{\texttt{agents/sakshi-keeper.md}} --- the \emph{witness keeper}. Read-only on the live store; append-only on the JSON-lines audit log at \texttt{\textasciitilde{}/.cache/pratyaksha/audit.jsonl}. Invoked from the lifecycle hooks (Section 6.5).
 \end{itemize}
 
 The choice to ship Manas and Buddhi as \emph{agents} (system-prompt-only sub-agents driven by the host LLM) rather than as fine-tunes is deliberate: it preserves the harness's host-platform-agnosticism (Section 5.4) and lets users swap the underlying model without re-training anything.
@@ -129,9 +129,9 @@ Their roles are:
 \item
   \textbf{\texttt{session-start.sh}} seeds the session-stable Sākṣī invariants (working directory, git SHA, model id, plugin version) via \texttt{set\_sakshi}.
 \item
-  \textbf{\texttt{pretooluse-budget.sh}} consults \texttt{budget\_status} before any harness tool runs and refuses execution if the budget gauge is over a configurable hard threshold (default 95\% of \texttt{context\_budget}).
+  \textbf{\texttt{pretooluse-budget.sh}} consults \texttt{budget\_status} before any harness tool runs and \textbf{logs} over-threshold use by default (advisory hook). If \texttt{PRATYAKSHA\_BUDGET\_STRICT=1}, the same script can be configured to \textbf{deny} tool execution when the gauge exceeds a hard threshold (default 95\% of \texttt{context\_budget}).
 \item
-  \textbf{\texttt{stop-compact.sh}} invokes \texttt{compact\_now(strategy="adaptive")} at the end of every turn so memory pressure does not accumulate across turns.
+  \textbf{\texttt{stop-compact.sh}} invokes \texttt{compact(strategy="adaptive")} at the end of every turn so memory pressure does not accumulate across turns.
 \end{itemize}
 
 \subsection{\texorpdfstring{6.7 What the plugin does \emph{not} contain}{6.7 What the plugin does not contain}}\label{what-the-plugin-does-not-contain}

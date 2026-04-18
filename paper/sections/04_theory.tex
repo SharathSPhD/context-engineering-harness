@@ -24,7 +24,7 @@ Here \(a\) is the \emph{qualificand} (viśeṣya), \(Q\) the \emph{qualifier} (p
 \texttt{Item} = \big\langle \texttt{qualificand},\; \texttt{qualifier},\; \texttt{condition},\; \texttt{precision}\in[0,1] \big\rangle.
 \]
 
-\texttt{condition} is a free-text string like \texttt{"as\ of\ 2024-09-Django-5.0"} or \texttt{"on\ POSIX,\ Python\ ≥\ 3.11"}. The MCP tool \texttt{insert(qualificand,\ qualifier,\ condition,\ precision,\ source)} is the only way evidence enters the store. Two items that share \texttt{qualificand} but differ in \texttt{condition} \emph{do not conflict}; two items that share \texttt{qualificand} \emph{and} \texttt{condition} but disagree on \texttt{qualifier} \emph{do}. This is the operational definition of a contradiction the harness can act on (Section 4.3).
+\texttt{condition} is a free-text string like \texttt{"as\ of\ 2024-09-Django-5.0"} or \texttt{"on\ POSIX,\ Python\ ≥\ 3.11"}. The MCP tool \texttt{context\_insert(qualificand,\ qualifier,\ condition,\ precision,\ source)} is the only way evidence enters the store. Two items that share \texttt{qualificand} but differ in \texttt{condition} \emph{do not conflict}; two items that share \texttt{qualificand} \emph{and} \texttt{condition} but disagree on \texttt{qualifier} \emph{do}. This is the operational definition of a contradiction the harness can act on (Section 4.3).
 
 \subsection{4.3 Bādha --- sublation as supersede-with-provenance}\label{bux101dha-sublation-as-supersede-with-provenance}
 
@@ -52,7 +52,7 @@ The Antaḥkaraṇa quartet of \emph{manas, buddhi, citta, ahaṃkāra} \citep{d
 \begin{itemize}
 \tightlist
 \item
-  \textbf{\texttt{ManasAgent}} receives the user query and the \texttt{ContextStore} snapshot, and returns \emph{which items it has elected to attend to and under which conditions}. Its output is structured JSON: \texttt{\{attended:\ {[}item\_id,\ ...{]},\ conditions:\ {[}str,\ ...{]},\ filter\_reasons:\ {[}str,\ ...{]}\}}. Manas is \emph{forbidden} from emitting a final answer.
+  \textbf{\texttt{ManasAgent}} receives the user query and the \texttt{ContextStore} snapshot, and returns a structured JSON object matching the shipped contract in \texttt{agents/manas.md}: \texttt{\{\ "draft":\ "...",\ "grounding":\ {[}"\textless{}element\_id\textgreater{}",\ ...{]},\ "uncertain\_claims":\ {[}"..."{]},\ "needs\_buddhi":\ true\ \textbar{}\ false\ \}}. Manas is operationalised as a \textbf{sub-agent} (Section 6.3), not a skill. Manas is \emph{forbidden} from emitting a final user-visible answer (draft text is for the orchestrator only).
 \item
   \textbf{\texttt{BuddhiAgent}} receives the user query, the Manas output, and re-reads the attended items from the \texttt{ContextStore}, and returns the final answer plus its own \texttt{khyāti\_class} (Section 4.6) for the answer. Buddhi is the only agent that may emit a user-visible answer.
 \end{itemize}
@@ -63,7 +63,7 @@ This two-stage gate is identical in shape to dual-process accounts of human cogn
 
 In Advaita Vedānta \citep{indich1980consciousness, fasching2009witness, ganeri2017concealed, sankaraupadesha}, \emph{sākṣī} --- the witness consciousness --- is the \emph{non-revisable, non-acting} observer that \emph{records} what is cognised without itself being the agent of cognition or action. It supplies the stable reference frame against which changes of cognition are intelligible at all.
 
-\textbf{LLM operationalization.} The harness instantiates a \texttt{SakshiKeeperAgent} (Section 6.3) and a \texttt{SakshiPrefix} skill (Section 6.2). On every turn, the keeper appends to a persistent JSON-lines \texttt{witness\_log.jsonl} an immutable record of:
+\textbf{LLM operationalization.} The harness instantiates a \texttt{SakshiKeeperAgent} (Section 6.3) and a \texttt{SakshiPrefix} skill (Section 6.2). On every turn, the keeper appends to a persistent JSON-lines audit log at \texttt{\textasciitilde{}/.cache/pratyaksha/audit.jsonl} (XDG-style cache path; survives plugin reinstall) an immutable record of:
 
 \begin{itemize}
 \tightlist
@@ -116,7 +116,7 @@ Modern LLM analogue
 
 This is not a post-hoc relabelling of an existing modern taxonomy. It is the \emph{original} taxonomy from the Indian philosophical tradition, jointly developed by debating schools over roughly a thousand years. We adopt it directly because (a) it carves the space cleanly along \emph{epistemic} (not merely surface-textual) lines, (b) the six classes are mutually exclusive in the tradition's own usage, and (c) it gives us a \emph{typed signal} the harness can act on (different remediation strategies for different classes).
 
-\textbf{LLM operationalization.} A few-shot Claude-side \texttt{KhyativadaClassifier} (Section 5.5) tags every Buddhi output with one of seven labels (six classes plus \texttt{none}). The classifier is grounded by a 3,000-example, two-rater annotated corpus (Section 11.2 / Appendix E) at Cohen's κ = 0.736 (``substantial'').
+\textbf{LLM operationalization.} The shipped plugin's \texttt{classify\_khyativada} tool applies a \textbf{heuristic classifier with the rule-based guardrails} described in Section 5.5. Separately, the experiments harness includes a few-shot Anthropic JSON classifier (\texttt{src/evaluation/khyativada\_fewshot.py}) that is \textbf{not} wired into the plugin tool; both paths are evaluated independently in §8 (H6). Inter-annotator agreement is reported on the 3,000-example corpus using prompts in Appendix D and results in §8.6 at Cohen's κ = 0.736 (``substantial'').
 
 \subsection{4.7 Saṃskāras and vāsanās --- adaptive forgetting}\label{saux1e43skux101ras-and-vux101sanux101s-adaptive-forgetting}
 
@@ -159,13 +159,13 @@ Tested by
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Pratyakṣa & Visible-context-only grounding discipline & All \texttt{retrieve\_*} tools & All hypotheses (architectural commitment) \\
-Avacchedaka & Typed limitor \texttt{(qualificand,\ qualifier,\ condition,\ precision)} & \texttt{insert}, \texttt{retrieve\_by\_qualifier} & H2, H5 \\
+Pratyakṣa & Visible-context-only grounding discipline & \texttt{context\_retrieve}, \texttt{context\_window}, related read paths & All hypotheses (architectural commitment) \\
+Avacchedaka & Typed limitor \texttt{(qualificand,\ qualifier,\ condition,\ precision)} & \texttt{context\_insert}, \texttt{context\_retrieve} & H2, H5 \\
 Bādha & Supersede-with-provenance under shared limitor & \texttt{sublate\_with\_evidence} & H4, H5, P6-B, P6-C \\
-Manas & Pre-judgment attention-selection sub-agent & \texttt{ManasAgent} skill & H3 \\
-Buddhi & Determinative judgment + khyāti tagging sub-agent & \texttt{BuddhiAgent} skill & H3, H6 \\
+Manas & Pre-judgment attention-selection \textbf{sub-agent} & \texttt{ManasAgent} (Section 6.3) & H3 \\
+Buddhi & Determinative judgment + khyāti tagging sub-agent & \texttt{BuddhiAgent} & H3, H6 \\
 Sākṣī & Write-once cross-turn witness log & \texttt{SakshiKeeperAgent}, \texttt{SakshiPrefix} & All (audit invariant) \\
-Khyātivāda & 6-class hallucination classifier & \texttt{classify\_khyati} & H6 \\
+Khyātivāda & 6-class hallucination classifier & \texttt{classify\_khyativada} & H6 \\
 Saṃskāra/vāsanā & Adaptive forgetting with witness-protected items & \texttt{AdaptiveForgetting} & H7 \\
 \end{longtable}
 }

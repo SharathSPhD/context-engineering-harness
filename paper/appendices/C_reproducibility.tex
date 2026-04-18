@@ -55,13 +55,21 @@ Seeds used are \texttt{{[}1,\ 2,\ 3{]}} for the canonical L1/L3 runs, and a sing
 
 \subsubsection{L1 --- public benchmarks (H1--H7)}\label{l1-public-benchmarks-h1h7}
 
+H1--H2 use the registered \texttt{BenchmarkAdapter} runner:
+
 \begin{verbatim}
-uv run python -m experiments.v2.p6a.run_h1_h2 --seeds 1 2 3
-uv run python -m experiments.v2.p6a.run_h3_h4_h5 --seeds 1 2 3
-uv run python -m experiments.v2.p6a.run_h6_h7 --seeds 1 2 3
+uv run python -m experiments.v2.p6a.run --hypotheses H1 H2 --seeds 1 2 3
 \end{verbatim}
 
-Outputs: \texttt{experiments/results/h1.json} \ldots{} \texttt{experiments/results/h7.json}.
+H3--H7 use the deterministic plugin-in-process harness:
+
+\begin{verbatim}
+uv run python -m experiments.v2.p6a.run_plugin_inloop --hypotheses H3 H4 H5 H6 H7 --seeds 1 2 3
+\end{verbatim}
+
+(Each module also accepts \texttt{all} in place of explicit hypothesis lists.)
+
+Outputs: JSON under \texttt{experiments/results/p6a/} consumed by P7 (tables \textbf{T1}--\textbf{T3}, figures \textbf{F01}--\textbf{F07}).
 
 \subsubsection{L2 --- live case study (P6-B)}\label{l2-live-case-study-p6-b}
 
@@ -80,6 +88,8 @@ uv run python -m experiments.v2.p6c.run_swebench_ab \
   --models claude-haiku-4-5 claude-sonnet-4-6 \
   --research-block-budget 8192
 \end{verbatim}
+
+The headline numbers in the paper use \textbf{\texttt{-\/-research-block-budget\ 8192}}. Fast CI smoke re-runs may pass \textbf{\texttt{-\/-research-block-budget-fast\ 512}} instead.
 
 Output: \texttt{experiments/results/p6c/summary.json} and per-instance traces under \texttt{experiments/results/p6c/runs/}.
 

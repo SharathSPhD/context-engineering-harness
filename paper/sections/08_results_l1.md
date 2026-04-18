@@ -1,6 +1,6 @@
 # 8 · Results — Layer 1: Public Benchmarks (H1–H7)
 
-We test seven preregistered hypotheses on five public benchmarks (RULER, HELMET, HaluEval, TruthfulQA, FACTS-Grounding) plus SWE-bench Verified. Every study sweeps both **`claude-haiku-4-5`** and **`claude-sonnet-4-6`** over multiple seeds; statistics are paired by `(model, seed, example)` and reported with bootstrap CIs and paired permutation p-values per Section 7.4. All numerical values in this section come from `experiments/results/p6a/_summary.json` and `_summary_plugin.json`, were emitted by `experiments/v2/p7/aggregate.py`, and are aggregated in **T1** and **T2** (Appendix C / `experiments/results/p7/tables/`). Figures **F01–F07** in `experiments/results/p7/figures/` visualise each hypothesis.
+We test seven preregistered hypotheses on six public benchmarks (RULER, HELMET, NoCha, HaluEval, TruthfulQA, FACTS-Grounding) plus SWE-bench Verified. Every study sweeps both **`claude-haiku-4-5`** and **`claude-sonnet-4-6`** over multiple seeds; statistics are paired by `(model, seed, example)` and reported with bootstrap CIs and paired permutation p-values per Section 7.4. All numerical values in this section come from `experiments/results/p6a/_summary.json` and `_summary_plugin.json`, were emitted by `experiments/v2/p7/aggregate.py`, and are aggregated in **T1** and **T2** (Appendix C / `experiments/results/p7/tables/`). Figures **F01–F07** in `experiments/results/p7/figures/` visualise each hypothesis.
 
 ## 8.1 H1 — Long-context recall (RULER)
 
@@ -58,7 +58,7 @@ The 100% / 0% headline is structural rather than empirical: the experiment is co
 
 **Hypothesis.** The 7-class Khyātivāda classifier (Section 5.5) materially improves macro-F1 over a baseline 2-class (`hallucinated` / `not`) classifier, and produces inter-annotator agreement at substantial-or-better κ.
 
-**Adapter.** `H6` synthetic 7-class corpus (n=70 × 5 × 2 = 700) for the macro-F1 study; **separately**, the n=3,000 jointly annotated corpus (Section 11.2 / Appendix E) for the IAA study.
+**Adapter.** `H6` synthetic 7-class corpus (n=70 × 5 × 2 = 700) for the macro-F1 study; **separately**, the n=3,000 jointly annotated corpus for the IAA study, with classifier prompts documented in **Appendix D** and agreement numbers reported here in §8.6.
 
 **Results.** Treatment macro-F1 **0.571**, baseline **0.123**, delta **+0.449** ([0.410, 0.483]), p **0.0020**, d **7.13**, target met. Figure **F06**.
 
@@ -77,3 +77,5 @@ As with H5, the 100% / 0% headline is structural rather than empirical: the witn
 ## 8.8 Summary of L1
 
 Across the seven L1 hypotheses, the treatment beats baseline at **p ≤ 0.0020** in *every single study*. Mean treatment metric is **0.910**, mean baseline metric is **0.420**, mean paired delta is **+0.490**. The two structural hypotheses (H5, H7) are extreme by design; the five empirical hypotheses (H1, H2 ×2, H3, H4, H6) carry the load. Combining only those five via Stouffer-Z gives a one-tailed p < 10⁻¹³ in the harness's favour. The harness *does* pay off on real, published benchmark surfaces, not just on internally-curated cases.
+
+When the omnibus in Section 10.7 stacks **all 10** quantitative rows, Stouffer's independence assumption is strained because correlated long-context rows (H1/H2 at 8 K and 32 K) enter separately. We therefore report **both** the naïve 10-study Stouffer-Z and a *correlation-corrected* variant with **7** effective studies after collapsing each `(hypothesis, family)` group; see **Table T7** for both values. The headline omnibus uses the conservative corrected statistic.

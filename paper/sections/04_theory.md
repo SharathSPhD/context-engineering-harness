@@ -24,7 +24,7 @@ $$
 \texttt{Item} = \big\langle \texttt{qualificand},\; \texttt{qualifier},\; \texttt{condition},\; \texttt{precision}\in[0,1] \big\rangle.
 $$
 
-`condition` is a free-text string like `"as of 2024-09-Django-5.0"` or `"on POSIX, Python ≥ 3.11"`. The MCP tool `insert(qualificand, qualifier, condition, precision, source)` is the only way evidence enters the store. Two items that share `qualificand` but differ in `condition` *do not conflict*; two items that share `qualificand` *and* `condition` but disagree on `qualifier` *do*. This is the operational definition of a contradiction the harness can act on (Section 4.3).
+`condition` is a free-text string like `"as of 2024-09-Django-5.0"` or `"on POSIX, Python ≥ 3.11"`. The MCP tool `context_insert(qualificand, qualifier, condition, precision, source)` is the only way evidence enters the store. Two items that share `qualificand` but differ in `condition` *do not conflict*; two items that share `qualificand` *and* `condition` but disagree on `qualifier` *do*. This is the operational definition of a contradiction the harness can act on (Section 4.3).
 
 ## 4.3 Bādha — sublation as supersede-with-provenance
 
@@ -43,7 +43,7 @@ The Antaḥkaraṇa quartet of *manas, buddhi, citta, ahaṃkāra* \citep{deutsc
 
 **LLM operationalization.** The harness defines two sub-agent prompts (Section 6.3):
 
-- **`ManasAgent`** receives the user query and the `ContextStore` snapshot, and returns *which items it has elected to attend to and under which conditions*. Its output is structured JSON: `{attended: [item_id, ...], conditions: [str, ...], filter_reasons: [str, ...]}`. Manas is *forbidden* from emitting a final answer.
+- **`ManasAgent`** receives the user query and the `ContextStore` snapshot, and returns a structured JSON object matching the shipped contract in `agents/manas.md`: `{ "draft": "...", "grounding": ["<element_id>", ...], "uncertain_claims": ["..."], "needs_buddhi": true | false }`. Manas is operationalised as a **sub-agent** (Section 6.3), not a skill. Manas is *forbidden* from emitting a final user-visible answer (draft text is for the orchestrator only).
 - **`BuddhiAgent`** receives the user query, the Manas output, and re-reads the attended items from the `ContextStore`, and returns the final answer plus its own `khyāti_class` (Section 4.6) for the answer. Buddhi is the only agent that may emit a user-visible answer.
 
 This two-stage gate is identical in shape to dual-process accounts of human cognition \citep{evans2003duality, kahneman2011thinking, sloman1996two} and to classic AI cognitive architectures \citep{laird1987soar, anderson1996actr, newell1990unified}, but the names — and the surrounding philosophical apparatus — are Vedic. Critically, *Manas can be wrong without Buddhi being wrong*: if Manas mis-selects, Buddhi's job is to detect and call for re-selection rather than to answer.
@@ -52,7 +52,7 @@ This two-stage gate is identical in shape to dual-process accounts of human cogn
 
 In Advaita Vedānta \citep{indich1980consciousness, fasching2009witness, ganeri2017concealed, sankaraupadesha}, *sākṣī* — the witness consciousness — is the *non-revisable, non-acting* observer that *records* what is cognised without itself being the agent of cognition or action. It supplies the stable reference frame against which changes of cognition are intelligible at all.
 
-**LLM operationalization.** The harness instantiates a `SakshiKeeperAgent` (Section 6.3) and a `SakshiPrefix` skill (Section 6.2). On every turn, the keeper appends to a persistent JSON-lines `witness_log.jsonl` an immutable record of:
+**LLM operationalization.** The harness instantiates a `SakshiKeeperAgent` (Section 6.3) and a `SakshiPrefix` skill (Section 6.2). On every turn, the keeper appends to a persistent JSON-lines audit log at `~/.cache/pratyaksha/audit.jsonl` (XDG-style cache path; survives plugin reinstall) an immutable record of:
 
 - The user query.
 - The Manas selection (which items, under which conditions).
@@ -77,7 +77,7 @@ Six classical schools of Indian philosophy proposed six theories of erroneous co
 
 This is not a post-hoc relabelling of an existing modern taxonomy. It is the *original* taxonomy from the Indian philosophical tradition, jointly developed by debating schools over roughly a thousand years. We adopt it directly because (a) it carves the space cleanly along *epistemic* (not merely surface-textual) lines, (b) the six classes are mutually exclusive in the tradition's own usage, and (c) it gives us a *typed signal* the harness can act on (different remediation strategies for different classes).
 
-**LLM operationalization.** A few-shot Claude-side `KhyativadaClassifier` (Section 5.5) tags every Buddhi output with one of seven labels (six classes plus `none`). The classifier is grounded by a 3,000-example, two-rater annotated corpus (Section 11.2 / Appendix E) at Cohen's κ = 0.736 ("substantial").
+**LLM operationalization.** The shipped plugin's `classify_khyativada` tool applies a **heuristic classifier with the rule-based guardrails** described in Section 5.5. Separately, the experiments harness includes a few-shot Anthropic JSON classifier (`src/evaluation/khyativada_fewshot.py`) that is **not** wired into the plugin tool; both paths are evaluated independently in §8 (H6). Inter-annotator agreement is reported on the 3,000-example corpus using prompts in Appendix D and results in §8.6 at Cohen's κ = 0.736 ("substantial").
 
 ## 4.7 Saṃskāras and vāsanās — adaptive forgetting
 
@@ -95,13 +95,13 @@ This avoids both the catastrophic-forgetting failure mode of naive context pruni
 
 | Vedic construct | LLM operationalization | MCP tool / module | Tested by |
 |---|---|---|---|
-| Pratyakṣa | Visible-context-only grounding discipline | All `retrieve_*` tools | All hypotheses (architectural commitment) |
-| Avacchedaka | Typed limitor `(qualificand, qualifier, condition, precision)` | `insert`, `retrieve_by_qualifier` | H2, H5 |
+| Pratyakṣa | Visible-context-only grounding discipline | `context_retrieve`, `context_window`, related read paths | All hypotheses (architectural commitment) |
+| Avacchedaka | Typed limitor `(qualificand, qualifier, condition, precision)` | `context_insert`, `context_retrieve` | H2, H5 |
 | Bādha | Supersede-with-provenance under shared limitor | `sublate_with_evidence` | H4, H5, P6-B, P6-C |
-| Manas | Pre-judgment attention-selection sub-agent | `ManasAgent` skill | H3 |
-| Buddhi | Determinative judgment + khyāti tagging sub-agent | `BuddhiAgent` skill | H3, H6 |
+| Manas | Pre-judgment attention-selection **sub-agent** | `ManasAgent` (Section 6.3) | H3 |
+| Buddhi | Determinative judgment + khyāti tagging sub-agent | `BuddhiAgent` | H3, H6 |
 | Sākṣī | Write-once cross-turn witness log | `SakshiKeeperAgent`, `SakshiPrefix` | All (audit invariant) |
-| Khyātivāda | 6-class hallucination classifier | `classify_khyati` | H6 |
+| Khyātivāda | 6-class hallucination classifier | `classify_khyativada` | H6 |
 | Saṃskāra/vāsanā | Adaptive forgetting with witness-protected items | `AdaptiveForgetting` | H7 |
 
 ## 4.9 What is *not* being claimed

@@ -28,7 +28,7 @@ The generator is fully deterministic given \texttt{(instance\_id,\ seed)}; its t
 
 \subsection{E.3 The two arms}\label{e.3-the-two-arms}
 
-Both arms operate under the same hard token budget \(B = 8192\) on the size of the \emph{research block} that the patch-generator sees. Both arms use the same \texttt{PatchSimulator} (see E.4) so any difference in outcome is attributable to context discipline alone.
+Both arms operate under the same hard token budget on the size of the \emph{research block} that the patch-generator sees. \textbf{Headline runs} set this with \textbf{\texttt{-\/-research-block-budget\ 8192}} (\(B = 8192\)); \textbf{smoke} re-runs may use \textbf{\texttt{-\/-research-block-budget-fast\ 512}}. Both arms use the same \texttt{PatchSimulator} (see E.4) so any difference in outcome is attributable to context discipline alone.
 
 \subsubsection{\texorpdfstring{\texttt{without\_harness} (baseline)}{without\_harness (baseline)}}\label{without_harness-baseline}
 

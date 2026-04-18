@@ -37,9 +37,9 @@ Every tool is typed via Pydantic v2 input/output models, returns JSON-serializab
 
 ## 6.3 The 3 sub-agents
 
-- **`agents/manas.md`** — defines the *attentional sense-organ* sub-agent. System prompt instructs the model to call `context_window` and `context_retrieve`, return a structured JSON of `{attended_ids, conditions, filter_reasons}`, and *never* to emit a final answer.
+- **`agents/manas.md`** — defines the *attentional sense-organ* **sub-agent**. System prompt instructs the model to call `get_sakshi`, `context_retrieve`, `context_window`, `classify_khyativada`, and `budget_record`, and to return structured JSON of the form `{ "draft": "...", "grounding": ["<element_id>", ...], "uncertain_claims": ["..."], "needs_buddhi": true | false }` (verbatim contract in the repository file). Manas must *never* emit a user-visible final answer.
 - **`agents/buddhi.md`** — the *determinative judging* sub-agent. May call `sublate_with_evidence`, `detect_conflict`, and `classify_khyativada`. Emits the user-visible answer and its self-classified `khyati_class` and `confidence`.
-- **`agents/sakshi-keeper.md`** — the *witness keeper*. Read-only on the live store; write-only on `witness_log.jsonl`. Invoked from the lifecycle hooks (Section 6.5).
+- **`agents/sakshi-keeper.md`** — the *witness keeper*. Read-only on the live store; append-only on the JSON-lines audit log at `~/.cache/pratyaksha/audit.jsonl`. Invoked from the lifecycle hooks (Section 6.5).
 
 The choice to ship Manas and Buddhi as *agents* (system-prompt-only sub-agents driven by the host LLM) rather than as fine-tunes is deliberate: it preserves the harness's host-platform-agnosticism (Section 5.4) and lets users swap the underlying model without re-training anything.
 
@@ -81,8 +81,8 @@ Following the Cursor/Claude-Code skill format (an `SKILL.md` per directory):
 Their roles are:
 
 - **`session-start.sh`** seeds the session-stable Sākṣī invariants (working directory, git SHA, model id, plugin version) via `set_sakshi`.
-- **`pretooluse-budget.sh`** consults `budget_status` before any harness tool runs and refuses execution if the budget gauge is over a configurable hard threshold (default 95% of `context_budget`).
-- **`stop-compact.sh`** invokes `compact_now(strategy="adaptive")` at the end of every turn so memory pressure does not accumulate across turns.
+- **`pretooluse-budget.sh`** consults `budget_status` before any harness tool runs and **logs** over-threshold use by default (advisory hook). If `PRATYAKSHA_BUDGET_STRICT=1`, the same script can be configured to **deny** tool execution when the gauge exceeds a hard threshold (default 95% of `context_budget`).
+- **`stop-compact.sh`** invokes `compact(strategy="adaptive")` at the end of every turn so memory pressure does not accumulate across turns.
 
 ## 6.7 What the plugin does *not* contain
 

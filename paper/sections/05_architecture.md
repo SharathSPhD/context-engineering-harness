@@ -22,7 +22,7 @@ class ContextItem:
     witness_id: str          # set by SakshiKeeperAgent on first witness
 ```
 
-Insertion is via a single MCP tool, `insert(...)`. Retrieval is via three MCP tools — `retrieve_by_id`, `retrieve_by_qualifier`, and `retrieve_under_condition` — none of which return `bādhita` or `evicted` rows by default. A debug flag exposes them for audit.
+Insertion is via a single MCP tool, `context_insert(...)`. Retrieval is via `context_retrieve(...)` (with optional `qualificand`, `qualifier_substring`, and `condition` filters) and `context_get(...)` for direct id fetch; none of these return `bādhita` or `evicted` rows by default. A debug flag exposes them for audit.
 
 Two design commitments distinguish this from a vector store:
 
@@ -32,7 +32,7 @@ Two design commitments distinguish this from a vector store:
 
 ## 5.2 The AvacchedakaQuery module
 
-`retrieve_under_condition(qualificand: str, condition: str)` walks the `ContextStore` and returns the *set* of items matching `qualificand` whose `condition` is *consistent* with the supplied condition. Consistency is decided by a small rule engine:
+`context_retrieve` with `qualificand` and `condition` set walks the `ContextStore` and returns the *set* of items matching `qualificand` whose `condition` is *consistent* with the supplied condition. Consistency is decided by a small rule engine:
 
 - **String equality** wins when conditions are identical.
 - **Temporal subsumption** wins when one condition is a strictly tighter time-window of the other (e.g. `"Django ≥ 5.0"` subsumes `"Django 5.0.4"`).
@@ -63,9 +63,9 @@ The two-stage gate is implemented as two MCP-side prompt templates and a single 
 
 Both Manas and Buddhi are *prompted-only* sub-agents. We deliberately do *not* fine-tune. The two-stage gate is a discipline, not a model: a different LLM (Claude 3.5 Sonnet, Claude 4.x, GPT-4o, Qwen-3) can be plugged in as the *runner* of either prompt without breaking the harness's invariants. This is the "host-platform-agnostic" design commitment, and it makes the plugin hot-swappable across Cursor / Claude Code / Claude Desktop \citep{anthropic2025mcp, cursor2025plugins}.
 
-## 5.5 The Khyativada classifier
+## 5.5 The Khyātivāda classifier
 
-The classifier is a single Claude prompt with structured JSON output. Inputs:
+The shipped `classify_khyativada` tool applies a **heuristic labeler with structured JSON shape** plus the rule-based guardrails below. The experiments harness additionally implements a few-shot Anthropic JSON variant (`src/evaluation/khyativada_fewshot.py`) for offline evaluation; that path is **not** wired into the plugin MCP surface. For exposition we still describe the JSON contract shared by both stacks. Inputs:
 
 - The user query.
 - The Buddhi answer.
@@ -81,7 +81,7 @@ Output:
 }
 ```
 
-Sample exemplars are curated to maximize within-class lexical diversity (e.g., asatkhyāti includes both "fabricated CVE" and "fabricated stack-trace line", not just one). A heuristic guardrail overrides the LLM-side label when (a) the answer cites a `qualificand` not present in any `ContextStore` item (force `asatkhyāti`), or (b) the answer's `qualifier` is the negation of an item the answer cites by id (force `viparītakhyāti`). These guardrails are *additive* — they only flip `none` to a class, never flip one class to another.
+Sample exemplars are curated for the few-shot *experiment* path to maximize within-class lexical diversity (e.g., asatkhyāti includes both "fabricated CVE" and "fabricated stack-trace line", not just one). In both stacks, heuristic guardrails override the model-proposed label when (a) the answer cites a `qualificand` not present in any `ContextStore` item (force `asatkhyāti`), or (b) the answer's `qualifier` is the negation of an item the answer cites by id (force `viparītakhyāti`). These guardrails are *additive* — they only flip `none` to a class, never flip one class to another.
 
 ## 5.6 The EventBoundaryCompactor
 
@@ -97,7 +97,7 @@ H4 (Section 8.4) tests this module against a no-compaction baseline.
 
 ## 5.7 AdaptiveForgetting
 
-Rules are as in Section 4.7. Implemented as a periodic background MCP tool `compact_now(strategy: Literal["adaptive", "lru", "none"])` that the agent or a lifecycle hook can invoke. The default policy is `adaptive`; the H7 study (Section 8.7) compares all three.
+Rules are as in Section 4.7. Implemented as a periodic background MCP tool `compact(strategy: Literal["adaptive", "lru", "none"])` that the agent or a lifecycle hook can invoke. The default policy is `adaptive`; the H7 study (Section 8.7) compares all three.
 
 ## 5.8 TokenBudgetWatchdog
 
@@ -113,16 +113,16 @@ A small but indispensable module. The watchdog tracks input/output tokens by cat
 }
 ```
 
-It is also wired into a `pretooluse-budget` hook (Section 6.4) so the host can refuse expensive tool calls when over budget.
+It is also wired into a `pretooluse-budget.sh` hook (Section 6.4) that **logs** budget pressure by default; optional strict refusal is available when `PRATYAKSHA_BUDGET_STRICT=1`.
 
 ## 5.9 The full request lifecycle
 
 A representative single-turn request now flows as:
 
 1. **User query** lands in the host agent (Claude Code, Cursor, or Claude Desktop).
-2. **Manas** is called: it inspects the `ContextStore` snapshot via `retrieve_by_qualifier` and returns its attended subset.
+2. **Manas** is called: it inspects the `ContextStore` snapshot via `context_retrieve` / `context_window` and returns its attended subset.
 3. **Buddhi** is called with that subset. It may issue **`sublate_with_evidence`** for any conflicts it spots before answering.
-4. **Khyativada classifier** is run on Buddhi's draft answer; if `khyati_class != "none"` and `confidence > τ_self_check` (default 0.7), Buddhi is asked to revise once.
+4. **`classify_khyativada`** is run on Buddhi's draft answer; if `khyati_class != "none"` and `confidence > τ_self_check` (default 0.7), Buddhi is asked to revise once.
 5. **Sākṣī** writes the witness log entry.
 6. The answer is returned to the user.
 7. **AdaptiveForgetting** and **EventBoundaryCompactor** are invoked by lifecycle hooks if budget pressure is detected.

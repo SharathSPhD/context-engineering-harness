@@ -48,13 +48,21 @@ Seeds used are `[1, 2, 3]` for the canonical L1/L3 runs, and a single `seed=0` f
 
 ### L1 — public benchmarks (H1–H7)
 
+H1–H2 use the registered `BenchmarkAdapter` runner:
+
 ```bash
-uv run python -m experiments.v2.p6a.run_h1_h2 --seeds 1 2 3
-uv run python -m experiments.v2.p6a.run_h3_h4_h5 --seeds 1 2 3
-uv run python -m experiments.v2.p6a.run_h6_h7 --seeds 1 2 3
+uv run python -m experiments.v2.p6a.run --hypotheses H1 H2 --seeds 1 2 3
 ```
 
-Outputs: `experiments/results/h1.json` … `experiments/results/h7.json`.
+H3–H7 use the deterministic plugin-in-process harness:
+
+```bash
+uv run python -m experiments.v2.p6a.run_plugin_inloop --hypotheses H3 H4 H5 H6 H7 --seeds 1 2 3
+```
+
+(Each module also accepts `all` in place of explicit hypothesis lists.)
+
+Outputs: JSON under `experiments/results/p6a/` consumed by P7 (tables **T1**–**T3**, figures **F01**–**F07**).
 
 ### L2 — live case study (P6-B)
 
@@ -73,6 +81,8 @@ uv run python -m experiments.v2.p6c.run_swebench_ab \
   --models claude-haiku-4-5 claude-sonnet-4-6 \
   --research-block-budget 8192
 ```
+
+The headline numbers in the paper use **`--research-block-budget 8192`**. Fast CI smoke re-runs may pass **`--research-block-budget-fast 512`** instead.
 
 Output: `experiments/results/p6c/summary.json` and per-instance traces under `experiments/results/p6c/runs/`.
 

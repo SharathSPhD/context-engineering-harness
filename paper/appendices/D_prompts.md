@@ -6,30 +6,18 @@ This appendix records, verbatim, the system and few-shot prompts used by every L
 
 *Source:* `plugin/pratyaksha-context-eng-harness/agents/manas.md`
 
+The shipped contract (abridged; see repository file for the full tool list and operating steps) requires Manas to read `get_sakshi`, retrieve via `context_retrieve`, bundle with `context_window` (with `max_tokens ≤ 8000`), self-check load-bearing claims with `classify_khyativada`, record spend with `budget_record`, and **return** structured JSON **exactly** of the form:
+
+```json
+{
+  "draft": "...",
+  "grounding": ["element_id_1", "element_id_2"],
+  "uncertain_claims": ["..."],
+  "needs_buddhi": true | false
+}
 ```
-You are *Manas*, the attentional faculty of the Pratyakṣa harness.
-Your role is to ATTEND, never to JUDGE. You select which items in the
-ContextStore deserve to enter the visible-context window for the next
-Buddhi step.
 
-Hard rules:
-1. You may call `context_retrieve`, `list_qualificands`, `context_window`,
-   `detect_conflict`, `boundary_compact`. You MAY NOT call `context_insert`
-   (only sources of evidence may insert) and you MAY NOT emit a final
-   answer to the user. Your output is always a JSON object of the form
-
-       {"selected_ids": [...], "rationale": "..."}
-
-2. Never include text that the user will read directly. The user only
-   ever reads what Buddhi writes.
-
-3. When `detect_conflict` returns conflicted=True, prefer the higher
-   posterior_mean item but flag the conflict in `rationale`. Do not
-   sublate; that is Buddhi's responsibility.
-
-4. Respect the avacchedaka contract: two items with the same qualificand
-   and qualifier but different conditions are NOT in conflict.
-```
+(This mirrors the literal return contract in `agents/manas.md`; each field is load-bearing for the orchestrator.) Manas must **not** call `context_insert` or `sublate_with_evidence`, must **not** overwrite the Sākṣī via `set_sakshi`, and must respect `budget_status` / `budget_record` discipline.
 
 ## D.2 `BuddhiAgent` system prompt
 
@@ -67,24 +55,24 @@ Hard rules:
 ```
 You are *Sākṣī-Keeper*, the witness of the Pratyakṣa harness.
 You do not act. You record. At session start you pin the
-session-stable invariants. At session end you flush the witness log.
+session-stable invariants. At session end you flush the audit log (`~/.cache/pratyaksha/audit.jsonl`).
 
 Hard rules:
 1. You only call `set_sakshi`, `get_sakshi`, and read-only queries on
-   the witness log. You may not modify ContextItems.
+   the audit log. You may not modify ContextItems.
 
 2. When you are invoked, your only output is the JSON snapshot of the
    current invariant set.
 
-3. Never reveal the contents of the witness log unless the user asks
+3. Never reveal the contents of the audit log unless the user asks
    for an audit.
 ```
 
-## D.4 `classify_khyativada` few-shot exemplars
+## D.4 `classify_khyativada` prompts (shipped heuristic vs. experiment few-shot)
 
-*Source:* `plugin/pratyaksha-context-eng-harness/mcp/khyati_prompts.py`
+*Sources:* `plugin/pratyaksha-context-eng-harness/mcp/khyati_prompts.py` (few-shot **experiment** path) and the shipped **heuristic** implementation wired to the MCP tool (Section 5.5 / Appendix B.13).
 
-The classifier prompt has the structure:
+The **experiment-only** few-shot Anthropic classifier uses a prompt of the form:
 
 ```
 [SYSTEM]
@@ -124,7 +112,7 @@ After the LLM responds, two **rule-based guardrails** override the prediction:
   `viparītakhyāti`.
 
 Both guardrails were added after manual error analysis on the H6
-dev fold and lifted Cohen's kappa from $0.69$ to $0.74$.
+dev fold and lifted Cohen's kappa from $0.69$ to $0.74$. The **plugin MCP tool** applies the heuristic stack plus these guardrails; the few-shot JSON template above is **not** what the shipped tool sends to the model, but it *is* what the offline few-shot path in `src/evaluation/khyativada_fewshot.py` uses. Section §8 (H6) evaluates both.
 
 ## D.5 Buddhi/Manas orchestration prompt fragments
 

@@ -44,7 +44,7 @@ import argparse
 import json
 import logging
 import time
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
@@ -561,8 +561,15 @@ def main(argv: list[str] | None = None) -> int:
                    help="examples per seed (≥100 satisfies the P6-C plan)")
     p.add_argument("--seeds", nargs="+", type=int, default=[0, 1, 2])
     p.add_argument("--models", nargs="+", default=["claude-haiku-4-5", "claude-sonnet-4-6"])
-    p.add_argument("--research-budget-tokens", type=int, default=512,
-                   help="hard cap on the without_harness research block")
+    p.add_argument("--research-budget-tokens", type=int, default=8192,
+                   help=("hard cap on the without_harness research block. "
+                         "Default 8192 matches the headline P6-C runs reported "
+                         "in the paper (§10, Appendix E). Pass --fast to switch "
+                         "to a 512-token smoke-test profile."))
+    p.add_argument("--fast", action="store_true",
+                   help=("smoke-test profile: overrides --research-budget-tokens "
+                         "to 512 (paper Appendix E §E.3 'fast' path). Useful for "
+                         "CI and laptop reproducibility runs."))
     p.add_argument("--precision-gate", type=float, default=0.50)
     p.add_argument("--bootstrap-n", type=int, default=2000)
     p.add_argument("--permutation-n", type=int, default=2000)
@@ -577,11 +584,13 @@ def main(argv: list[str] | None = None) -> int:
     level = logging.WARNING - 10 * args.verbose
     logging.basicConfig(level=max(logging.DEBUG, level), format="%(levelname)s %(message)s")
 
+    research_budget_tokens = 512 if args.fast else args.research_budget_tokens
+
     headline = run_ab(
         n_examples=args.n_examples,
         seeds=tuple(args.seeds),
         models=tuple(args.models),
-        research_budget_tokens=args.research_budget_tokens,
+        research_budget_tokens=research_budget_tokens,
         precision_gate=args.precision_gate,
         bootstrap_n=args.bootstrap_n,
         permutation_n=args.permutation_n,

@@ -27,7 +27,6 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-import sys
 import time
 from dataclasses import asdict
 from datetime import datetime, timezone

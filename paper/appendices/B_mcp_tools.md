@@ -4,8 +4,8 @@ This appendix gives the full input / output schema and behavioural contract for 
 
 All tools share three host-platform invariants:
 
-- **Audit hook.** Every successful tool call appends a single JSON-line to `${CLAUDE_PLUGIN_ROOT}/witness_log.jsonl` via the `_audit(event, payload)` helper.
-- **Budget hook.** Every tool call is preceded by the `pretooluse-budget.sh` lifecycle hook, which consults `budget_status` and refuses execution if the gauge exceeds the configured hard threshold.
+- **Audit hook.** Every successful tool call appends a single JSON-line to `~/.cache/pratyaksha/audit.jsonl` (XDG-style cache path; survives plugin reinstall) via the `_audit(event, payload)` helper.
+- **Budget hook.** Every tool call is preceded by the `pretooluse-budget.sh` lifecycle hook, which consults `budget_status` and **logs** budget pressure by default (**advisory**). Optional strict refusal is available when `PRATYAKSHA_BUDGET_STRICT=1` and the hook is configured to deny over-threshold calls.
 - **Schema-strict I/O.** Every tool's input is validated by a Pydantic v2 model; every output is JSON-serialisable.
 
 ---
@@ -189,7 +189,7 @@ class KhyatiResult(BaseModel):
     confidence: float
 ```
 
-**Behaviour.** Section 5.5. Few-shot Claude-side classifier with structured JSON output and rule-based guardrails (force `asatkhyāti` for non-existent qualificands; force `viparītakhyāti` for inverted-boolean cited items).
+**Behaviour.** Section 5.5. The **shipped plugin** path is a **heuristic classifier with structured JSON output** and the same rule-based guardrails (force `asatkhyāti` for non-existent qualificands; force `viparītakhyāti` for inverted-boolean cited items). A **few-shot Anthropic JSON** variant lives in the experiments harness (`src/evaluation/khyativada_fewshot.py`) and is **not** wired into this MCP tool; both variants are evaluated independently in §8 (H6).
 
 ---
 

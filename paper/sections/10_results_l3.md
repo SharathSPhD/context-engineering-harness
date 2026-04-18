@@ -1,6 +1,6 @@
 # 10 · Results — Layer 3: SWE-bench Verified A/B Head-to-Head (P6-C)
 
-Layer 3 supplies the most ecologically valid evidence in the paper: a head-to-head A/B test on **120 real SWE-bench Verified \citep{openai2024sweverified, jimenez2024swebench}** instances, **3 seeds × 2 models** (= **720 paired runs**), under a *fixed* 8 K-token research-block budget. Both arms see the same instances, the same evidence trail, and the same model; the only difference is whether the harness is in the loop. The numbers below come from `experiments/results/p6c/swebench_ab.json` and are aggregated in tables **T4** (headline) and **T5** (per-seed breakdown) and figures **F10** (paired-difference histogram), **F11** (target-path-hit rate).
+Layer 3 supplies the most ecologically valid *coding-context* evidence in the paper: a head-to-head A/B test on **120 real SWE-bench Verified \citep{openai2024sweverified, jimenez2024swebench}** instances, **3 seeds × 2 models** (= **720 paired runs**), under a *fixed* research-block budget. Both arms see the same instances, the same **synthetic** evidence trail, and the same model; the only difference is whether the harness is in the loop. **On synthetic research trails over the SWE-bench Verified instance set**, with patch generation deterministically anchored on the first plausible file path of the research block, we compare harness vs. baseline; the optional Docker scorer agreement is reported on a 30-instance sub-sample (κ = 0.97). Headline runs set **`--research-block-budget 8192`** (8 K tokens); smoke re-runs may use **`--research-block-budget-fast 512`**. The numbers below come from `experiments/results/p6c/swebench_ab.json` and are aggregated in tables **T4** (headline) and **T5** (per-seed breakdown) and figures **F10** (paired-difference histogram), **F11** (target-path-hit rate).
 
 ## 10.1 Design
 
@@ -8,7 +8,7 @@ For each SWE-bench Verified instance we:
 
 1. **Generate a research trail of four snippets.** Two are *stale* (low precision in $[0.20, 0.45]$, point at *wrong* file paths constructed by perturbing the correct path with a synthetic typo, and reference superseded API names typical of pre-issue Stack Overflow / blog answers). Two are *fresh* (precision in $[0.80, 0.97]$, point at the *correct* file path, reference the current API). Stale items carry `superseded_by_id` pointers to fresh items; the four are then *shuffled* so the agent cannot use ordering as a signal. (Implementation: `experiments/v2/p6c/research_evidence.py`, deterministic per-seed.)
 
-2. **Build a research block under a fixed token budget** (default 8 K, configurable):
+2. **Build a research block under a fixed token budget** (headline runs: **`--research-block-budget 8192`**; smoke tests: **`--research-block-budget-fast 512`**):
    - **`with_harness` arm.** Insert every snippet via `context_insert`; trigger `sublate_with_evidence` for every stale-vs-fresh pair via the dominance rule; then assemble the block from `live` items only, truncating from the end if the budget is exceeded.
    - **`without_harness` arm.** Concatenate raw snippets in shuffle order and truncate to the same token budget.
 
@@ -31,14 +31,14 @@ For each SWE-bench Verified instance we:
 | per_instance_n_pairs | 720 |
 | per_(model, seed)_delta | +0.2486 |
 | per_(model, seed)_CI 95% | [0.2361, 0.2611] |
-| per_(model, seed)_p_value | **0.0312** |
+| per_(model, seed)_p_value | **0.03125** (= $1/32$, the discrete test floor) |
 | per_(model, seed)_n_pairs | 6 |
-| **treatment_target_path_hit_rate** | **1.0000 (720 / 720)** |
+| **treatment_target_path_hit_rate** | **1.0000 — 100% in all 6 (model × seed) cells, 720 / 720 paired runs** |
 | baseline_target_path_hit_rate | 0.5028 (362 / 720) |
 | total_sublations_fired | **1,440** |
 | target_met | **True** |
 
-Source: `experiments/results/p6c/_summary.json` and table T4. Visualised by figures F10 (paired difference histogram, all positive) and F11 (target-path-hit-rate bars).
+Source: `experiments/results/p6c/_summary.json` and table T4. Visualised by figures F10 (paired difference histogram, all positive) and F11 (target-path-hit-rate bars). The per-instance permutation $p = 0.0005$ and the per-(model, seed) $p = 0.03125$ are both load-bearing: the latter is the **floor** of the exact permutation distribution on six cells, so we supplement it with bootstrap CIs as in Section 7.4.
 
 ## 10.3 Per-(model, seed) breakdown
 
@@ -54,7 +54,7 @@ The default budget is 8 K tokens. We additionally swept budgets ∈ {2 K, 4 K, 8
 
 ## 10.6 What the harness contributes, in one sentence
 
-*Under a fixed token budget, on a real-world distribution of stale-vs-fresh evidence trails, the harness anchors the downstream agent on the correct file in 100% of cases versus 50.3% for the budgeted baseline*. This is not a benchmark-specific quirk; it is the operational expression of *avacchedaka* + *bādha* + the *first-seen-wins* failure mode of unaided agents.
+*Under a fixed token budget, on synthetic research trails over the SWE-bench Verified instance set (patch generation deterministically anchored on the first plausible file path of the research block), the harness anchors the stub patch on the correct file in **100% of the 6 (model × seed) cells (720 / 720 paired runs)** versus **50.3%** for the budgeted baseline*, with per-instance permutation $p = 0.0005$ and per-(model, seed) $p = 0.03125$ as in Section 10.2. This is not a claim about unconstrained LLM patch generation on the full upstream harness; it is the operational expression of *avacchedaka* + *bādha* + the *first-seen-wins* failure mode of unaided agents under the stated simulator.
 
 ## 10.7 Aggregate across all studies
 
@@ -69,4 +69,4 @@ We close this section with the omnibus statistic. Stouffer-Z combination (Sectio
 | mean per-study delta | +0.476 |
 | mean Cohen's d (excluding the two structural-100% studies) | 9.62 |
 
-The single combined statistic crosses *every* conventional significance threshold by orders of magnitude. We discuss the appropriate epistemic weight to give this number, and the limitations that temper it, in Section 11.
+The single combined statistic crosses *every* conventional significance threshold by orders of magnitude. Because several stacked rows share generators and model families, we also report a correlation-corrected Stouffer variant alongside the naïve 10-study value (**Table T7**). We discuss the appropriate epistemic weight to give these numbers, and the limitations that temper them, in Section 11.

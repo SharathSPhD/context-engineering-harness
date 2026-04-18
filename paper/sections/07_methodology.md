@@ -6,7 +6,7 @@ We validate the harness across three orthogonal evidence layers — public bench
 
 The entire validation pipeline ran under a custom **`CLIBudgetScheduler`** (P0 of the project plan) that enforces a hard ceiling on per-window CLI spend, persists every call to a `cost_ledger.db` SQLite ledger, layers an MD5-keyed disk cache over identical (system, user, model, max_tokens) tuples, and pre-computes prompt-cache prefixes for repeated runs of the same benchmark adapter \citep{anthropic2024promptcaching}. Rate-limit detection uses parsed Anthropic 429 responses combined with a heuristic five-hour-window estimator; on detection the scheduler issues a HALT signal to the `attractor-flow` driver \citep{attractorflowplugin}, which pauses the current basin and, after the configured cool-down, RESUMEs from the last persisted ledger row.
 
-This scheduler is **not part of the shipped plugin** — it is a build-time tool, like `pytest` or `make`. We document it here because it made the L1+L2+L3 validation feasible at all under realistic CLI quotas, and because the cost ledger it produced is part of the reproducibility manifest (Appendix F).
+This scheduler is **not part of the shipped plugin** — it is a build-time tool, like `pytest` or `make`. We document it here because it made the L1+L2+L3 validation feasible at all under realistic CLI quotas, and because the cost ledger it produced is part of the reproducibility manifest (Appendix C).
 
 ## 7.2 The BenchmarkAdapter ABC and HypothesisSpec
 
@@ -68,6 +68,8 @@ We adopt a single statistical recipe across all studies:
 - **Cohen's d.** Standardised effect size on paired deltas \citep{cohen1988statistical}.
 - **Stouffer-Z omnibus** \citep{stouffer1949combining, liptak1958combining}. To combine across studies we use the *weighted* Stouffer-Z method with weights $w_i = \sqrt{n_i}$, computing the inverse normal CDF and survival function via the Beasley-Springer-Moro routine \citep{beasley1977normal, moro1995tail} so we have *zero* dependency on SciPy in the aggregator. The combined two-sided p is reported with both the studies' n and the sum of weights.
 
+Stouffer's method assumes independence among combined $Z$-scores. Several of our rows are *not* independent (e.g. H1@8K and H1@32K share the same generator and model family). We therefore report **both** a naïve Stouffer combination treating all **10** listed studies as separate and a *correlation-corrected* combination that collapses each `(hypothesis, family)` configuration to one effective study (**7** effective studies). The conservative headline uses the corrected value; both appear in **Table T7**.
+
 All statistics, figures, and tables are produced by the single Python module `experiments/v2/p7/aggregate.py`, are deterministic modulo the timestamp, and are unit-tested by `tests/test_v2/test_p7_aggregate.py` (12 tests, all passing).
 
 ## 7.5 Models tested
@@ -89,7 +91,7 @@ We curate three real GitHub issues — Django request-body double-read, requests
 
 ### 7.6.2 P6-C (SWE-bench Verified A/B)
 
-For each of $n=120$ SWE-bench Verified instances and each of 3 seeds × 2 models (= 720 paired runs), we synthesise a *research trail* (`p6c/research_evidence.py`) of 4 evidence snippets per instance — 2 stale (with wrong file paths and superseded API names, simulating low-precision Stack Overflow / blog posts) and 2 fresh (with correct paths and current APIs). The harness arm filters the trail through the plugin (drops `stale=True` items via `sublate_with_evidence` and budget-truncates the rest); the baseline arm naively concatenates and budget-truncates the trail. Both arms then build a fixed-budget research block (default 8 K tokens) that is fed to a deterministic `PatchSimulator` which emits a stub diff anchored on the *first plausible file path in the research block*. We score via the heuristic *target-path-hit-rate* and a paired permutation test over both per-instance and per-(model, seed) groupings.
+For each of $n=120$ SWE-bench Verified instances and each of 3 seeds × 2 models (= 720 paired runs), we synthesise a *research trail* (`p6c/research_evidence.py`) of 4 evidence snippets per instance — 2 stale (with wrong file paths and superseded API names, simulating low-precision Stack Overflow / blog posts) and 2 fresh (with correct paths and current APIs). The harness arm filters the trail through the plugin (drops `stale=True` items via `sublate_with_evidence` and budget-truncates the rest); the baseline arm naively concatenates and budget-truncates the trail. Both arms then build a fixed-budget research block. **Headline numbers in this paper** use an explicit **`--research-block-budget 8192`** token budget (8 K) on the research block passed to the deterministic `PatchSimulator`; CI smoke re-runs may use **`--research-block-budget-fast 512`** for cost control. The simulator emits a stub diff anchored on the *first plausible file path in the research block*. We score via the heuristic *target-path-hit-rate* and a paired permutation test over both per-instance and per-(model, seed) groupings.
 
 The PatchSimulator design choice is critical: by *not* using a real LLM patch generator, we cleanly isolate the harness's contribution as a *context discipline* rather than as generation quality, which is the only intervention the plugin actually makes.
 
@@ -99,4 +101,4 @@ The single module `experiments/v2/p7/aggregate.py` consumes every artefact from 
 
 ## 7.8 Reproducibility
 
-The full reproducibility manifest is in **Appendix F**: commit SHAs, seeds, hardware, software versions, total measured CLI spend (from `cost_ledger.db`), and exact wall-clock per study. The repository's CI (`pytest`) runs the full validation pipeline in offline mode (synthetic-fallback adapters) on every commit and is currently green at **499 passing tests, 2 skipped, 0 failing** as of the build that produced this paper.
+The full reproducibility manifest is in **Appendix C**: commit SHAs, seeds, hardware, software versions, total measured CLI spend (from `cost_ledger.db`), and exact wall-clock per study. The repository's CI (`pytest`) runs the full validation pipeline in offline mode (synthetic-fallback adapters) on every commit and is currently green at **499 passing tests, 2 skipped, 0 failing** as of the build that produced this paper.

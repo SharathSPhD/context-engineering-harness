@@ -32,7 +32,6 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-import re
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path

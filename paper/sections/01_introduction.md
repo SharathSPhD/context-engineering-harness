@@ -16,7 +16,7 @@ We claim three things:
 
 2. **A small, drop-in plugin** — `pratyaksha-context-eng-harness` — can operationalize all of the above on top of *unmodified* frontier LLMs (Claude 3.5/4.x, GPT-4-class, Qwen-3) via the Model Context Protocol \citep{anthropic2025mcp}. The plugin ships 15 MCP tools, 3 skills, 3 sub-agents, 4 slash commands, and 3 lifecycle hooks; we install it into Claude Code and Cursor with a single `/plugin install` and observe end-to-end statistical improvements without changing the underlying model.
 
-3. **The improvements are real, large, and reproducible.** Across 10 preregistered studies — H1–H7 on public long-context and hallucination benchmarks, plus a deterministic live case study (P6-B) and a 720-pair SWE-bench Verified A/B (P6-C) — the harness produces a Stouffer-combined two-sided p = **7.94 × 10⁻²⁰** in its favour, with mean per-study delta **+0.476**. On the most ecologically valid study (SWE-bench Verified, fixed 8 K-token research budget, paired by issue-id × model × seed), the harness anchors the agent on the correct file in **100%** of cases versus **50.3%** for the budgeted baseline.
+3. **The improvements are real, large, and reproducible.** Across 10 preregistered studies — H1–H7 on public long-context and hallucination benchmarks, plus a deterministic live case study (P6-B) and a 720-pair SWE-bench Verified A/B (P6-C) — the harness produces a Stouffer-combined two-sided p = **7.94 × 10⁻²⁰** in its favour, with mean per-study delta **+0.476**. On the L3 study (SWE-bench Verified *instance set*, synthetic research trails, fixed 8 K-token research budget with `--research-block-budget 8192`, paired by issue-id × model × seed, patch generation deterministically anchored on the first plausible file path of the research block), the harness anchors the stub patch on the correct file in **100%** of cases versus **50.3%** for the budgeted baseline; the optional Docker scorer agreement is reported on a 30-instance sub-sample (κ = 0.97).
 
 ## 1.3 Why now, and why a plugin
 
@@ -40,9 +40,9 @@ Cognition's *Don't Build Multi-Agents* essay \citep{yan2025dontbuild} also clari
 
 4. **A 6-class Khyātivāda annotation codebook** with two-rater agreement (heuristic + LLM-as-judge) at Cohen's κ = **0.736** on n = 3,000 examples, plus the released annotation pipeline (Appendix E).
 
-5. **A reproducible cost-aware build pipeline** (Section 7.1, Appendix F) that drove the entire 10-study validation under hard CLI rate limits via a custom budget scheduler with disk caching, prompt caching, and 5-hour-window-aware exponential backoff. The total measured CLI budget consumed was logged to `cost_ledger.db` and is included in the reproducibility manifest.
+5. **A reproducible cost-aware build pipeline** (Section 7.1, Appendix C) that drove the entire 10-study validation under hard CLI rate limits via a custom budget scheduler with disk caching, prompt caching, and 5-hour-window-aware exponential backoff. The total measured CLI budget consumed was logged to `cost_ledger.db` and is included in the reproducibility manifest.
 
-6. **A documented origin story** (Section 3) showing how this work emerged from a TRIZ-style contradiction analysis of context engineering itself, with the `triz-engine` plugin's `log_session_entry` tool used as the audit trail. We argue this method — *named contradictions, named principles, named operationalizations* — generalizes beyond the present paper.
+6. **A documented origin story** (Section 3) showing how this work emerged from a TRIZ-style contradiction analysis of context engineering itself, with the `triz-engine` plugin's `log_session_entry` tool used as the audit trail. For this paper we treat that session as a *method note* (contradiction → inventive principle → vocabulary gap) rather than as a claim that TRIZ itself generalises the contribution.
 
 ## 1.5 Roadmap
 
