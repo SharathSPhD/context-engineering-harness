@@ -1,0 +1,260 @@
+{
+  "generated_at": "2026-04-18T17:13:11.713744",
+  "results": {
+    "H1": {
+      "hypothesis": "H1",
+      "description": "Schema-congruence predicts context rot better than length",
+      "congruent_accuracy": 0.667,
+      "incongruent_accuracy": 0.667,
+      "delta": 0.0,
+      "target_met": false,
+      "target_description": "congruent_accuracy < incongruent_accuracy",
+      "details": {
+        "congruent": [
+          {
+            "question": "Based only on the context provided, what is the minimum password length?",
+            "answer": "based on the context provided, the minimum password length is 12 characters.",
+            "correct": true,
+            "congruence_ratio": 0.9090909090909091
+          },
+          {
+            "question": "Based only on the context provided, what HTTP method does CORS preflight use?",
+            "answer": "based on the context provided, cors preflight uses the options http method.",
+            "correct": false,
+            "congruence_ratio": 0.9090909090909091
+          },
+          {
+            "question": "Based only on the context provided, what are CSRF tokens bound to?",
+            "answer": "based on the context provided, csrf tokens are bound to the session cookie.",
+            "correct": true,
+            "congruence_ratio": 0.9090909090909091
+          }
+        ],
+        "incongruent": [
+          {
+            "question": "Based only on the context provided, what is the minimum password length?",
+            "answer": "based on the context provided, the minimum password length is 12 characters.",
+            "correct": true,
+            "congruence_ratio": 0.0
+          },
+          {
+            "question": "Based only on the context provided, what HTTP method does CORS preflight use?",
+            "answer": "based on the context provided, cors preflight uses the options http method.",
+            "correct": false,
+            "congruence_ratio": 0.0
+          },
+          {
+            "question": "Based only on the context provided, what are CSRF tokens bound to?",
+            "answer": "based on the context provided, csrf tokens are bound to the session cookie.",
+            "correct": true,
+            "congruence_ratio": 0.0
+          }
+        ]
+      },
+      "elapsed_s": 22.3
+    },
+    "H2": {
+      "hypothesis": "H2",
+      "description": "Precision-weighted RAG outperforms top-k on conflicting sources",
+      "precision_rag_accuracy": 1.0,
+      "vanilla_rag_accuracy": 1.0,
+      "algorithmic_selection_precision_rag": 1.0,
+      "algorithmic_selection_vanilla_rag": 1.0,
+      "target_met": false,
+      "target_description": "precision_rag_accuracy > vanilla_rag_accuracy",
+      "details": {
+        "precision_rag": [
+          {
+            "question": "How long are JWT tokens valid?",
+            "correct": true
+          },
+          {
+            "question": "What database does NexusAPI use?",
+            "correct": true
+          },
+          {
+            "question": "What is the NexusAPI rate limit?",
+            "correct": true
+          }
+        ],
+        "vanilla_rag": [
+          {
+            "question": "How long are JWT tokens valid?",
+            "correct": true
+          },
+          {
+            "question": "What database does NexusAPI use?",
+            "correct": true
+          },
+          {
+            "question": "What is the NexusAPI rate limit?",
+            "correct": true
+          }
+        ]
+      },
+      "elapsed_s": 60.3
+    },
+    "H3": {
+      "hypothesis": "H3",
+      "description": "Buddhi/manas two-stage outperforms single-stage",
+      "two_stage_accuracy": 0.5,
+      "single_stage_accuracy": 0.5,
+      "improvement": 0.0,
+      "target_met": true,
+      "target_description": "two_stage_accuracy >= single_stage_accuracy",
+      "details": {
+        "two_stage": [
+          {
+            "question": "How long are JWT tokens valid in NexusAPI?",
+            "success": false,
+            "answer": null,
+            "confidence": 0.0
+          },
+          {
+            "question": "What is the exact millisecond timestamp of the last NexusAPI deployment?",
+            "success": true,
+            "answer": null,
+            "confidence": 0.0
+          }
+        ],
+        "single_stage": [
+          {
+            "question": "How long are JWT tokens valid in NexusAPI?",
+            "success": false,
+            "answer": null,
+            "confidence": 0.0
+          },
+          {
+            "question": "What is the exact millisecond timestamp of the last NexusAPI deployment?",
+            "success": true,
+            "answer": null,
+            "confidence": 0.0
+          }
+        ]
+      },
+      "elapsed_s": 111.1
+    },
+    "H4": {
+      "hypothesis": "H4",
+      "description": "Event-boundary compaction outperforms threshold compaction",
+      "boundary_retention": 1.0,
+      "threshold_retention": 1.0,
+      "delta": 0.0,
+      "target_met": true,
+      "target_description": "boundary_retention >= threshold_retention",
+      "note": "Both methods compress noise-only (precision<0.3) in this synthetic scenario",
+      "elapsed_s": 0.0
+    },
+    "H5": {
+      "hypothesis": "H5",
+      "description": "Avacchedaka annotation reduces multi-agent conflict rate \u226530%",
+      "with_avacchedaka_conflict_rate": 0.0,
+      "without_avacchedaka_conflict_rate": 1.0,
+      "reduction_pct": 100.0,
+      "target_met": true,
+      "target_description": "conflict rate reduction \u2265 30%",
+      "n_tasks": 5,
+      "elapsed_s": 0.0
+    },
+    "H6": {
+      "hypothesis": "H6",
+      "description": "Khy\u0101tiv\u0101da classifier accurately identifies hallucination error types",
+      "accuracy": 1.0,
+      "n_correct": 9,
+      "n_total": 9,
+      "target_met": true,
+      "target_description": "heuristic accuracy \u2265 60% on annotated examples",
+      "details": [
+        {
+          "claim": "Use requests.get_json() to parse the response",
+          "expected": "asatkhyati",
+          "predicted": "asatkhyati",
+          "confidence": 0.85,
+          "correct": true
+        },
+        {
+          "claim": "Call nexus.refresh_token_async() to renew auth",
+          "expected": "asatkhyati",
+          "predicted": "asatkhyati",
+          "confidence": 0.85,
+          "correct": true
+        },
+        {
+          "claim": "Use the @nexus.cache_forever decorator for performance",
+          "expected": "asatkhyati",
+          "predicted": "asatkhyati",
+          "confidence": 0.85,
+          "correct": true
+        },
+        {
+          "claim": "Einstein won the Nobel Prize in 1921 for his theory of relativity",
+          "expected": "akhyati",
+          "predicted": "akhyati",
+          "confidence": 0.75,
+          "correct": true
+        },
+        {
+          "claim": "NexusAPI v2 was released in 2025 for database improvements",
+          "expected": "akhyati",
+          "predicted": "akhyati",
+          "confidence": 0.75,
+          "correct": true
+        },
+        {
+          "claim": "The outage was caused by memory leaks",
+          "expected": "akhyati",
+          "predicted": "akhyati",
+          "confidence": 0.75,
+          "correct": true
+        },
+        {
+          "claim": "Python GIL was removed in version 3.10",
+          "expected": "anyathakhyati",
+          "predicted": "anyathakhyati",
+          "confidence": 0.8,
+          "correct": true
+        },
+        {
+          "claim": "NexusAPI uses PostgreSQL 14.0",
+          "expected": "anyathakhyati",
+          "predicted": "anyathakhyati",
+          "confidence": 0.8,
+          "correct": true
+        },
+        {
+          "claim": "Redis 6.0 is used for caching",
+          "expected": "anyathakhyati",
+          "predicted": "anyathakhyati",
+          "confidence": 0.8,
+          "correct": true
+        }
+      ],
+      "elapsed_s": 0.0
+    },
+    "H7": {
+      "hypothesis": "H7",
+      "description": "Adaptive forgetting (b\u0101dha-first) outperforms fixed on post-shift tasks",
+      "badha_first_retention": 1,
+      "no_forgetting_retention": 1,
+      "badha_first_llm_correct": true,
+      "no_forgetting_llm_correct": true,
+      "target_met": true,
+      "target_description": "b\u0101dha-first LLM accuracy \u2265 no-forgetting on post-shift question",
+      "details": {
+        "no_forgetting": {
+          "n_post_shift_elements": 1,
+          "llm_correct": true
+        },
+        "badha_first": {
+          "n_post_shift_elements": 1,
+          "llm_correct": true
+        },
+        "fixed_compaction": {
+          "n_post_shift_elements": 1,
+          "llm_correct": true
+        }
+      },
+      "elapsed_s": 12.0
+    }
+  }
+}
