@@ -1,0 +1,183 @@
+{
+  "label": "H1_ruler_8192",
+  "spec": {
+    "hypothesis_id": "H1",
+    "description": "Avacchedaka structured retriever prompt lifts RULER NIAH accuracy at 8192-token contexts vs the unstructured baseline; effect \u2265 5 pts.",
+    "adapter_name": "ruler_niah",
+    "treatment_condition": "harness_on",
+    "baseline_condition": "harness_off",
+    "metric": "accuracy",
+    "direction": "greater",
+    "delta": 0.05,
+    "n_examples": 30,
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "models": [
+      "claude-haiku-4-5",
+      "claude-sonnet-4-6"
+    ],
+    "significance_alpha": 0.05,
+    "notes": "Tier=8192 tokens. Adapter is the synthetic NIAH; the live re-run path will swap in load_real=True."
+  },
+  "outcome": {
+    "treatment_metric": 0.8444,
+    "baseline_metric": 0.4722,
+    "delta_observed": 0.3722,
+    "ci_low": 0.2833,
+    "ci_high": 0.4557,
+    "p_value": 0.0005,
+    "cohens_d": 0.6222,
+    "target_met": true,
+    "n_examples_used": 180,
+    "n_seeds_used": 3,
+    "extra": {
+      "treatment_runs": 6,
+      "baseline_runs": 6,
+      "models": [
+        "claude-haiku-4-5",
+        "claude-sonnet-4-6"
+      ]
+    }
+  },
+  "treatment_runs": [
+    {
+      "adapter": "ruler_niah",
+      "model": "claude-haiku-4-5",
+      "condition": "harness_on",
+      "seed": 0,
+      "n": 30,
+      "mean_score": 0.7667,
+      "accuracy": 0.7667,
+      "total_input_tokens": 206879,
+      "total_output_tokens": 30
+    },
+    {
+      "adapter": "ruler_niah",
+      "model": "claude-haiku-4-5",
+      "condition": "harness_on",
+      "seed": 1,
+      "n": 30,
+      "mean_score": 0.8667,
+      "accuracy": 0.8667,
+      "total_input_tokens": 206687,
+      "total_output_tokens": 30
+    },
+    {
+      "adapter": "ruler_niah",
+      "model": "claude-haiku-4-5",
+      "condition": "harness_on",
+      "seed": 2,
+      "n": 30,
+      "mean_score": 0.7,
+      "accuracy": 0.7,
+      "total_input_tokens": 206803,
+      "total_output_tokens": 30
+    },
+    {
+      "adapter": "ruler_niah",
+      "model": "claude-sonnet-4-6",
+      "condition": "harness_on",
+      "seed": 0,
+      "n": 30,
+      "mean_score": 0.9333,
+      "accuracy": 0.9333,
+      "total_input_tokens": 206879,
+      "total_output_tokens": 30
+    },
+    {
+      "adapter": "ruler_niah",
+      "model": "claude-sonnet-4-6",
+      "condition": "harness_on",
+      "seed": 1,
+      "n": 30,
+      "mean_score": 0.9333,
+      "accuracy": 0.9333,
+      "total_input_tokens": 206687,
+      "total_output_tokens": 30
+    },
+    {
+      "adapter": "ruler_niah",
+      "model": "claude-sonnet-4-6",
+      "condition": "harness_on",
+      "seed": 2,
+      "n": 30,
+      "mean_score": 0.8667,
+      "accuracy": 0.8667,
+      "total_input_tokens": 206803,
+      "total_output_tokens": 30
+    }
+  ],
+  "baseline_runs": [
+    {
+      "adapter": "ruler_niah",
+      "model": "claude-haiku-4-5",
+      "condition": "harness_off",
+      "seed": 0,
+      "n": 30,
+      "mean_score": 0.3667,
+      "accuracy": 0.3667,
+      "total_input_tokens": 204516,
+      "total_output_tokens": 30
+    },
+    {
+      "adapter": "ruler_niah",
+      "model": "claude-haiku-4-5",
+      "condition": "harness_off",
+      "seed": 1,
+      "n": 30,
+      "mean_score": 0.4,
+      "accuracy": 0.4,
+      "total_input_tokens": 204301,
+      "total_output_tokens": 30
+    },
+    {
+      "adapter": "ruler_niah",
+      "model": "claude-haiku-4-5",
+      "condition": "harness_off",
+      "seed": 2,
+      "n": 30,
+      "mean_score": 0.4333,
+      "accuracy": 0.4333,
+      "total_input_tokens": 204419,
+      "total_output_tokens": 30
+    },
+    {
+      "adapter": "ruler_niah",
+      "model": "claude-sonnet-4-6",
+      "condition": "harness_off",
+      "seed": 0,
+      "n": 30,
+      "mean_score": 0.5333,
+      "accuracy": 0.5333,
+      "total_input_tokens": 204516,
+      "total_output_tokens": 30
+    },
+    {
+      "adapter": "ruler_niah",
+      "model": "claude-sonnet-4-6",
+      "condition": "harness_off",
+      "seed": 1,
+      "n": 30,
+      "mean_score": 0.6333,
+      "accuracy": 0.6333,
+      "total_input_tokens": 204301,
+      "total_output_tokens": 30
+    },
+    {
+      "adapter": "ruler_niah",
+      "model": "claude-sonnet-4-6",
+      "condition": "harness_off",
+      "seed": 2,
+      "n": 30,
+      "mean_score": 0.4667,
+      "accuracy": 0.4667,
+      "total_input_tokens": 204419,
+      "total_output_tokens": 30
+    }
+  ],
+  "wallclock_s": 1.366,
+  "ts": "2026-04-18T20:58:16.709573+00:00"
+}

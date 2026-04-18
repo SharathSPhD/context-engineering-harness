@@ -1,0 +1,165 @@
+{
+  "meta": {
+    "mode": "mock",
+    "scheduler_status": null,
+    "models": [
+      "claude-haiku-4-5",
+      "claude-sonnet-4-6"
+    ],
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "n_examples_override": 30,
+    "bootstrap_n": 2000,
+    "permutation_n": 2000
+  },
+  "results": [
+    {
+      "label": "H1_ruler_8192",
+      "hypothesis_id": "H1",
+      "adapter": "ruler_niah",
+      "models": [
+        "claude-haiku-4-5",
+        "claude-sonnet-4-6"
+      ],
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "n_examples": 30,
+      "outcome": {
+        "treatment_metric": 0.8444,
+        "baseline_metric": 0.4722,
+        "delta_observed": 0.3722,
+        "ci_low": 0.2833,
+        "ci_high": 0.4557,
+        "p_value": 0.0005,
+        "cohens_d": 0.6222,
+        "target_met": true,
+        "n_examples_used": 180,
+        "n_seeds_used": 3,
+        "extra": {
+          "treatment_runs": 6,
+          "baseline_runs": 6,
+          "models": [
+            "claude-haiku-4-5",
+            "claude-sonnet-4-6"
+          ]
+        }
+      },
+      "wallclock_s": 1.366
+    },
+    {
+      "label": "H1_ruler_32768",
+      "hypothesis_id": "H1",
+      "adapter": "ruler_niah",
+      "models": [
+        "claude-haiku-4-5",
+        "claude-sonnet-4-6"
+      ],
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "n_examples": 30,
+      "outcome": {
+        "treatment_metric": 0.8889,
+        "baseline_metric": 0.5,
+        "delta_observed": 0.3889,
+        "ci_low": 0.3,
+        "ci_high": 0.4722,
+        "p_value": 0.0005,
+        "cohens_d": 0.6786,
+        "target_met": true,
+        "n_examples_used": 180,
+        "n_seeds_used": 3,
+        "extra": {
+          "treatment_runs": 6,
+          "baseline_runs": 6,
+          "models": [
+            "claude-haiku-4-5",
+            "claude-sonnet-4-6"
+          ]
+        }
+      },
+      "wallclock_s": 5.144
+    },
+    {
+      "label": "H2_helmet_recall_8192",
+      "hypothesis_id": "H2",
+      "adapter": "helmet_recall",
+      "models": [
+        "claude-haiku-4-5",
+        "claude-sonnet-4-6"
+      ],
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "n_examples": 30,
+      "outcome": {
+        "treatment_metric": 0.8811,
+        "baseline_metric": 0.5189,
+        "delta_observed": 0.3622,
+        "ci_low": 0.3244,
+        "ci_high": 0.4011,
+        "p_value": 0.0005,
+        "cohens_d": 1.419,
+        "target_met": true,
+        "n_examples_used": 180,
+        "n_seeds_used": 3,
+        "extra": {
+          "treatment_runs": 6,
+          "baseline_runs": 6,
+          "models": [
+            "claude-haiku-4-5",
+            "claude-sonnet-4-6"
+          ]
+        }
+      },
+      "wallclock_s": 1.283
+    },
+    {
+      "label": "H2_helmet_recall_32768",
+      "hypothesis_id": "H2",
+      "adapter": "helmet_recall",
+      "models": [
+        "claude-haiku-4-5",
+        "claude-sonnet-4-6"
+      ],
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "n_examples": 30,
+      "outcome": {
+        "treatment_metric": 0.8689,
+        "baseline_metric": 0.5122,
+        "delta_observed": 0.3567,
+        "ci_low": 0.3167,
+        "ci_high": 0.3989,
+        "p_value": 0.0005,
+        "cohens_d": 1.2854,
+        "target_met": true,
+        "n_examples_used": 180,
+        "n_seeds_used": 3,
+        "extra": {
+          "treatment_runs": 6,
+          "baseline_runs": 6,
+          "models": [
+            "claude-haiku-4-5",
+            "claude-sonnet-4-6"
+          ]
+        }
+      },
+      "wallclock_s": 5.11
+    }
+  ],
+  "ts": "2026-04-18T20:58:39.780811+00:00"
+}

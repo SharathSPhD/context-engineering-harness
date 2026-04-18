@@ -1,0 +1,183 @@
+{
+  "label": "H2_helmet_recall_8192",
+  "spec": {
+    "hypothesis_id": "H2",
+    "description": "Avacchedaka structured-recall prompt lifts HELMET-recall joint accuracy (k=5) at 8192-token contexts vs unstructured baseline; effect \u2265 10 pts.",
+    "adapter_name": "helmet_recall",
+    "treatment_condition": "harness_on",
+    "baseline_condition": "harness_off",
+    "metric": "score",
+    "direction": "greater",
+    "delta": 0.1,
+    "n_examples": 30,
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "models": [
+      "claude-haiku-4-5",
+      "claude-sonnet-4-6"
+    ],
+    "significance_alpha": 0.05,
+    "notes": "Tier=8192 tokens, k=5 needles per example."
+  },
+  "outcome": {
+    "treatment_metric": 0.8811,
+    "baseline_metric": 0.5189,
+    "delta_observed": 0.3622,
+    "ci_low": 0.3244,
+    "ci_high": 0.4011,
+    "p_value": 0.0005,
+    "cohens_d": 1.419,
+    "target_met": true,
+    "n_examples_used": 180,
+    "n_seeds_used": 3,
+    "extra": {
+      "treatment_runs": 6,
+      "baseline_runs": 6,
+      "models": [
+        "claude-haiku-4-5",
+        "claude-sonnet-4-6"
+      ]
+    }
+  },
+  "treatment_runs": [
+    {
+      "adapter": "helmet_recall",
+      "model": "claude-haiku-4-5",
+      "condition": "harness_on",
+      "seed": 0,
+      "n": 30,
+      "mean_score": 0.8467,
+      "accuracy": 0.3667,
+      "total_input_tokens": 206545,
+      "total_output_tokens": 578
+    },
+    {
+      "adapter": "helmet_recall",
+      "model": "claude-haiku-4-5",
+      "condition": "harness_on",
+      "seed": 1,
+      "n": 30,
+      "mean_score": 0.8067,
+      "accuracy": 0.3667,
+      "total_input_tokens": 206327,
+      "total_output_tokens": 644
+    },
+    {
+      "adapter": "helmet_recall",
+      "model": "claude-haiku-4-5",
+      "condition": "harness_on",
+      "seed": 2,
+      "n": 30,
+      "mean_score": 0.8467,
+      "accuracy": 0.4667,
+      "total_input_tokens": 206432,
+      "total_output_tokens": 678
+    },
+    {
+      "adapter": "helmet_recall",
+      "model": "claude-sonnet-4-6",
+      "condition": "harness_on",
+      "seed": 0,
+      "n": 30,
+      "mean_score": 0.9267,
+      "accuracy": 0.7,
+      "total_input_tokens": 206545,
+      "total_output_tokens": 637
+    },
+    {
+      "adapter": "helmet_recall",
+      "model": "claude-sonnet-4-6",
+      "condition": "harness_on",
+      "seed": 1,
+      "n": 30,
+      "mean_score": 0.9333,
+      "accuracy": 0.7,
+      "total_input_tokens": 206327,
+      "total_output_tokens": 751
+    },
+    {
+      "adapter": "helmet_recall",
+      "model": "claude-sonnet-4-6",
+      "condition": "harness_on",
+      "seed": 2,
+      "n": 30,
+      "mean_score": 0.9267,
+      "accuracy": 0.6667,
+      "total_input_tokens": 206432,
+      "total_output_tokens": 745
+    }
+  ],
+  "baseline_runs": [
+    {
+      "adapter": "helmet_recall",
+      "model": "claude-haiku-4-5",
+      "condition": "harness_off",
+      "seed": 0,
+      "n": 30,
+      "mean_score": 0.46,
+      "accuracy": 0.0333,
+      "total_input_tokens": 205465,
+      "total_output_tokens": 315
+    },
+    {
+      "adapter": "helmet_recall",
+      "model": "claude-haiku-4-5",
+      "condition": "harness_off",
+      "seed": 1,
+      "n": 30,
+      "mean_score": 0.46,
+      "accuracy": 0.0,
+      "total_input_tokens": 205247,
+      "total_output_tokens": 365
+    },
+    {
+      "adapter": "helmet_recall",
+      "model": "claude-haiku-4-5",
+      "condition": "harness_off",
+      "seed": 2,
+      "n": 30,
+      "mean_score": 0.5,
+      "accuracy": 0.0,
+      "total_input_tokens": 205352,
+      "total_output_tokens": 393
+    },
+    {
+      "adapter": "helmet_recall",
+      "model": "claude-sonnet-4-6",
+      "condition": "harness_off",
+      "seed": 0,
+      "n": 30,
+      "mean_score": 0.5667,
+      "accuracy": 0.1,
+      "total_input_tokens": 205465,
+      "total_output_tokens": 385
+    },
+    {
+      "adapter": "helmet_recall",
+      "model": "claude-sonnet-4-6",
+      "condition": "harness_off",
+      "seed": 1,
+      "n": 30,
+      "mean_score": 0.5133,
+      "accuracy": 0.0667,
+      "total_input_tokens": 205247,
+      "total_output_tokens": 401
+    },
+    {
+      "adapter": "helmet_recall",
+      "model": "claude-sonnet-4-6",
+      "condition": "harness_off",
+      "seed": 2,
+      "n": 30,
+      "mean_score": 0.6133,
+      "accuracy": 0.0333,
+      "total_input_tokens": 205352,
+      "total_output_tokens": 483
+    }
+  ],
+  "wallclock_s": 1.283,
+  "ts": "2026-04-18T20:58:29.511684+00:00"
+}
