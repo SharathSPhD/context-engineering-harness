@@ -1,6 +1,6 @@
-\section{1 · Introduction}\label{introduction}
+\section{Introduction}\label{introduction}
 
-\subsection{1.1 The context-engineering moment}\label{the-context-engineering-moment}
+\subsection{The context-engineering moment}\label{the-context-engineering-moment}
 
 By late 2025 the LLM community converged on a once-fringe phrase. Tobi Lütke wrote on 18 June 2025 that ``context engineering'' had eclipsed ``prompt engineering'' as the load-bearing skill in LLM application work \citep{lutke2025contexteng}; Karpathy amplified this a week later \citep{karpathy2025contexteng}; Anthropic's engineering team published their own position piece --- \emph{Effective Context Engineering for AI Agents} --- endorsing the same shift \citep{anthropic2025contexteng}; and Cognition AI, builders of Devin, opened the field's most-cited essay of the year --- \emph{Don't Build Multi-Agents} --- with the line, ``if there's one principle to take away {[}from this post{]}, it's that \textbf{context engineering is everything}'' \citep{yan2025dontbuild}. Across these four near-simultaneous statements, the term was not introduced as marketing; it named a discipline the field had been groping toward without a vocabulary.
 
@@ -8,7 +8,7 @@ The empirical urgency for that vocabulary was already overwhelming, and the \emp
 
 This is the moment at which \emph{context engineering} needed not slogans but a typed object model.
 
-\subsection{1.2 The argument of this paper}\label{the-argument-of-this-paper}
+\subsection{The argument of this paper}\label{the-argument-of-this-paper}
 
 We claim three things:
 
@@ -22,7 +22,7 @@ We claim three things:
   \textbf{The improvements are real, large, and reproducible} \emph{across general long-context agentic tasks}, not merely on coding. Across 10 preregistered studies --- H1--H7 on public long-context and hallucination benchmarks, plus a deterministic live case study (P6-B), plus a 720-pair SWE-bench Verified A/B (P6-C) --- the system produces a Stouffer-combined two-sided \(p = \mathbf{7.94 \times 10^{-20}}\) in its favour, with mean per-study delta \(\mathbf{+0.476}\). The seven L1 hypotheses (RULER, HELMET, NoCha, HaluEval, TruthfulQA, FACTS-Grounding) are the \emph{general-purpose} evidence; SWE-bench Verified is one challenging coding-specific instantiation that exercises the same mechanisms under a fixed 512-token research-block budget (the run-card value recorded in \passthrough{\lstinline!experiments/results/p6c/\_summary.json!}).
 \end{enumerate}
 
-\subsection{1.3 Why now, and why a plugin}\label{why-now-and-why-a-plugin}
+\subsection{Why now, and why a plugin}\label{why-now-and-why-a-plugin}
 
 Three converging facts make this work tractable today:
 
@@ -37,7 +37,7 @@ Three converging facts make this work tractable today:
 
 Cognition's \emph{Don't Build Multi-Agents} essay \citep{yan2025dontbuild} also clarified what \emph{not} to build: an army of communicating sub-agents whose context overlap explodes super-linearly. Our system is single-agent-by-default and deliberately \emph{minimises} multi-agent surface area: \emph{Buddhi} and \emph{Manas} are \emph{internal} gates on a single agent's reasoning trace, not separate networked agents. \emph{Sākṣī} is a witness object, not a ``supervisor agent''. The plugin therefore stays on the right side of Cognition's principle: \emph{share the full conversation history, don't fragment it across loose sub-agents.}
 
-\subsection{1.4 Contributions}\label{contributions}
+\subsection{Contributions}\label{contributions}
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -55,6 +55,6 @@ Cognition's \emph{Don't Build Multi-Agents} essay \citep{yan2025dontbuild} also 
   \textbf{A documented origin story} (Section 3) showing how this work emerged from a TRIZ-style contradiction analysis of context engineering itself, with the \passthrough{\lstinline!triz-engine!} plugin's \passthrough{\lstinline!log\_session\_entry!} tool used as the audit trail. For this paper we treat that session as a \emph{method note} (contradiction → inventive principle → vocabulary gap) rather than as a claim that TRIZ itself generalises the contribution.
 \end{enumerate}
 
-\subsection{1.5 Roadmap}\label{roadmap}
+\subsection{Roadmap}\label{roadmap}
 
 Section 2 surveys the four relevant literatures (long-context LLMs, RAG/memory, agentic AI architectures, and hallucination/calibration). Section 3 narrates how a TRIZ contradiction analysis pointed us to classical Indian epistemology. Section 4 builds the school-attributed translation table from Sanskrit philosophical terms to LLM operations. Section 5 describes the system architecture. Section 6 specifies the shipped plugin and includes an end-to-end worked example. Section 7 gives the validation methodology and our CLI-budget infrastructure. Sections 8, 9, and 10 present results from L1 (public benchmarks --- the \emph{general-purpose} claim), L2 (live case study), and L3 (SWE-bench Verified A/B --- \emph{one challenging instantiation}), respectively. Section 11 discusses limitations and threats to validity. Section 12 concludes and points to future work. Six appendices contain the glossary, MCP tool reference, statistical details, adapter details, the Khyātivāda codebook, and the reproducibility manifest.

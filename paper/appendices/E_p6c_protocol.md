@@ -1,12 +1,12 @@
-# Appendix E · P6-C SWE-bench Verified A/B Protocol
+# P6-C SWE-bench Verified A/B Protocol
 
 This appendix gives the complete protocol for the L3 head-to-head test (Section 10) at sufficient granularity for a third party to reproduce or audit it.
 
-## E.1 Universe of instances
+## Universe of instances
 
 We sample $n = 120$ instances from SWE-bench Verified \citep{jimenez2024swebench}. The sample is the deterministic prefix of the dataset under its native ordering after a single `random.Random(20251220).shuffle(instances)` call. The instance ids are emitted to `experiments/results/p6c/instance_set.json`.
 
-## E.2 Synthetic research-trail generator
+## Synthetic research-trail generator
 
 The generator (`experiments/v2/p6c/research_evidence.py`) emits, for each instance, a list of `ResearchSnippet` objects under the contract:
 
@@ -18,7 +18,7 @@ The generator (`experiments/v2/p6c/research_evidence.py`) emits, for each instan
 
 The generator is fully deterministic given `(instance_id, seed)`; its tests live in `tests/test_v2/test_p6c_research_evidence.py`.
 
-## E.3 The two arms
+## The two arms
 
 Both arms operate under the same hard token budget on the size of the *research block* that the patch-generator sees. **Headline runs** set this with **`--research-block-budget 8192`** ($B = 8192$); **smoke** re-runs may use **`--research-block-budget-fast 512`**. Both arms use the same `PatchSimulator` (see E.4) so any difference in outcome is attributable to context discipline alone.
 
@@ -56,7 +56,7 @@ def _build_research_block_with_harness(snippets, budget):
 
 Crucially, the harness's `compact` step prefers high-precision items first, so the in-budget block becomes a curated subset rather than a tail-truncated concatenation.
 
-## E.4 `PatchSimulator`
+## `PatchSimulator`
 
 Section 7.5 describes the rationale; here we give the contract.
 
@@ -80,7 +80,7 @@ class PatchSimulator:
 
 The simulator deterministically picks the *first* `path.py` token mentioned in the (system + prompt) text. By construction, this means the output depends *only* on the contents and order of the research block — exactly the variable we want to isolate.
 
-## E.5 Scoring
+## Scoring
 
 Two scorers are computed for every instance:
 
@@ -89,7 +89,7 @@ Two scorers are computed for every instance:
 
 We confirm in Section 10 that the heuristic scorer and the Docker scorer agree on the cases we ran with both ($\kappa$ = 0.97 on a 30-instance sub-sample); this validates the heuristic as a faithful low-cost proxy.
 
-## E.6 Statistical recipe
+## Statistical recipe
 
 Each (instance, seed, model) triple yields one paired observation $(y_{\text{with}}, y_{\text{without}})$. With 120 instances × 3 seeds × 2 models = 720 paired observations:
 
@@ -98,7 +98,7 @@ Each (instance, seed, model) triple yields one paired observation $(y_{\text{wit
 
 Both tests are two-sided permutation tests with $10^4$ shuffles. Bootstrap CIs use $10^4$ resamples.
 
-## E.7 Outputs
+## Outputs
 
 `experiments/results/p6c/summary.json` contains:
 

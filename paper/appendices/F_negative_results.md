@@ -1,8 +1,8 @@
-# Appendix F · Negative and Null Results
+# Negative and Null Results
 
 A faithful empirical paper must publish what *did not work* with the same rigour as what did. This appendix records four substantive negative results and one null result encountered during the v2 iteration of the harness. These are documented in raw form in `docs/v0_retrospective.md` (the v0 baseline retrospective) and in the per-iteration journals under `attractor-flow-state/journals/`; this appendix is the consolidated reviewer-facing summary.
 
-## F.1 Negative — `PrecisionWeightedRAG` (v0)
+## Negative — `PrecisionWeightedRAG` (v0)
 
 **What we tried.** The v0 harness had a single `PrecisionWeightedRAG` aggregator that combined multiple sources by precision-weighted majority vote.
 
@@ -14,7 +14,7 @@ A faithful empirical paper must publish what *did not work* with the same rigour
 
 **Replacement.** The Bayesian Beta-Bernoulli aggregator with explicit posterior margin and conflict detection (Section 5.3). H2 ECE dropped to $0.07$.
 
-## F.2 Negative — single-stage `BuddhiAgent`
+## Negative — single-stage `BuddhiAgent`
 
 **What we tried.** A single-stage agent (one Claude call) that both attended to the store *and* emitted the user-visible answer.
 
@@ -22,7 +22,7 @@ A faithful empirical paper must publish what *did not work* with the same rigour
 
 **Replacement.** The two-stage Manas-then-Buddhi orchestration (Section 5.4), where Manas's only output is a list of `selected_ids` and Buddhi sees only those.
 
-## F.3 Negative — naive LRU compaction
+## Negative — naive LRU compaction
 
 **What we tried.** A simple LRU eviction policy in `compact`.
 
@@ -30,7 +30,7 @@ A faithful empirical paper must publish what *did not work* with the same rigour
 
 **Replacement.** The `AdaptiveForgetting` rule set (Section 5.7), which is precision-weighted, witness-aware, and bias-aware against eviction of `source=user` items.
 
-## F.4 Negative — single-source-of-truth Khyātivāda annotator
+## Negative — single-source-of-truth Khyātivāda annotator
 
 **What we tried.** A single LLM-as-judge annotator over 3 000 examples for the H6 evaluation.
 
@@ -38,7 +38,7 @@ A faithful empirical paper must publish what *did not work* with the same rigour
 
 **Replacement.** Two independent annotators (heuristic + LLM-as-judge) with rule-based guardrails on top, reported as Cohen's kappa $\kappa = 0.736$ (H6, Section 8). This is "substantial agreement" by Landis-Koch convention but is *not* the inflated single-annotator number we initially computed ($0.91$, which we now treat as a methodological warning sign).
 
-## F.5 Null — vLLM Qwen3-1.7B vs. heuristic surprise backend
+## Null — vLLM Qwen3-1.7B vs. heuristic surprise backend
 
 **What we tried.** Replacing the lightweight Zipf-style heuristic surprise scorer (used in Section 5.6) with a real per-token negative-log-likelihood from Qwen3-1.7B served via vLLM.
 
@@ -46,7 +46,7 @@ A faithful empirical paper must publish what *did not work* with the same rigour
 
 **Implication.** For event-boundary detection in realistic agent transcripts, the heuristic surprise backend is sufficient and saves $\sim 700$ ms/turn plus a $\sim 1.7$ GB GPU footprint. We ship the heuristic as default and document the vLLM path as opt-in, with the explicit note that *we have not found a workload where it pays for itself*. We treat this as a healthy null result that informs deployment guidance.
 
-## F.6 Negative — early plugin tried to inline ContextStore into prompt
+## Negative — early plugin tried to inline ContextStore into prompt
 
 **What we tried.** In an early plugin draft, every Buddhi prompt was prefixed with a JSON dump of the *entire* live `ContextStore` (capped at 4K tokens). This was meant to make the model "see everything".
 

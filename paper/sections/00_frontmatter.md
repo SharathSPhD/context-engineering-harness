@@ -57,7 +57,7 @@ epistemology; Ny\=aya--Vai\'se\d{s}ika; Advaita Ved\=anta; SWE-bench
 Verified; MCP plugin; Claude Code.
 ```
 
-## Plain-language summary
+## Plain-language summary {.unnumbered}
 
 LLM agents — research assistants, document Q\&A engines, multi-tool
 orchestrators, code-review bots — fail in predictable ways once their

@@ -1,4 +1,4 @@
-# Appendix A · Glossary of Sanskrit Terms with English Operationalizations
+# Glossary of Sanskrit Terms with English Operationalizations
 
 This glossary fixes the technical vocabulary used throughout the paper. Each entry gives the IAST transliteration, the literal Sanskrit gloss, the school of origin (where one dominates), the operational definition we adopt in the harness, and a primary scholarly reference. Entries are alphabetised by IAST.
 

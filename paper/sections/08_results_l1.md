@@ -1,4 +1,4 @@
-# 8 · Results — Layer 1: Public Benchmarks (H1–H7)
+# Results — Layer 1: Public Benchmarks (H1–H7)
 
 We test seven preregistered hypotheses on six public benchmarks (RULER, HELMET, NoCha, HaluEval, TruthfulQA, FACTS-Grounding) plus SWE-bench Verified. Every study sweeps both **`claude-haiku-4-5`** and **`claude-sonnet-4-6`** over multiple seeds; statistics are paired by `(model, seed, example)` and reported with bootstrap CIs and paired permutation p-values per Section 7.4. All numerical values in this section come from `experiments/results/p6a/_summary.json` and `_summary_plugin.json`, were emitted by `experiments/v2/p7/aggregate.py`, and are aggregated in Table~\ref{tab:t1_long_context} (raw long-context aggregator) and Table~\ref{tab:t2_plugin_inloop} (plugin in-the-loop). Per-hypothesis effects are plotted inline as Figures~\ref{fig:f01}--\ref{fig:f07}.
 
@@ -20,7 +20,7 @@ We test seven preregistered hypotheses on six public benchmarks (RULER, HELMET, 
 \end{table}
 ```
 
-## 8.1 H1 — Long-context recall (RULER)
+## H1 — Long-context recall (RULER)
 
 **Hypothesis.** Avacchedaka-typed insertion of distractor passages preserves recall accuracy at long context lengths better than a baseline that concatenates raw passages.
 
@@ -41,7 +41,7 @@ The 32 K delta is *larger* than the 8 K delta, contrary to the *Lost-in-the-Midd
 \end{figure}
 ```
 
-## 8.2 H2 — Long-context RAG (HELMET-Recall)
+## H2 — Long-context RAG (HELMET-Recall)
 
 **Hypothesis.** Bayesian Beta-Bernoulli aggregation of conflicting passages (Section 5.3) outperforms naive precision-weighted RAG on HELMET-Recall.
 
@@ -60,7 +60,7 @@ The 32 K delta is *larger* than the 8 K delta, contrary to the *Lost-in-the-Midd
 
 Calibration on a 1,800-example held-out slice: Bayesian aggregator Brier **0.094**, ECE **0.041**; baseline PrecisionWeightedRAG Brier **0.176**, ECE **0.118**. The **47%** relative reduction in Brier and **65%** relative reduction in ECE materially improve calibration in addition to top-line accuracy — exactly the regime the Bayesian-fusion / deep-ensembles literature \citep{ovadia2019can, gal2016dropout} predicts.
 
-## 8.3 H3 — Buddhi/Manas grounding gate
+## H3 — Buddhi/Manas grounding gate
 
 **Hypothesis.** A two-stage Manas-then-Buddhi gate (Section 5.4) raises grounded-claim accuracy on a mixed-faithfulness corpus relative to a single-stage agent over the same model + same retrieval.
 
@@ -79,7 +79,7 @@ Calibration on a 1,800-example held-out slice: Bayesian aggregator Brier **0.094
 
 The two-stage gate's gain is structural: by *requiring* Manas to declare which items it attended to before Buddhi judges, hallucinations of the *ātmakhyāti* class (projection of the agent's own state, e.g. inventing helper functions) are suppressed at the *attention* step rather than at the *answer* step. This matches the dual-process theoretical motivation \citep{evans2003duality, kahneman2011thinking, sloman1996two, stanovich2000individual} and the cognitive-architecture evidence \citep{laird1987soar, anderson1996actr}.
 
-## 8.4 H4 — Event-boundary compaction
+## H4 — Event-boundary compaction
 
 **Hypothesis.** Surprise-driven event-boundary compaction (Section 5.6) preserves answer accuracy on a long-running session vs. naive truncation under the same final budget.
 
@@ -98,7 +98,7 @@ The two-stage gate's gain is structural: by *requiring* Manas to declare which i
 
 The very large Cohen's d reflects the binary nature of the underlying score (recall of a witness-protected fact past a compaction event). The harness's adaptive policy *never* evicted a witness-protected fact, so it scored 1.0 on every paired example; the LRU baseline evicted protected facts ~40% of the time. The result is consistent with the predictive-coding/event-segmentation account of episode boundaries \citep{rao1999predictive, friston2010fep, zacks2007event, baldassano2017nested} as the right place to compress.
 
-## 8.5 H5 — Avacchedaka sublation
+## H5 — Avacchedaka sublation
 
 **Hypothesis.** When fresh evidence supersedes stale evidence under a shared limitor, `sublate_with_evidence` resolves the conflict in favour of the fresh evidence, where the baseline keeps both and answers from the wrong one.
 
@@ -117,7 +117,7 @@ The very large Cohen's d reflects the binary nature of the underlying score (rec
 
 The 100% / 0% headline is structural rather than empirical: the experiment is constructed so that the only correct answer is to favour the fresh evidence, and the baseline (no sublation primitive) cannot. We retain it as a sanity-check on the harness's *bādha* implementation rather than as a comparison of contenders.
 
-## 8.6 H6 — Khyātivāda hallucination classifier
+## H6 — Khyātivāda hallucination classifier
 
 **Hypothesis.** The 7-class Khyātivāda classifier (Section 5.5) materially improves macro-F1 over a baseline 2-class (`hallucinated` / `not`) classifier, and produces inter-annotator agreement at substantial-or-better κ.
 
@@ -146,7 +146,7 @@ IAA (n=3,000): overall Cohen's κ **0.736** ("substantial" per Landis & Koch \ci
 \end{table}
 ```
 
-## 8.7 H7 — Adaptive forgetting
+## H7 — Adaptive forgetting
 
 **Hypothesis.** A witness-protected exponential-decay forgetting policy (Section 5.7) preserves long-term recall of important facts where naive LRU forgets them.
 
@@ -165,7 +165,7 @@ IAA (n=3,000): overall Cohen's κ **0.736** ("substantial" per Landis & Koch \ci
 
 As with H5, the 100% / 0% headline is structural rather than empirical: the witness-protection invariant is exactly the missing primitive in the LRU baseline.
 
-## 8.8 Summary of L1
+## Summary of L1
 
 Across the seven L1 hypotheses, the treatment beats baseline at **p ≤ 0.0020** in *every single study*. Mean treatment metric is **0.910**, mean baseline metric is **0.420**, mean paired delta is **+0.490**. The two structural hypotheses (H5, H7) are extreme by design; the five empirical hypotheses (H1, H2 ×2, H3, H4, H6) carry the load. Combining only those five via Stouffer-Z gives a one-tailed p < 10⁻¹³ in the harness's favour. The harness *does* pay off on real, published benchmark surfaces, not just on internally-curated cases.
 

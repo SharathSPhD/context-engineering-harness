@@ -1,14 +1,14 @@
-\section{4 · Theoretical Foundations: Classical Indian Epistemology Mapped to LLM Context Engineering}\label{theoretical-foundations-classical-indian-epistemology-mapped-to-llm-context-engineering}
+\section{Theoretical Foundations: Classical Indian Epistemology Mapped to LLM Context Engineering}\label{theoretical-foundations-classical-indian-epistemology-mapped-to-llm-context-engineering}
 
 This section constructs a precise translation table from seven classical Indian epistemic constructs --- drawn from four philosophical schools, \textbf{Nyāya--Vaiśeṣika}, \textbf{Advaita Vedānta}, \textbf{Pūrva Mīmāṃsā}, and \textbf{Sāṃkhya} --- to seven runtime operations on an LLM agent's context. Each row is a falsifiable design commitment, and each is operationalised in Section 5 and tested in Sections 8--10. To preempt the most common misreading: we use ``classical Indian epistemology'' rather than ``Vedic epistemology'' because the constructs we draw on (the Nyāya \emph{avacchedaka}, the Advaita \emph{bādha}, the Sāṃkhya \emph{manas}/\emph{buddhi} split, the cross-school \emph{khyātivāda} debate) are products of the \emph{darśana} literature, \emph{not} of the Vedic \emph{saṃhitā} corpus per se. Section 4.9 returns to what is and is not being claimed.
 
-\subsection{4.1 Pratyakṣa --- direct perception as the harness's grounding pramāṇa}\label{pratyakux1e63a-direct-perception-as-the-harnesss-grounding-pramux101ux1e47a}
+\subsection{Pratyakṣa --- direct perception as the harness's grounding pramāṇa}\label{pratyakux1e63a-direct-perception-as-the-harnesss-grounding-pramux101ux1e47a}
 
 In Nyāya \citep{aksapada200nyayasutra, matilal1986perception, phillips2012epistemology} and Advaita \citep{dharmaraja17vedantaparibhasa, datta1932advaita}, \emph{pratyakṣa} (direct perception) is the \emph{first} of the \emph{pramāṇas} --- the means of valid cognition --- and the \emph{foundational} one against which inference (\emph{anumāna}), comparison (\emph{upamāna}), testimony (\emph{śabda}), implication (\emph{arthāpatti}), and non-cognition (\emph{anupalabdhi}) are measured.
 
 \textbf{LLM operationalization.} We treat \emph{pratyakṣa} as the agent's \textbf{direct read of its current context window} --- what it can in-fact attend to right now --- and demote all upstream operations (RAG retrieval, tool outputs, prior-turn summaries) to the status of \emph{secondary pramāṇas} whose claims must be entered into the visible context with their own qualifiers. The harness's name, \emph{Pratyakṣa}, is therefore a methodological commitment: \emph{if it is not in the visible, witness-tracked context, it is not direct evidence for the agent's next action}. Hidden hot caches, opaque rerankers, and ``system memories'' the agent cannot inspect are, in this discipline, \textbf{not allowed to ground a claim} without first entering the \emph{pratyakṣa} surface.
 
-\subsection{4.2 Avacchedaka --- qualifier-conditioned cognition as typed limitor}\label{avacchedaka-qualifier-conditioned-cognition-as-typed-limitor}
+\subsection{Avacchedaka --- qualifier-conditioned cognition as typed limitor}\label{avacchedaka-qualifier-conditioned-cognition-as-typed-limitor}
 
 In Navya-Nyāya \citep{matilal1968navyanyaya, ingalls1951materials, gangesa14tattvacintamani, phillips2012epistemology}, every cognition is structurally a triple:
 
@@ -28,7 +28,7 @@ Here \(a\) is the \emph{qualificand} (viśeṣya), \(Q\) the \emph{qualifier} (p
 
 \input{figures_tikz/fig2_avacchedaka.tex}
 
-\subsection{4.3 Bādha --- sublation as supersede-with-provenance}\label{bux101dha-sublation-as-supersede-with-provenance}
+\subsection{Bādha --- sublation as supersede-with-provenance}\label{bux101dha-sublation-as-supersede-with-provenance}
 
 In Advaita Vedānta \citep{deutsch1969advaita, shaw1990bada, dharmaraja17vedantaparibhasa, sankaraupadesha}, a higher-precision cognition \emph{sublates} (bādhita) a lower-precision one. The classical example is mistaking a rope for a snake: the \emph{snake-cognition} is not erased on closer inspection --- the agent must remember it, because \emph{that error is itself an object of subsequent reflection} --- but its qualifier is now stamped \emph{bādhita} and it no longer grounds action.
 
@@ -47,7 +47,7 @@ The dominance rule is the operational form of the Advaita commitment that \emph{
 
 \input{figures_tikz/fig3_sublation.tex}
 
-\subsection{4.4 Buddhi and Manas --- the two-stage attend-then-judge gate}\label{buddhi-and-manas-the-two-stage-attend-then-judge-gate}
+\subsection{Buddhi and Manas --- the two-stage attend-then-judge gate}\label{buddhi-and-manas-the-two-stage-attend-then-judge-gate}
 
 The Antaḥkaraṇa quartet of \emph{manas, buddhi, citta, ahaṃkāra} \citep{deutsch1969advaita, ramprasad2013advaita, datta1932advaita} distinguishes the \emph{attentional sense-organ} (\emph{manas}) from the \emph{determinative judging faculty} (\emph{buddhi}). Manas selects and presents; Buddhi decides. The two are sequential and cannot be collapsed without losing the gate.
 
@@ -65,7 +65,7 @@ This two-stage gate is identical in shape to dual-process accounts of human cogn
 
 \input{figures_tikz/fig4_manas_buddhi.tex}
 
-\subsection{4.5 Sākṣī --- the witness as model-invariant audit frame}\label{sux101kux1e63ux12b-the-witness-as-model-invariant-audit-frame}
+\subsection{Sākṣī --- the witness as model-invariant audit frame}\label{sux101kux1e63ux12b-the-witness-as-model-invariant-audit-frame}
 
 In Advaita Vedānta \citep{indich1980consciousness, fasching2009witness, ganeri2017concealed, sankaraupadesha}, \emph{sākṣī} --- the witness consciousness --- is the \emph{non-revisable, non-acting} observer that \emph{records} what is cognised without itself being the agent of cognition or action. It supplies the stable reference frame against which changes of cognition are intelligible at all.
 
@@ -87,7 +87,7 @@ In Advaita Vedānta \citep{indich1980consciousness, fasching2009witness, ganeri2
 
 Crucially, the witness is \emph{write-once-per-turn} and \emph{read-only} to all agents in the next turn. It is the harness's source of truth for cross-turn provenance, and it is \emph{invariant under model swaps}: the witness log written under Claude 3.5 Sonnet is fully readable, fully diffable, and fully auditable when the agent is later switched to Claude 4.5 Sonnet, GPT-4o, or Qwen-3-72B. The model is replaceable; the witness is not.
 
-\subsection{4.6 Khyātivāda --- six-class typology of error}\label{khyux101tivux101da-six-class-typology-of-error}
+\subsection{Khyātivāda --- six-class typology of error}\label{khyux101tivux101da-six-class-typology-of-error}
 
 Six classical schools of Indian philosophy proposed six theories of erroneous cognition \citep{ram2007error, matilal1986perception, datta1932advaita, bhatt1989prabhakara, bilimoria2018epistemology, mohanty1992reason}. Each names a specific \emph{kind} of error:
 
@@ -126,7 +126,7 @@ This is not a post-hoc relabelling of an existing modern taxonomy. It is the \em
 
 \input{figures_tikz/fig5_khyati.tex}
 
-\subsection{4.7 Saṃskāras and vāsanās --- adaptive forgetting}\label{saux1e43skux101ras-and-vux101sanux101s-adaptive-forgetting}
+\subsection{Saṃskāras and vāsanās --- adaptive forgetting}\label{saux1e43skux101ras-and-vux101sanux101s-adaptive-forgetting}
 
 In Advaita and Yoga, \emph{saṃskāras} are residual mental impressions and \emph{vāsanās} are dispositional tendencies that survive the immediate occasion of a cognition \citep{deutsch1969advaita, sankaraupadesha, halbfass1991traditioncomparison}. They explain why we are drawn to the same patterns of thought and why some impressions decay quickly while others persist indefinitely. The Advaitin practice prescribes \emph{removal of obstructive vāsanās} --- adaptive forgetting of patterns that no longer ground correct cognition.
 
@@ -145,7 +145,7 @@ In Advaita and Yoga, \emph{saṃskāras} are residual mental impressions and \em
 
 This avoids both the catastrophic-forgetting failure mode of naive context pruning \citep{french1999catastrophic, kirkpatrick2017overcoming, parisi2019continual} and the ``everything is forever'' failure mode of unconstrained external memory \citep{packer2023memgpt}.
 
-\subsection{4.8 The translation table, summarised}\label{the-translation-table-summarised}
+\subsection{The translation table, summarised}\label{the-translation-table-summarised}
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -178,6 +178,6 @@ Tested by
 \end{longtable}
 }
 
-\subsection{\texorpdfstring{4.9 What is \emph{not} being claimed}{4.9 What is not being claimed}}\label{what-is-not-being-claimed}
+\subsection{\texorpdfstring{What is \emph{not} being claimed}{What is not being claimed}}\label{what-is-not-being-claimed}
 
 We are \emph{not} claiming that the historical authors had LLMs in mind, nor that our operationalizations are textually faithful in the way a Sanskrit philologist would require. We are claiming the weaker, falsifiable thing: that the \emph{type signatures} the tradition developed for cognition turn out to \emph{fit} the type signatures we need for an LLM context-engineering harness, and that fitting them produces measurable downstream gains. The next six sections defend that claim empirically.

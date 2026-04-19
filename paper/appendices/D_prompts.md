@@ -1,8 +1,8 @@
-# Appendix D · Verbatim Prompts
+# Verbatim Prompts
 
 This appendix records, verbatim, the system and few-shot prompts used by every LLM-facing component in the harness. Every prompt is also present in the source repository at the path noted in the heading; this appendix is therefore a *secondary* copy provided for reviewer convenience. If the source and this appendix ever drift, the source is canonical.
 
-## D.1 `ManasAgent` system prompt
+## `ManasAgent` system prompt
 
 *Source:* `plugin/pratyaksha-context-eng-harness/agents/manas.md`
 
@@ -19,7 +19,7 @@ The shipped contract (abridged; see repository file for the full tool list and o
 
 (This mirrors the literal return contract in `agents/manas.md`; each field is load-bearing for the orchestrator.) Manas must **not** call `context_insert` or `sublate_with_evidence`, must **not** overwrite the Sākṣī via `set_sakshi`, and must respect `budget_status` / `budget_record` discipline.
 
-## D.2 `BuddhiAgent` system prompt
+## `BuddhiAgent` system prompt
 
 *Source:* `plugin/pratyaksha-context-eng-harness/agents/buddhi.md`
 
@@ -48,7 +48,7 @@ Hard rules:
 5. Be brief. The user gets one paragraph + one citation block.
 ```
 
-## D.3 `SakshiKeeperAgent` system prompt
+## `SakshiKeeperAgent` system prompt
 
 *Source:* `plugin/pratyaksha-context-eng-harness/agents/sakshi-keeper.md`
 
@@ -68,7 +68,7 @@ Hard rules:
    for an audit.
 ```
 
-## D.4 `classify_khyativada` prompts (shipped heuristic vs. experiment few-shot)
+## `classify_khyativada` prompts (shipped heuristic vs. experiment few-shot)
 
 *Sources:* `plugin/pratyaksha-context-eng-harness/mcp/khyati_prompts.py` (few-shot **experiment** path) and the shipped **heuristic** implementation wired to the MCP tool (Section 5.5 / Appendix B.13).
 
@@ -114,7 +114,7 @@ After the LLM responds, two **rule-based guardrails** override the prediction:
 Both guardrails were added after manual error analysis on the H6
 dev fold and lifted Cohen's kappa from $0.69$ to $0.74$. The **plugin MCP tool** applies the heuristic stack plus these guardrails; the few-shot JSON template above is **not** what the shipped tool sends to the model, but it *is* what the offline few-shot path in `src/evaluation/khyativada_fewshot.py` uses. Section §8 (H6) evaluates both.
 
-## D.5 Buddhi/Manas orchestration prompt fragments
+## Buddhi/Manas orchestration prompt fragments
 
 The orchestrator (Section 5.4) wraps Manas's output and Buddhi's input
 with the following templates:

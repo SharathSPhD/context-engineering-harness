@@ -1,4 +1,4 @@
-\section{Appendix B · Full MCP Tool Specifications}\label{appendix-b-full-mcp-tool-specifications}
+\section{Full MCP Tool Specifications}\label{full-mcp-tool-specifications}
 
 This appendix gives the full input / output schema and behavioural contract for each of the 15 MCP tools shipped by \passthrough{\lstinline!pratyaksha-context-eng-harness!} v1.0.0. The canonical source is \passthrough{\lstinline!plugin/pratyaksha-context-eng-harness/mcp/server.py!}.
 
@@ -16,7 +16,7 @@ All tools share three host-platform invariants:
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{\texorpdfstring{B.1 \texttt{context\_insert} --- avacchedaka insertion}{B.1 context\_insert --- avacchedaka insertion}}\label{b.1-context_insert-avacchedaka-insertion}
+\subsection{\texorpdfstring{\texttt{context\_insert} --- avacchedaka insertion}{context\_insert --- avacchedaka insertion}}\label{context_insert-avacchedaka-insertion}
 
 \textbf{Signature.} \passthrough{\lstinline!context\_insert(args: InsertInput) -> ContextElementOut!}
 
@@ -35,7 +35,7 @@ class InsertInput(BaseModel):
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{\texorpdfstring{B.2 \texttt{context\_retrieve} --- default avacchedaka query}{B.2 context\_retrieve --- default avacchedaka query}}\label{b.2-context_retrieve-default-avacchedaka-query}
+\subsection{\texorpdfstring{\texttt{context\_retrieve} --- default avacchedaka query}{context\_retrieve --- default avacchedaka query}}\label{context_retrieve-default-avacchedaka-query}
 
 \textbf{Signature.} \passthrough{\lstinline!context\_retrieve(args: RetrieveInput) -> \{items: list[ContextElement]\}!}
 
@@ -53,7 +53,7 @@ class RetrieveInput(BaseModel):
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{\texorpdfstring{B.3 \texttt{context\_get} --- direct id-based fetch}{B.3 context\_get --- direct id-based fetch}}\label{b.3-context_get-direct-id-based-fetch}
+\subsection{\texorpdfstring{\texttt{context\_get} --- direct id-based fetch}{context\_get --- direct id-based fetch}}\label{context_get-direct-id-based-fetch}
 
 \textbf{Signature.} \passthrough{\lstinline!context\_get(args: GetByIdInput) -> ContextElement | None!}
 
@@ -66,7 +66,7 @@ class GetByIdInput(BaseModel):
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{\texorpdfstring{B.4 \texttt{context\_sublate} --- basic sublation}{B.4 context\_sublate --- basic sublation}}\label{b.4-context_sublate-basic-sublation}
+\subsection{\texorpdfstring{\texttt{context\_sublate} --- basic sublation}{context\_sublate --- basic sublation}}\label{context_sublate-basic-sublation}
 
 \textbf{Signature.} \passthrough{\lstinline!context\_sublate(args: SublateInput) -> ContextElement!}
 
@@ -80,7 +80,7 @@ class SublateInput(BaseModel):
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{\texorpdfstring{B.5 \texttt{sublate\_with\_evidence} --- evidence-anchored sublation}{B.5 sublate\_with\_evidence --- evidence-anchored sublation}}\label{b.5-sublate_with_evidence-evidence-anchored-sublation}
+\subsection{\texorpdfstring{\texttt{sublate\_with\_evidence} --- evidence-anchored sublation}{sublate\_with\_evidence --- evidence-anchored sublation}}\label{sublate_with_evidence-evidence-anchored-sublation}
 
 \textbf{Signature.} \passthrough{\lstinline!sublate\_with\_evidence(args: SublateWithEvidenceInput) -> \{target: ContextElement, by: ContextElement\}!}
 
@@ -95,7 +95,7 @@ class SublateWithEvidenceInput(BaseModel):
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{\texorpdfstring{B.6 \texttt{detect\_conflict} --- Bayesian-margin conflict check}{B.6 detect\_conflict --- Bayesian-margin conflict check}}\label{b.6-detect_conflict-bayesian-margin-conflict-check}
+\subsection{\texorpdfstring{\texttt{detect\_conflict} --- Bayesian-margin conflict check}{detect\_conflict --- Bayesian-margin conflict check}}\label{detect_conflict-bayesian-margin-conflict-check}
 
 \textbf{Signature.} \passthrough{\lstinline!detect\_conflict(args: RetrieveInput) -> \{conflicted: bool, margin: float, items: list[ContextElement]\}!}
 
@@ -103,7 +103,7 @@ class SublateWithEvidenceInput(BaseModel):
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{\texorpdfstring{B.7 \texttt{list\_qualificands} --- diagnostic surface}{B.7 list\_qualificands --- diagnostic surface}}\label{b.7-list_qualificands-diagnostic-surface}
+\subsection{\texorpdfstring{\texttt{list\_qualificands} --- diagnostic surface}{list\_qualificands --- diagnostic surface}}\label{list_qualificands-diagnostic-surface}
 
 \textbf{Signature.} \passthrough{\lstinline!list\_qualificands() -> \{qualificands: list[str]\}!}
 
@@ -111,7 +111,7 @@ class SublateWithEvidenceInput(BaseModel):
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{\texorpdfstring{B.8 \texttt{compact} --- adaptive forgetting}{B.8 compact --- adaptive forgetting}}\label{b.8-compact-adaptive-forgetting}
+\subsection{\texorpdfstring{\texttt{compact} --- adaptive forgetting}{compact --- adaptive forgetting}}\label{compact-adaptive-forgetting}
 
 \textbf{Signature.} \passthrough{\lstinline!compact(args: CompactInput) -> CompactionReport!}
 
@@ -125,7 +125,7 @@ class CompactInput(BaseModel):
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{\texorpdfstring{B.9 \texttt{boundary\_compact} --- event-boundary compaction}{B.9 boundary\_compact --- event-boundary compaction}}\label{b.9-boundary_compact-event-boundary-compaction}
+\subsection{\texorpdfstring{\texttt{boundary\_compact} --- event-boundary compaction}{boundary\_compact --- event-boundary compaction}}\label{boundary_compact-event-boundary-compaction}
 
 \textbf{Signature.} \passthrough{\lstinline!boundary\_compact(args: BoundaryCompactInput) -> \{summarised\_count: int, summary\_id: str\}!}
 
@@ -140,7 +140,7 @@ class BoundaryCompactInput(BaseModel):
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{\texorpdfstring{B.10 \texttt{context\_window} --- visible-context summary for Manas}{B.10 context\_window --- visible-context summary for Manas}}\label{b.10-context_window-visible-context-summary-for-manas}
+\subsection{\texorpdfstring{\texttt{context\_window} --- visible-context summary for Manas}{context\_window --- visible-context summary for Manas}}\label{context_window-visible-context-summary-for-manas}
 
 \textbf{Signature.} \passthrough{\lstinline!context\_window(args: ContextWindowInput) -> WindowSnapshot!}
 
@@ -154,7 +154,7 @@ class ContextWindowInput(BaseModel):
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{\texorpdfstring{B.11 \texttt{set\_sakshi} --- pin a session-stable witness invariant}{B.11 set\_sakshi --- pin a session-stable witness invariant}}\label{b.11-set_sakshi-pin-a-session-stable-witness-invariant}
+\subsection{\texorpdfstring{\texttt{set\_sakshi} --- pin a session-stable witness invariant}{set\_sakshi --- pin a session-stable witness invariant}}\label{set_sakshi-pin-a-session-stable-witness-invariant}
 
 \textbf{Signature.} \passthrough{\lstinline!set\_sakshi(args: SetSakshiInput) -> \{ok: True\}!}
 
@@ -168,7 +168,7 @@ class SetSakshiInput(BaseModel):
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{\texorpdfstring{B.12 \texttt{get\_sakshi} --- retrieve the witness invariants}{B.12 get\_sakshi --- retrieve the witness invariants}}\label{b.12-get_sakshi-retrieve-the-witness-invariants}
+\subsection{\texorpdfstring{\texttt{get\_sakshi} --- retrieve the witness invariants}{get\_sakshi --- retrieve the witness invariants}}\label{get_sakshi-retrieve-the-witness-invariants}
 
 \textbf{Signature.} \passthrough{\lstinline!get\_sakshi() -> \{invariants: dict[str, str]\}!}
 
@@ -176,7 +176,7 @@ class SetSakshiInput(BaseModel):
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{\texorpdfstring{B.13 \texttt{classify\_khyativada} --- 7-class hallucination classifier}{B.13 classify\_khyativada --- 7-class hallucination classifier}}\label{b.13-classify_khyativada-7-class-hallucination-classifier}
+\subsection{\texorpdfstring{\texttt{classify\_khyativada} --- 7-class hallucination classifier}{classify\_khyativada --- 7-class hallucination classifier}}\label{classify_khyativada-7-class-hallucination-classifier}
 
 \textbf{Signature.} \passthrough{\lstinline!classify\_khyativada(args: ClassifyInput) -> KhyatiResult!}
 
@@ -199,7 +199,7 @@ class KhyatiResult(BaseModel):
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{\texorpdfstring{B.14 \texttt{budget\_status} --- TokenBudgetWatchdog gauge}{B.14 budget\_status --- TokenBudgetWatchdog gauge}}\label{b.14-budget_status-tokenbudgetwatchdog-gauge}
+\subsection{\texorpdfstring{\texttt{budget\_status} --- TokenBudgetWatchdog gauge}{budget\_status --- TokenBudgetWatchdog gauge}}\label{budget_status-tokenbudgetwatchdog-gauge}
 
 \textbf{Signature.} \passthrough{\lstinline!budget\_status(args: BudgetStatusInput) -> BudgetStatus!}
 
@@ -212,7 +212,7 @@ class BudgetStatusInput(BaseModel):
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{\texorpdfstring{B.15 \texttt{budget\_record} --- record consumed tokens per turn}{B.15 budget\_record --- record consumed tokens per turn}}\label{b.15-budget_record-record-consumed-tokens-per-turn}
+\subsection{\texorpdfstring{\texttt{budget\_record} --- record consumed tokens per turn}{budget\_record --- record consumed tokens per turn}}\label{budget_record-record-consumed-tokens-per-turn}
 
 \textbf{Signature.} \passthrough{\lstinline!budget\_record(args: BudgetRecordInput) -> BudgetStatus!}
 
@@ -226,7 +226,7 @@ class BudgetRecordInput(BaseModel):
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{\texorpdfstring{B.16 Negative claims --- what the plugin does \emph{not} do}{B.16 Negative claims --- what the plugin does not do}}\label{b.16-negative-claims-what-the-plugin-does-not-do}
+\subsection{\texorpdfstring{Negative claims --- what the plugin does \emph{not} do}{Negative claims --- what the plugin does not do}}\label{negative-claims-what-the-plugin-does-not-do}
 
 We assert and audit:
 

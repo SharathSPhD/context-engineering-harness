@@ -1,8 +1,8 @@
-\section{Appendix D · Verbatim Prompts}\label{appendix-d-verbatim-prompts}
+\section{Verbatim Prompts}\label{verbatim-prompts}
 
 This appendix records, verbatim, the system and few-shot prompts used by every LLM-facing component in the harness. Every prompt is also present in the source repository at the path noted in the heading; this appendix is therefore a \emph{secondary} copy provided for reviewer convenience. If the source and this appendix ever drift, the source is canonical.
 
-\subsection{\texorpdfstring{D.1 \texttt{ManasAgent} system prompt}{D.1 ManasAgent system prompt}}\label{d.1-manasagent-system-prompt}
+\subsection{\texorpdfstring{\texttt{ManasAgent} system prompt}{ManasAgent system prompt}}\label{manasagent-system-prompt}
 
 \emph{Source:} \passthrough{\lstinline!plugin/pratyaksha-context-eng-harness/agents/manas.md!}
 
@@ -19,7 +19,7 @@ The shipped contract (abridged; see repository file for the full tool list and o
 
 (This mirrors the literal return contract in \passthrough{\lstinline!agents/manas.md!}; each field is load-bearing for the orchestrator.) Manas must \textbf{not} call \passthrough{\lstinline!context\_insert!} or \passthrough{\lstinline!sublate\_with\_evidence!}, must \textbf{not} overwrite the Sākṣī via \passthrough{\lstinline!set\_sakshi!}, and must respect \passthrough{\lstinline!budget\_status!} / \passthrough{\lstinline!budget\_record!} discipline.
 
-\subsection{\texorpdfstring{D.2 \texttt{BuddhiAgent} system prompt}{D.2 BuddhiAgent system prompt}}\label{d.2-buddhiagent-system-prompt}
+\subsection{\texorpdfstring{\texttt{BuddhiAgent} system prompt}{BuddhiAgent system prompt}}\label{buddhiagent-system-prompt}
 
 \emph{Source:} \passthrough{\lstinline!plugin/pratyaksha-context-eng-harness/agents/buddhi.md!}
 
@@ -48,7 +48,7 @@ Hard rules:
 5. Be brief. The user gets one paragraph + one citation block.
 \end{lstlisting}
 
-\subsection{\texorpdfstring{D.3 \texttt{SakshiKeeperAgent} system prompt}{D.3 SakshiKeeperAgent system prompt}}\label{d.3-sakshikeeperagent-system-prompt}
+\subsection{\texorpdfstring{\texttt{SakshiKeeperAgent} system prompt}{SakshiKeeperAgent system prompt}}\label{sakshikeeperagent-system-prompt}
 
 \emph{Source:} \passthrough{\lstinline!plugin/pratyaksha-context-eng-harness/agents/sakshi-keeper.md!}
 
@@ -68,7 +68,7 @@ Hard rules:
    for an audit.
 \end{lstlisting}
 
-\subsection{\texorpdfstring{D.4 \texttt{classify\_khyativada} prompts (shipped heuristic vs.~experiment few-shot)}{D.4 classify\_khyativada prompts (shipped heuristic vs.~experiment few-shot)}}\label{d.4-classify_khyativada-prompts-shipped-heuristic-vs.-experiment-few-shot}
+\subsection{\texorpdfstring{\texttt{classify\_khyativada} prompts (shipped heuristic vs.~experiment few-shot)}{classify\_khyativada prompts (shipped heuristic vs.~experiment few-shot)}}\label{classify_khyativada-prompts-shipped-heuristic-vs.-experiment-few-shot}
 
 \emph{Sources:} \passthrough{\lstinline!plugin/pratyaksha-context-eng-harness/mcp/khyati\_prompts.py!} (few-shot \textbf{experiment} path) and the shipped \textbf{heuristic} implementation wired to the MCP tool (Section 5.5 / Appendix B.13).
 
@@ -119,7 +119,7 @@ After the LLM responds, two \textbf{rule-based guardrails} override the predicti
 Both guardrails were added after manual error analysis on the H6
 dev fold and lifted Cohen's kappa from \(0.69\) to \(0.74\). The \textbf{plugin MCP tool} applies the heuristic stack plus these guardrails; the few-shot JSON template above is \textbf{not} what the shipped tool sends to the model, but it \emph{is} what the offline few-shot path in \passthrough{\lstinline!src/evaluation/khyativada\_fewshot.py!} uses. Section §8 (H6) evaluates both.
 
-\subsection{D.5 Buddhi/Manas orchestration prompt fragments}\label{d.5-buddhimanas-orchestration-prompt-fragments}
+\subsection{Buddhi/Manas orchestration prompt fragments}\label{buddhimanas-orchestration-prompt-fragments}
 
 The orchestrator (Section 5.4) wraps Manas's output and Buddhi's input
 with the following templates:

@@ -1,8 +1,8 @@
-# Appendix C · Reproducibility Manifest
+# Reproducibility Manifest
 
 This manifest gives a deterministic recipe to re-run every numerical claim in the paper. Every command below is exactly what we ran; outputs are written to `experiments/results/` under deterministic file names.
 
-## C.1 Pinned dependencies
+## Pinned dependencies
 
 ```
 python  >= 3.11
@@ -25,7 +25,7 @@ torch >= 2.3.0
 
 `tectonic` (for paper PDF) is installed via `brew install tectonic`. No other system dependencies are required.
 
-## C.2 One-shot environment bootstrap
+## One-shot environment bootstrap
 
 ```bash
 git clone https://github.com/SharathSPhD/pratyaksha-context-eng-harness.git
@@ -34,7 +34,7 @@ uv sync                               # creates .venv, pins versions
 uv run pytest tests/ -q               # 499 passes, 2 skipped
 ```
 
-## C.3 Random-seed contract
+## Random-seed contract
 
 Every experiment fixes seeds in three places:
 
@@ -44,7 +44,7 @@ Every experiment fixes seeds in three places:
 
 Seeds used are `[1, 2, 3]` for the canonical L1/L3 runs, and a single `seed=0` for the deterministic L2 case study.
 
-## C.4 Re-running each layer
+## Re-running each layer
 
 ### L1 — public benchmarks (H1–H7)
 
@@ -96,7 +96,7 @@ uv run python -m experiments.v2.p7.aggregate \
 
 Output: `experiments/results/p7/figures/F01.png` … `F13.png`, `experiments/results/p7/tables/T1_*.md` … `T7_*.md`, plus `_index.json` and `_summary.md`.
 
-## C.5 Cost ledger
+## Cost ledger
 
 The custom `CLIBudgetScheduler` writes `cost_ledger.db` with one row per outgoing API call. To re-derive total token usage and total wall-clock spend:
 
@@ -106,21 +106,21 @@ uv run python -m harness.scheduler.report --db cost_ledger.db
 
 The ledger from our run is shipped as `experiments/results/cost_ledger.snapshot.db` for inspection.
 
-## C.6 Determinism audit
+## Determinism audit
 
 `tests/test_v2/test_p7_aggregate.py::test_aggregate_is_deterministic` asserts that two consecutive runs of the aggregator produce byte-identical figure binaries and table strings. This pins the entire pipeline against silent stochastic drift.
 
-## C.7 What is *not* deterministic
+## What is *not* deterministic
 
 The L1 and L3 layers depend on the Anthropic API. Anthropic does not guarantee bitwise-identical completions across provisioning windows even with a fixed `seed`. We therefore report multi-seed means with bootstrap CIs and paired permutation tests, not point estimates. The deltas reported in Sections 8 and 10 are robust to single-seed drift on the order of $\pm 0.02$ on every metric we tested.
 
 The L2 layer is fully deterministic: it is LLM-free.
 
-## C.8 Worked-example payloads (Redis-caching turn, §6.7)
+## Worked-example payloads (Redis-caching turn, §6.7)
 
 The five host-visible artefacts of the §6.7 / Fig.~\ref{fig:swimlane} worked example. All payloads are reproduced verbatim from `docs/worked_example_redis.jsonl` in the plugin repo; they replay byte-for-byte against the cached evidence trail under `examples/redis_session/`.
 
-### C.8.1 `mcp__pratyaksha_mcp__manas_step` (request)
+### `mcp__pratyaksha_mcp__manas_step` (request)
 
 ```json
 {
@@ -137,7 +137,7 @@ The five host-visible artefacts of the §6.7 / Fig.~\ref{fig:swimlane} worked ex
 }
 ```
 
-### C.8.2 `detect_conflict` (response excerpt)
+### `detect_conflict` (response excerpt)
 
 ```json
 {
@@ -157,7 +157,7 @@ The five host-visible artefacts of the §6.7 / Fig.~\ref{fig:swimlane} worked ex
 }
 ```
 
-### C.8.3 `sublate_with_evidence` (request + verdict)
+### `sublate_with_evidence` (request + verdict)
 
 ```json
 {
@@ -174,7 +174,7 @@ The five host-visible artefacts of the §6.7 / Fig.~\ref{fig:swimlane} worked ex
 }
 ```
 
-### C.8.4 `mcp__pratyaksha_mcp__buddhi_step` (final answer envelope)
+### `mcp__pratyaksha_mcp__buddhi_step` (final answer envelope)
 
 ```json
 {
@@ -189,7 +189,7 @@ The five host-visible artefacts of the §6.7 / Fig.~\ref{fig:swimlane} worked ex
 }
 ```
 
-### C.8.5 Sākṣī audit-log (one line per stage; `~/.cache/pratyaksha/audit.jsonl`)
+### Sākṣī audit-log (one line per stage; `~/.cache/pratyaksha/audit.jsonl`)
 
 ```json
 {"turn":42,"evt":"USER_TURN","query":"how do I cache a user session in Redis?","ts":1734519301.12}
@@ -199,7 +199,7 @@ The five host-visible artefacts of the §6.7 / Fig.~\ref{fig:swimlane} worked ex
 {"turn":42,"evt":"ANSWER","khyati":"yathārtha","conf":0.91,"grounding":["item_88"]}
 ```
 
-### C.8.6 `/context-status` snapshot (post-turn, abridged)
+### `/context-status` snapshot (post-turn, abridged)
 
 ```text
 context window  :  3 live, 1 sublated, 0 evicted

@@ -1,8 +1,8 @@
-# 6 · The Cursor / Claude-Code Plugin
+# The Cursor / Claude-Code Plugin
 
 The harness ships as a single plugin, **`pratyaksha-context-eng-harness`** (v1.0.0, MIT-licensed), installable into Cursor, Claude Code (CLI and the VS Code extension), and Claude Desktop via the Model Context Protocol \citep{anthropic2025mcp}. This section specifies the shipped artefact in enough detail that an external reviewer can verify its claims directly against the repository at `github.com/SharathSPhD/pratyaksha-context-eng-harness`.
 
-## 6.1 Manifest and discovery
+## Manifest and discovery
 
 Two manifests are shipped:
 
@@ -11,7 +11,7 @@ Two manifests are shipped:
 
 Both manifests are version-pinned to `1.0.0`, point to the same upstream URL, and resolve identically in Cursor (via the plugin marketplace \citep{cursor2025plugins}) and Claude Code (via the new plugin marketplace surface \citep{anthropic2025claudecode}). Setup is a single command: `curl -LsSf https://astral.sh/uv/install.sh | sh`; the MCP server's Python dependencies are installed lazily on first tool call by `uv` \citep{uv2025}, so a fresh user can install the plugin without ever invoking `pip`, creating a virtualenv, or running `claude mcp add`.
 
-## 6.2 The 15 MCP tools
+## The 15 MCP tools
 
 The MCP server (`mcp/server.py`, FastMCP-style) exposes exactly fifteen tools. Their names, signatures, and operational roles are:
 
@@ -35,7 +35,7 @@ The MCP server (`mcp/server.py`, FastMCP-style) exposes exactly fifteen tools. T
 
 Every tool is typed via Pydantic v2 input/output models, returns JSON-serializable structures, and is exercised by at least one unit test in `tests/test_v2/`. A complete tool reference with full schemas is in **Appendix B**.
 
-## 6.3 The 3 sub-agents
+## The 3 sub-agents
 
 - **`agents/manas.md`** — defines the *attentional sense-organ* **sub-agent**. System prompt instructs the model to call `get_sakshi`, `context_retrieve`, `context_window`, `classify_khyativada`, and `budget_record`, and to return structured JSON of the form `{ "draft": "...", "grounding": ["<element_id>", ...], "uncertain_claims": ["..."], "needs_buddhi": true | false }` (verbatim contract in the repository file). Manas must *never* emit a user-visible final answer.
 - **`agents/buddhi.md`** — the *determinative judging* sub-agent. May call `sublate_with_evidence`, `detect_conflict`, and `classify_khyativada`. Emits the user-visible answer and its self-classified `khyati_class` and `confidence`.
@@ -43,7 +43,7 @@ Every tool is typed via Pydantic v2 input/output models, returns JSON-serializab
 
 The choice to ship Manas and Buddhi as *agents* (system-prompt-only sub-agents driven by the host LLM) rather than as fine-tunes is deliberate: it preserves the harness's host-platform-agnosticism (Section 5.4) and lets users swap the underlying model without re-training anything.
 
-## 6.4 The 3 skills
+## The 3 skills
 
 Following the Cursor/Claude-Code skill format (an `SKILL.md` per directory):
 
@@ -51,14 +51,14 @@ Following the Cursor/Claude-Code skill format (an `SKILL.md` per directory):
 - **`skills/sublate-on-conflict/SKILL.md`** — triggers Buddhi's call to `sublate_with_evidence` when `detect_conflict` returns true.
 - **`skills/witness-prefix/SKILL.md`** — wraps every Buddhi prompt with a stable `<sakshi_invariants>` system block via `get_sakshi`, so the witness frame is *literally a system message*, not inlined into the user turn.
 
-## 6.5 The 4 slash commands
+## The 4 slash commands
 
 - **`/context-status`** — pretty-prints the visible context window, by category, with budget gauge.
 - **`/sublate <target_id> <by_id> <reason>`** — manual sublation override (audit / debug).
 - **`/budget`** — shorthand for `budget_status` rendered as a one-line gauge.
 - **`/compact-now [strategy]`** — manually trigger compaction; `strategy ∈ {adaptive, lru, none}` (default `adaptive`).
 
-## 6.6 The 3 lifecycle hooks
+## The 3 lifecycle hooks
 
 `hooks/hooks.json` registers three hooks against the standard Claude Code lifecycle events:
 
@@ -84,7 +84,7 @@ Their roles are:
 - **`pretooluse-budget.sh`** consults `budget_status` before any harness tool runs and **logs** over-threshold use by default (advisory hook). If `PRATYAKSHA_BUDGET_STRICT=1`, the same script can be configured to **deny** tool execution when the gauge exceeds a hard threshold (default 95% of `context_budget`).
 - **`stop-compact.sh`** invokes `compact(strategy="adaptive")` at the end of every turn so memory pressure does not accumulate across turns.
 
-## 6.7 Worked example: a Redis-caching turn, end-to-end
+## Worked example: a Redis-caching turn, end-to-end
 
 To make the runtime contract concrete we trace a single user turn end-to-end through the deployed plugin. The user prompt is *"how do I cache a user session in Redis?"*; the agent's tool returns a mix of pre-Redis-7 blog snippets and the official Redis 7 documentation. Figure~\ref{fig:swimlane} visualises the swimlane across **User → Manas → Buddhi → Sublation → Sākṣī**, with the per-stage immutable JSON line written into `~/.cache/pratyaksha/audit.jsonl`.
 
@@ -96,7 +96,7 @@ The five host-visible artefacts are: (i) one `mcp__pratyaksha_mcp__manas_step` J
 
 This single turn exercises every load-bearing primitive of Sections 4–5 in a non-coding agentic context, and is the runtime template the L1 (§8) and L3 (§10) experiments instantiate at scale.
 
-## 6.8 What the plugin does *not* contain
+## What the plugin does *not* contain
 
 We assert and audit two negative claims:
 
@@ -105,11 +105,11 @@ We assert and audit two negative claims:
 
 This matters because the harness is a *discipline*, not an infrastructure. Anything heavier than that would defeat the purpose of a plugin you can install in 30 seconds.
 
-## 6.9 Smoke test and CI
+## Smoke test and CI
 
 `mcp/smoke_test.py` exercises every tool against the local MCP server: 15 round-trips, each verifying the input schema, the output schema, and one non-trivial behavioural assertion (e.g. `sublate_with_evidence` actually flips the target item's status). The smoke test runs in roughly 4 seconds wall-clock and is wired into the repo's CI as `pytest -m smoke`. We additionally exercise every command and hook via `claude --debug` in the developer's local Claude Code installation; the transcript of one such smoke run is preserved in `docs/plugin_smoke_transcript.md`.
 
-## 6.10 Hot-swappability across hosts
+## Hot-swappability across hosts
 
 The same `marketplace.json` resolves in:
 

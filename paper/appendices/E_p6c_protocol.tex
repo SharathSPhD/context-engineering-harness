@@ -1,12 +1,12 @@
-\section{Appendix E · P6-C SWE-bench Verified A/B Protocol}\label{appendix-e-p6-c-swe-bench-verified-ab-protocol}
+\section{P6-C SWE-bench Verified A/B Protocol}\label{p6-c-swe-bench-verified-ab-protocol}
 
 This appendix gives the complete protocol for the L3 head-to-head test (Section 10) at sufficient granularity for a third party to reproduce or audit it.
 
-\subsection{E.1 Universe of instances}\label{e.1-universe-of-instances}
+\subsection{Universe of instances}\label{universe-of-instances}
 
 We sample \(n = 120\) instances from SWE-bench Verified \citep{jimenez2024swebench}. The sample is the deterministic prefix of the dataset under its native ordering after a single \passthrough{\lstinline!random.Random(20251220).shuffle(instances)!} call. The instance ids are emitted to \passthrough{\lstinline!experiments/results/p6c/instance\_set.json!}.
 
-\subsection{E.2 Synthetic research-trail generator}\label{e.2-synthetic-research-trail-generator}
+\subsection{Synthetic research-trail generator}\label{synthetic-research-trail-generator}
 
 The generator (\passthrough{\lstinline!experiments/v2/p6c/research\_evidence.py!}) emits, for each instance, a list of \passthrough{\lstinline!ResearchSnippet!} objects under the contract:
 
@@ -26,7 +26,7 @@ The generator (\passthrough{\lstinline!experiments/v2/p6c/research\_evidence.py!
 
 The generator is fully deterministic given \passthrough{\lstinline!(instance\_id, seed)!}; its tests live in \passthrough{\lstinline!tests/test\_v2/test\_p6c\_research\_evidence.py!}.
 
-\subsection{E.3 The two arms}\label{e.3-the-two-arms}
+\subsection{The two arms}\label{the-two-arms}
 
 Both arms operate under the same hard token budget on the size of the \emph{research block} that the patch-generator sees. \textbf{Headline runs} set this with \textbf{\passthrough{\lstinline!--research-block-budget 8192!}} (\(B = 8192\)); \textbf{smoke} re-runs may use \textbf{\passthrough{\lstinline!--research-block-budget-fast 512!}}. Both arms use the same \passthrough{\lstinline!PatchSimulator!} (see E.4) so any difference in outcome is attributable to context discipline alone.
 
@@ -64,7 +64,7 @@ def _build_research_block_with_harness(snippets, budget):
 
 Crucially, the harness's \passthrough{\lstinline!compact!} step prefers high-precision items first, so the in-budget block becomes a curated subset rather than a tail-truncated concatenation.
 
-\subsection{\texorpdfstring{E.4 \texttt{PatchSimulator}}{E.4 PatchSimulator}}\label{e.4-patchsimulator}
+\subsection{\texorpdfstring{\texttt{PatchSimulator}}{PatchSimulator}}\label{patchsimulator}
 
 Section 7.5 describes the rationale; here we give the contract.
 
@@ -88,7 +88,7 @@ class PatchSimulator:
 
 The simulator deterministically picks the \emph{first} \passthrough{\lstinline!path.py!} token mentioned in the (system + prompt) text. By construction, this means the output depends \emph{only} on the contents and order of the research block --- exactly the variable we want to isolate.
 
-\subsection{E.5 Scoring}\label{e.5-scoring}
+\subsection{Scoring}\label{scoring}
 
 Two scorers are computed for every instance:
 
@@ -102,7 +102,7 @@ Two scorers are computed for every instance:
 
 We confirm in Section 10 that the heuristic scorer and the Docker scorer agree on the cases we ran with both (\(\kappa\) = 0.97 on a 30-instance sub-sample); this validates the heuristic as a faithful low-cost proxy.
 
-\subsection{E.6 Statistical recipe}\label{e.6-statistical-recipe}
+\subsection{Statistical recipe}\label{statistical-recipe}
 
 Each (instance, seed, model) triple yields one paired observation \((y_{\text{with}}, y_{\text{without}})\). With 120 instances × 3 seeds × 2 models = 720 paired observations:
 
@@ -116,7 +116,7 @@ Each (instance, seed, model) triple yields one paired observation \((y_{\text{wi
 
 Both tests are two-sided permutation tests with \(10^4\) shuffles. Bootstrap CIs use \(10^4\) resamples.
 
-\subsection{E.7 Outputs}\label{e.7-outputs}
+\subsection{Outputs}\label{outputs}
 
 \passthrough{\lstinline!experiments/results/p6c/summary.json!} contains:
 

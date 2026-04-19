@@ -1,4 +1,4 @@
-# Appendix B · Full MCP Tool Specifications
+# Full MCP Tool Specifications
 
 This appendix gives the full input / output schema and behavioural contract for each of the 15 MCP tools shipped by `pratyaksha-context-eng-harness` v1.0.0. The canonical source is `plugin/pratyaksha-context-eng-harness/mcp/server.py`.
 
@@ -10,7 +10,7 @@ All tools share three host-platform invariants:
 
 ---
 
-## B.1 `context_insert` — avacchedaka insertion
+## `context_insert` — avacchedaka insertion
 
 **Signature.** `context_insert(args: InsertInput) -> ContextElementOut`
 
@@ -29,7 +29,7 @@ class InsertInput(BaseModel):
 
 ---
 
-## B.2 `context_retrieve` — default avacchedaka query
+## `context_retrieve` — default avacchedaka query
 
 **Signature.** `context_retrieve(args: RetrieveInput) -> {items: list[ContextElement]}`
 
@@ -47,7 +47,7 @@ class RetrieveInput(BaseModel):
 
 ---
 
-## B.3 `context_get` — direct id-based fetch
+## `context_get` — direct id-based fetch
 
 **Signature.** `context_get(args: GetByIdInput) -> ContextElement | None`
 
@@ -60,7 +60,7 @@ class GetByIdInput(BaseModel):
 
 ---
 
-## B.4 `context_sublate` — basic sublation
+## `context_sublate` — basic sublation
 
 **Signature.** `context_sublate(args: SublateInput) -> ContextElement`
 
@@ -74,7 +74,7 @@ class SublateInput(BaseModel):
 
 ---
 
-## B.5 `sublate_with_evidence` — evidence-anchored sublation
+## `sublate_with_evidence` — evidence-anchored sublation
 
 **Signature.** `sublate_with_evidence(args: SublateWithEvidenceInput) -> {target: ContextElement, by: ContextElement}`
 
@@ -89,7 +89,7 @@ class SublateWithEvidenceInput(BaseModel):
 
 ---
 
-## B.6 `detect_conflict` — Bayesian-margin conflict check
+## `detect_conflict` — Bayesian-margin conflict check
 
 **Signature.** `detect_conflict(args: RetrieveInput) -> {conflicted: bool, margin: float, items: list[ContextElement]}`
 
@@ -97,7 +97,7 @@ class SublateWithEvidenceInput(BaseModel):
 
 ---
 
-## B.7 `list_qualificands` — diagnostic surface
+## `list_qualificands` — diagnostic surface
 
 **Signature.** `list_qualificands() -> {qualificands: list[str]}`
 
@@ -105,7 +105,7 @@ class SublateWithEvidenceInput(BaseModel):
 
 ---
 
-## B.8 `compact` — adaptive forgetting
+## `compact` — adaptive forgetting
 
 **Signature.** `compact(args: CompactInput) -> CompactionReport`
 
@@ -119,7 +119,7 @@ class CompactInput(BaseModel):
 
 ---
 
-## B.9 `boundary_compact` — event-boundary compaction
+## `boundary_compact` — event-boundary compaction
 
 **Signature.** `boundary_compact(args: BoundaryCompactInput) -> {summarised_count: int, summary_id: str}`
 
@@ -134,7 +134,7 @@ class BoundaryCompactInput(BaseModel):
 
 ---
 
-## B.10 `context_window` — visible-context summary for Manas
+## `context_window` — visible-context summary for Manas
 
 **Signature.** `context_window(args: ContextWindowInput) -> WindowSnapshot`
 
@@ -148,7 +148,7 @@ class ContextWindowInput(BaseModel):
 
 ---
 
-## B.11 `set_sakshi` — pin a session-stable witness invariant
+## `set_sakshi` — pin a session-stable witness invariant
 
 **Signature.** `set_sakshi(args: SetSakshiInput) -> {ok: True}`
 
@@ -162,7 +162,7 @@ class SetSakshiInput(BaseModel):
 
 ---
 
-## B.12 `get_sakshi` — retrieve the witness invariants
+## `get_sakshi` — retrieve the witness invariants
 
 **Signature.** `get_sakshi() -> {invariants: dict[str, str]}`
 
@@ -170,7 +170,7 @@ class SetSakshiInput(BaseModel):
 
 ---
 
-## B.13 `classify_khyativada` — 7-class hallucination classifier
+## `classify_khyativada` — 7-class hallucination classifier
 
 **Signature.** `classify_khyativada(args: ClassifyInput) -> KhyatiResult`
 
@@ -193,7 +193,7 @@ class KhyatiResult(BaseModel):
 
 ---
 
-## B.14 `budget_status` — TokenBudgetWatchdog gauge
+## `budget_status` — TokenBudgetWatchdog gauge
 
 **Signature.** `budget_status(args: BudgetStatusInput) -> BudgetStatus`
 
@@ -206,7 +206,7 @@ class BudgetStatusInput(BaseModel):
 
 ---
 
-## B.15 `budget_record` — record consumed tokens per turn
+## `budget_record` — record consumed tokens per turn
 
 **Signature.** `budget_record(args: BudgetRecordInput) -> BudgetStatus`
 
@@ -220,7 +220,7 @@ class BudgetRecordInput(BaseModel):
 
 ---
 
-## B.16 Negative claims — what the plugin does *not* do
+## Negative claims — what the plugin does *not* do
 
 We assert and audit:
 

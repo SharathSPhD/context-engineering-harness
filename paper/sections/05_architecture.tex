@@ -1,10 +1,10 @@
-\section{5 · The Pratyakṣa System: Architecture}\label{the-pratyakux1e63a-system-architecture}
+\section{The Pratyakṣa System: Architecture}\label{the-pratyakux1e63a-system-architecture}
 
 We describe the system as a layered architecture: a Core ContextStore, three runtime modules (Avacchedaka query, Sublation, Bayesian aggregation), three reasoning modules (Buddhi/Manas, Sākṣī, Khyātivāda classifier), and three resource-management modules (EventBoundaryCompactor, AdaptiveForgetting, TokenBudgetWatchdog). Each module is implemented as one or more MCP tools (Section 6.2 / Appendix B) and is exercised by at least one of the seven preregistered hypotheses (H1--H7). Figure \ref{fig:architecture} shows the deployed surface end-to-end: 15 MCP tools (grouped into four families) consumed by 3 sub-agents, exposed through 4 slash-commands and 3 lifecycle hooks, and mounted by all four host surfaces (Claude Code CLI, Claude Code VS Code, Cursor, Claude Desktop) without modification of the underlying LLM.
 
 \input{figures_tikz/fig1_architecture.tex}
 
-\subsection{5.1 The ContextStore (core)}\label{the-contextstore-core}
+\subsection{The ContextStore (core)}\label{the-contextstore-core}
 
 The \passthrough{\lstinline!ContextStore!} is a typed, append-mostly key-value store that lives outside the LLM and is exposed to it via MCP. Its row schema is exactly the \emph{avacchedaka} tuple of Section 4.2:
 
@@ -36,7 +36,7 @@ Two design commitments distinguish this from a vector store:
   \textbf{Provenance never disappears.} Sublation rewrites \passthrough{\lstinline!status!}, never deletes. Eviction (under hard budget pressure) writes to a sidecar \passthrough{\lstinline!evicted\_log.jsonl!} so the witness can replay the eviction reason.
 \end{enumerate}
 
-\subsection{5.2 The AvacchedakaQuery module}\label{the-avacchedakaquery-module}
+\subsection{The AvacchedakaQuery module}\label{the-avacchedakaquery-module}
 
 \passthrough{\lstinline!context\_retrieve!} with \passthrough{\lstinline!qualificand!} and \passthrough{\lstinline!condition!} set walks the \passthrough{\lstinline!ContextStore!} and returns the \emph{set} of items matching \passthrough{\lstinline!qualificand!} whose \passthrough{\lstinline!condition!} is \emph{consistent} with the supplied condition. Consistency is decided by a small rule engine:
 
@@ -54,7 +54,7 @@ Two design commitments distinguish this from a vector store:
 
 This rule engine is intentionally simple. We are not building a description-logic reasoner; we are providing the agent with a typed surface on which to act.
 
-\subsection{5.3 The Sublation + Bayesian aggregation module}\label{the-sublation-bayesian-aggregation-module}
+\subsection{The Sublation + Bayesian aggregation module}\label{the-sublation-bayesian-aggregation-module}
 
 Conflict resolution proceeds in two steps. First, \passthrough{\lstinline!sublate\_with\_evidence(target\_id, by\_id, reason)!} performs the Vedānta operation of Section 4.3. Second, when the agent must commit to a single posterior probability for a contested claim --- for example, ``is the user's setting \passthrough{\lstinline!enable\_x = True!}?'' --- the harness offers a \textbf{Bayesian Beta-Bernoulli aggregator} in place of the original \emph{PrecisionWeightedRAG} of v0:
 
@@ -66,7 +66,7 @@ For a claim \(H \in \{0, 1\}\) supported by \(k\) source items with precisions \
 
 The posterior mean \(\bar{H} = \alpha_n / (\alpha_n + \beta_n)\) is returned, alongside the posterior margin \(|\bar{H} - 0.5|\). A claim is reported as \emph{conflicted} when this margin falls below a threshold \(\tau\) (default \(0.10\)). Calibration is evaluated by \textbf{Brier score} \citep{brier1950score} and \textbf{expected calibration error} (ECE) with equal-width binning \citep{naeini2015ece, guo2017calibration}; on H2 the Bayesian aggregator achieves Brier 0.094 vs.~PrecisionWeightedRAG 0.176 and ECE 0.041 vs.~0.118 on a held-out 1,800-example validation slice (Section 8.2, T2 in Appendix C), corroborating the broader literature on Bayesian fusion under conflicting evidence \citep{ovadia2019can, gal2016dropout}.
 
-\subsection{5.4 Buddhi and Manas as plug-in sub-agents}\label{buddhi-and-manas-as-plug-in-sub-agents}
+\subsection{Buddhi and Manas as plug-in sub-agents}\label{buddhi-and-manas-as-plug-in-sub-agents}
 
 The two-stage gate is implemented as two MCP-side prompt templates and a single orchestration policy in the host agent (Buddhi-Manas Orchestrator). The data-flow is:
 
@@ -83,7 +83,7 @@ The two-stage gate is implemented as two MCP-side prompt templates and a single 
 
 Both Manas and Buddhi are \emph{prompted-only} sub-agents. We deliberately do \emph{not} fine-tune. The two-stage gate is a discipline, not a model: a different LLM (Claude 3.5 Sonnet, Claude 4.x, GPT-4o, Qwen-3) can be plugged in as the \emph{runner} of either prompt without breaking the harness's invariants. This is the ``host-platform-agnostic'' design commitment, and it makes the plugin hot-swappable across Cursor / Claude Code / Claude Desktop \citep{anthropic2025mcp, cursor2025plugins}.
 
-\subsection{5.5 The Khyātivāda classifier}\label{the-khyux101tivux101da-classifier}
+\subsection{The Khyātivāda classifier}\label{the-khyux101tivux101da-classifier}
 
 The shipped \passthrough{\lstinline!classify\_khyativada!} tool applies a \textbf{heuristic labeler with structured JSON shape} plus the rule-based guardrails below. The experiments harness additionally implements a few-shot Anthropic JSON variant (\passthrough{\lstinline!src/evaluation/khyativada\_fewshot.py!}) for offline evaluation; that path is \textbf{not} wired into the plugin MCP surface. For exposition we still describe the JSON contract shared by both stacks. Inputs:
 
@@ -109,7 +109,7 @@ Output:
 
 Sample exemplars are curated for the few-shot \emph{experiment} path to maximize within-class lexical diversity (e.g., asatkhyāti includes both ``fabricated CVE'' and ``fabricated stack-trace line'', not just one). In both stacks, heuristic guardrails override the model-proposed label when (a) the answer cites a \passthrough{\lstinline!qualificand!} not present in any \passthrough{\lstinline!ContextStore!} item (force \passthrough{\lstinline!asatkhyāti!}), or (b) the answer's \passthrough{\lstinline!qualifier!} is the negation of an item the answer cites by id (force \passthrough{\lstinline!viparītakhyāti!}). These guardrails are \emph{additive} --- they only flip \passthrough{\lstinline!none!} to a class, never flip one class to another.
 
-\subsection{5.6 The EventBoundaryCompactor}\label{the-eventboundarycompactor}
+\subsection{The EventBoundaryCompactor}\label{the-eventboundarycompactor}
 
 For long-running sessions we want to compact whole \emph{episodes} of context, not individual items. Following event-segmentation theory \citep{zacks2007event, baldassano2017nested} and predictive-coding accounts of surprise \citep{rao1999predictive, friston2010fep, feldman2010precision}, we segment the rolling token stream by per-token \textbf{negative-log-probability surprise} computed by a small open-weights model --- Qwen3-1.7B served via vLLM \citep{kwon2023vllm, vllm2023, qwen2024technical}, with an optional fallback to Qwen3-0.6B and a final heuristic-Zipf fallback \citep{piantadosi2014zipf, shannon1948mathematical, mackay2003information} when the GPU path is unavailable.
 
@@ -128,11 +128,11 @@ A boundary is declared when surprise exceeds a rolling-mean+2σ threshold sustai
 
 H4 (Section 8.4) tests this module against a no-compaction baseline.
 
-\subsection{5.7 AdaptiveForgetting}\label{adaptiveforgetting}
+\subsection{AdaptiveForgetting}\label{adaptiveforgetting}
 
 Rules are as in Section 4.7. Implemented as a periodic background MCP tool \passthrough{\lstinline!compact(strategy: Literal["adaptive", "lru", "none"])!} that the agent or a lifecycle hook can invoke. The default policy is \passthrough{\lstinline!adaptive!}; the H7 study (Section 8.7) compares all three.
 
-\subsection{5.8 TokenBudgetWatchdog}\label{tokenbudgetwatchdog}
+\subsection{TokenBudgetWatchdog}\label{tokenbudgetwatchdog}
 
 A small but indispensable module. The watchdog tracks input/output tokens by category (system, retrieval, tool, completion) against a configured budget (default 60\% of model context window) and exposes one MCP tool, \passthrough{\lstinline!budget\_status()!}, returning:
 
@@ -148,7 +148,7 @@ A small but indispensable module. The watchdog tracks input/output tokens by cat
 
 It is also wired into a \passthrough{\lstinline!pretooluse-budget.sh!} hook (Section 6.4) that \textbf{logs} budget pressure by default; optional strict refusal is available when \passthrough{\lstinline!PRATYAKSHA\_BUDGET\_STRICT=1!}.
 
-\subsection{5.9 The full request lifecycle}\label{the-full-request-lifecycle}
+\subsection{The full request lifecycle}\label{the-full-request-lifecycle}
 
 A representative single-turn request now flows as:
 

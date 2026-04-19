@@ -1,8 +1,8 @@
-# 3 · Origin: From a TRIZ Contradiction Analysis to Classical Indian Epistemology
+# Origin: From a TRIZ Contradiction Analysis to Classical Indian Epistemology
 
 This section narrates how the project came to be, because the methodology itself is part of the contribution. We did *not* begin by reading Sanskrit. We began by running TRIZ \citep{altshuller1984creativity, altshuller2002innovation, terninko1998triz, savransky2000triz} on a single engineering contradiction in modern LLM agents, and observed — to our own surprise — that the resolution drove us out of the LLM literature entirely and into the long-running cross-school epistemological debate between Nyāya, Mīmāṃsā, Advaita Vedānta and adjacent traditions, which had reached technical maturity in eleventh-century Mithilā.
 
-## 3.1 The TRIZ session
+## The TRIZ session
 
 Using the `triz-engine` Cursor plugin \citep{trizengineplugin} (developed by the same author and used here in production from 2025-12), we logged the following primary contradiction:
 
@@ -14,7 +14,7 @@ Of the four principles, **#10 (Preliminary Action)** dominated: rather than figh
 
 This required a vocabulary we did not have. The standard RAG literature attaches *embeddings* and *similarity scores* but not *typed conditions*. The standard hallucination literature attaches *post-hoc labels* but not *runtime qualifiers*. The standard memory-architecture literature \citep{sumers2024coala, packer2023memgpt} stratifies storage by *recency* and *importance* but does not give those strata an *epistemic* type.
 
-## 3.2 The discovery: classical Indian epistemology already had this vocabulary
+## The discovery: classical Indian epistemology already had this vocabulary
 
 A search for "*typed limitor on a cognition*" + "*precision-weighted assertion*" + "*supersession of older belief without deletion*" returned, after several iterations, classical Indian epistemology — specifically:
 
@@ -34,13 +34,13 @@ A search for "*typed limitor on a cognition*" + "*precision-weighted assertion*"
 
 It was not a metaphor. Each of these constructs admits a *precise runtime operationalization* on an LLM context window. Section 4 builds the translation table.
 
-## 3.3 Why this method matters
+## Why this method matters
 
 The deeper claim is methodological. Several recent context-engineering threads resemble *fragments* of an integrated philosophical tradition under different names: scratchpads ≈ *manas*; tool-use selectors ≈ *buddhi*; retrieval rerankers ≈ approximate *avacchedaka*; sleep-time-compute / consolidation ≈ *bādha*-driven memory pruning; provenance tracking ≈ *sākṣī*; hallucination taxonomies in flux ≈ *khyātivāda*. By naming the constructs from a tradition that already integrated them, we (a) get a *coherent* design rather than a bag of mechanisms, and (b) inherit two thousand years of internal critique of the tradition (Mīmāṃsā vs. Nyāya vs. Advaita debates) as our *adversarial review*.
 
 The TRIZ session that produced this trajectory took 87 minutes of wall-clock time and consumed 38,512 input tokens / 4,206 output tokens of Claude usage; the full audit trail is preserved in the repository under `docs/triz-origin-session.md`. We retain this provenance not for vanity but because **it is the kind of audit trail the harness itself is designed to enforce**.
 
-## 3.4 The two dev-time orchestration tools we used (and excluded from the shipped plugin)
+## The two dev-time orchestration tools we used (and excluded from the shipped plugin)
 
 Two further plugins were used during development and *deliberately excluded from the shipped artefact*:
 

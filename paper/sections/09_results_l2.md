@@ -1,8 +1,8 @@
-# 9 · Results — Layer 2: Live Case Study (P6-B)
+# Results — Layer 2: Live Case Study (P6-B)
 
 Layer 2 supplies what L1 cannot: an end-to-end, deterministic, *ecologically-real* trace of the harness in action on real GitHub issues. The case study is consciously *not* an LLM-generated transcript: it is a typed, reproducible flow through `context_insert → sublate_with_evidence → compact → final answer` whose output is exactly the qualifier-set of the surviving live items. This isolates the *context discipline* from generation quality.
 
-## 9.1 Cases
+## Cases
 
 We hand-picked three real issues drawn from popular Python projects, each with a documented mix of stale-vs-fresh evidence in the actual user-facing search results:
 
@@ -14,7 +14,7 @@ We hand-picked three real issues drawn from popular Python projects, each with a
 
 For each issue we curated 3–5 evidence items (`EvidenceItem`s, see `experiments/v2/p6b/case_data.py`) tagged with `precision`, `condition`, `stale`, and where appropriate `superseded_by_id`.
 
-## 9.2 Arms
+## Arms
 
 Both arms are deterministic and LLM-free; the difference is purely the *discipline* applied:
 
@@ -22,7 +22,7 @@ Both arms are deterministic and LLM-free; the difference is purely the *discipli
 
 - **`with_harness` (treatment).** Process evidence in *discovery order*; for each new item, call `sublate_with_evidence` on any pre-existing item it explicitly supersedes (via `superseded_by_id`) *or* on any pre-existing stale item under the same `(qualificand, condition)` whose `precision` is dominated by the new item. Then run `compact` to drop sublated items from the live set. Final answer is the qualifier-set of the surviving live items.
 
-## 9.3 Headline numbers
+## Headline numbers
 
 | metric | with-harness | without-harness | delta |
 |---|---|---|---|
@@ -65,30 +65,30 @@ Source: `experiments/results/p6b/_summary.json`. Visualised in Figures~\ref{fig:
 
 The *context tokens used* row is critical: both arms operate under *identical* token budgets. The harness wins not by buying more context but by *using the same budget more disciplinedly*. The seven `sublate_with_evidence` events and three `compact` events are exactly the operational footprint of the Section 4.3 / 4.7 commitments.
 
-## 9.4 Per-case narrative
+## Per-case narrative
 
-### 9.4.1 `django_request_body`
+### `django_request_body`
 
 The baseline anchored on the pre-3.2 advice (the first item in discovery order, since it was the most-upvoted Stack Overflow answer when the issue was filed). The harness saw the same item, accepted it provisionally, then fired `sublate_with_evidence` against the stale Stack Overflow snippets as fresher items arrived (the official Django 4.1 release notes and the Django 4.2 docs); per `experiments/results/p6b/django_request_body.json` (`metrics.sublations`), this case fires **3 sublations** and **1 compaction**, after which the final live set contains only the fresh Django 4.x items (`store_size_active = 4`, `store_size_sublated = 1`). The final answer correctly cited the form-encoded clarification from the 4.1 release notes.
 
 The forbidden-claim audit: the baseline emitted one forbidden phrase (`Django 1.x`/`always raises`/`never raises`); the harness emitted zero.
 
-### 9.4.2 `requests_retry_adapter`
+### `requests_retry_adapter`
 
 Stale Stack Overflow snippets used the old `Retry(method_whitelist=...)` parameter; the fresh urllib3 v2 doc snippet uses `allowed_methods=...`. Per the per-case JSON (`requests_retry_adapter.json`, `metrics.sublations`), the harness fires **2 sublations** and **1 compaction** and commits to `allowed_methods`. The baseline locked onto `method_whitelist` and never recovered.
 
 The forbidden-claim audit: the baseline emitted two forbidden references (e.g.\ `method_whitelist`, `requests.packages.urllib3`); the harness emitted one — a single `method_whitelist` mention surviving inside the *sublation event's* explanatory `reason` string for audit purposes only, with zero references in the final live qualifier set.
 
-### 9.4.3 `pandas_iterrows_dtype`
+### `pandas_iterrows_dtype`
 
 Stale snippets all said "iterrows preserves dtype"; the fresh pandas-2.x doc snippet says "no, use `itertuples` (or accept that rows are promoted to a common dtype)". Per `pandas_iterrows_dtype.json` (`metrics.sublations`), the harness fires **2 sublations** and **1 compaction**, leaving only the fresh pandas-2.x items in the live set, and commits to the *common-dtype / `itertuples`* answer. The baseline committed to the wrong answer.
 
 The forbidden-claim audit: the baseline emitted two forbidden phrases (`preserves the column dtype` and/or `you can rely on integer`); the harness emitted zero.
 
-## 9.5 Why this matters
+## Why this matters
 
 The L2 case study is the smallest possible *ecologically valid* test of the harness's central claim: *the discipline pays off even with no model-generation step, even under identical token budgets, on real-world stale-vs-fresh evidence trails*. The 3-of-3 result is small in *n* but *epistemically large*: it shows the mechanism is not benchmark-specific. The benchmark we constructed for L3 (Section 10) makes the same point at $n=120$ with multi-seed multi-model paired statistics.
 
-## 9.6 Reproducibility
+## Reproducibility
 
 The case-study runner is `experiments/v2/p6b/run_case_study.py`. The case data is `experiments/v2/p6b/case_data.py`. Both are deterministic and LLM-free. Re-running `python -m experiments.v2.p6b.run_case_study` re-emits `experiments/results/p6b/*.json` byte-identically.

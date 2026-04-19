@@ -1,8 +1,8 @@
-# 10 · Results — Layer 3: SWE-bench Verified A/B Head-to-Head (P6-C)
+# Results — Layer 3: SWE-bench Verified A/B Head-to-Head (P6-C)
 
 Layer 3 supplies the most ecologically valid *coding-context* evidence in the paper, but it is not the headline claim. The mechanisms validated in Layers 1 (general long-context and hallucination benchmarks, §8) and 2 (live multi-domain case study, §9) are agent- and domain-agnostic; SWE-bench Verified is included here because it is *one challenging coding-specific instantiation* of the same mechanisms under a fixed token budget. We run a head-to-head A/B test on **120 SWE-bench Verified \citep{openai2024sweverified, jimenez2024swebench}**-style instances, **3 seeds × 2 models** (= **720 paired runs**). Both arms see the same instances, the same **synthetic** evidence trail, and the same model; the only difference is whether the system is in the loop. Patch generation is deterministically anchored on the first plausible file path of the research block. The headline run reported here uses the **deterministic patch-simulator** path (no Docker harness) with the fast research-block budget **`--research-block-budget 512`** as recorded in `experiments/results/p6c/_summary.json` (`spec.research_budget_tokens = 512`, `spec.use_docker_harness = false`). A separate Docker-harness sub-sample at 30 instances reports scorer agreement $\kappa = 0.97$ between the heuristic and the official Docker grader; the larger budget (`--research-block-budget 8192`) is supported by the runner but is not the source of the numbers below. The numbers come from `experiments/results/p6c/swebench_ab.json` and are aggregated in Table~\ref{tab:t4_p6c_headline} (headline) and Table~\ref{tab:t5_p6c_per_seed} (per-seed breakdown) and Figures~\ref{fig:f10}--\ref{fig:f11}.
 
-## 10.1 Design
+## Design
 
 For each SWE-bench Verified instance we:
 
@@ -18,7 +18,7 @@ For each SWE-bench Verified instance we:
 
 5. **Statistics.** Two paired permutation tests are computed: (i) per-instance, $n=720$ pairs (every (instance, model, seed) triple is its own pair); (ii) per-(model, seed), $n=6$ pairs (every cell's mean score is a pair).
 
-## 10.2 Headline result
+## Headline result
 
 | metric | value |
 |---|---|
@@ -68,7 +68,7 @@ Source: `experiments/results/p6c/_summary.json` and Table~\ref{tab:t4_p6c_headli
 \end{figure}
 ```
 
-## 10.3 Per-(model, seed) breakdown
+## Per-(model, seed) breakdown
 
 The system's behaviour is *identical* across `claude-haiku-4-5` and `claude-sonnet-4-6` (because the patch simulator is deterministic, by design — see Section 10.1). The baseline's behaviour varies slightly across seeds (because the seed determines the shuffle order of the four snippets, and the baseline's `first-seen` anchoring is order-sensitive). Concretely, treatment hits target-path **120/120** in every cell; baseline hits 57, 66, 58, 57, 66, 58 across the six cells — a near-coin-flip outcome, exactly as the *Lost-in-the-Middle*-style anchoring \citep{liu2023lostmiddle, kazemnejad2024impact} predicts when the wrong-path snippet appears first. Table~\ref{tab:t5_p6c_per_seed} reports the full breakdown.
 
@@ -82,19 +82,19 @@ The system's behaviour is *identical* across `claude-haiku-4-5` and `claude-sonn
 \end{table}
 ```
 
-## 10.4 What this measures and what it does not
+## What this measures and what it does not
 
 This study measures the system's effect *exactly* on what the system exists to address: *which snippets the agent sees, in which order, with which provenance, with which sublations applied*. It does **not** measure the system's effect on the agent's ability to write correct code, because the patch simulator is a deterministic anchoring function rather than an LLM coder. We deliberately split these concerns. A natural follow-up (Section 12) is to repeat the study with a real LLM coder; we predict the gain will compress somewhat (because a strong coder will sometimes recover from a wrong-path anchor) but remain large, because the wrong-path anchor frequently surfaces in agent transcripts published in the SWE-bench Verified leaderboard analysis \citep{openai2024sweverified}. Crucially, the *same* mechanism — sublation under a shared *avacchedaka* — explains the gains observed on the *non-coding* L1 surfaces (RULER, HELMET, NoCha, HaluEval, TruthfulQA, FACTS-Grounding) in §8; SWE-bench is one challenging *coding* instance of an agent-level effect.
 
-## 10.5 Sensitivity to budget size (predicted, not in headline JSON)
+## Sensitivity to budget size (predicted, not in headline JSON)
 
 The headline run is at **512 tokens**. The runner additionally supports `--research-block-budget` ∈ {2 K, 4 K, 8 K, 16 K, 32 K}; we *predict* (and the runner is wired to confirm) monotonically *decreasing* gain as the budget grows: when the budget is large enough to fit the full unshuffled trail, the system's contribution shifts from *truncation* to *sublation*, and the baseline's anchoring bias still dominates the wrong-file outcome. The full budget sweep is left for the next release; the headline JSON in `experiments/results/p6c/_summary.json` covers only the 512-token cell. Figure~\ref{fig:f10}'s paired-diff histogram is positive at this budget.
 
-## 10.6 What the system contributes, in one sentence
+## What the system contributes, in one sentence
 
 *Under a fixed 512-token research-block budget, on synthetic research trails constructed over the SWE-bench Verified instance set (patch generation deterministically anchored on the first plausible file path of the research block), the system anchors the stub patch on the correct file in **100% of the 6 (model × seed) cells (720 / 720 paired runs)** versus **50.3%** for the budgeted baseline*, with per-instance permutation $p = 0.0005$ and per-(model, seed) $p = 0.03125$ as in Section 10.2. This is not a claim about unconstrained LLM patch generation on the full upstream harness; it is the operational expression of *avacchedaka* + *bādha* + the *first-seen-wins* failure mode of unaided agents under the stated simulator — and the same operational pattern is what produces the Layer-1 long-context and hallucination effects.
 
-## 10.7 Aggregate across all studies
+## Aggregate across all studies
 
 We close this section with the omnibus statistic. Stouffer-Z combination (Section 7.4) over the 10 quantitative studies (H1×2 lengths, H2×2 lengths, H3, H4, H5, H6, H7, P6-C-per-instance) gives:
 

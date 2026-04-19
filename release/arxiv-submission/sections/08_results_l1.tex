@@ -1,4 +1,4 @@
-\section{8 · Results --- Layer 1: Public Benchmarks (H1--H7)}\label{results-layer-1-public-benchmarks-h1h7}
+\section{Results --- Layer 1: Public Benchmarks (H1--H7)}\label{results-layer-1-public-benchmarks-h1h7}
 
 We test seven preregistered hypotheses on six public benchmarks (RULER, HELMET, NoCha, HaluEval, TruthfulQA, FACTS-Grounding) plus SWE-bench Verified. Every study sweeps both \textbf{\passthrough{\lstinline!claude-haiku-4-5!}} and \textbf{\passthrough{\lstinline!claude-sonnet-4-6!}} over multiple seeds; statistics are paired by \passthrough{\lstinline!(model, seed, example)!} and reported with bootstrap CIs and paired permutation p-values per Section 7.4. All numerical values in this section come from \passthrough{\lstinline!experiments/results/p6a/\_summary.json!} and \passthrough{\lstinline!\_summary\_plugin.json!}, were emitted by \passthrough{\lstinline!experiments/v2/p7/aggregate.py!}, and are aggregated in Table\textasciitilde{}\ref{tab:t1_long_context} (raw long-context aggregator) and Table\textasciitilde{}\ref{tab:t2_plugin_inloop} (plugin in-the-loop). Per-hypothesis effects are plotted inline as Figures\textasciitilde{}\ref{fig:f01}--\ref{fig:f07}.
 
@@ -18,7 +18,7 @@ We test seven preregistered hypotheses on six public benchmarks (RULER, HELMET, 
 \input{tables/T2_p6a_plugin_inloop.tex}}
 \end{table}
 
-\subsection{8.1 H1 --- Long-context recall (RULER)}\label{h1-long-context-recall-ruler}
+\subsection{H1 --- Long-context recall (RULER)}\label{h1-long-context-recall-ruler}
 
 \textbf{Hypothesis.} Avacchedaka-typed insertion of distractor passages preserves recall accuracy at long context lengths better than a baseline that concatenates raw passages.
 
@@ -37,7 +37,7 @@ The 32 K delta is \emph{larger} than the 8 K delta, contrary to the \emph{Lost-i
 \label{fig:f01}
 \end{figure}
 
-\subsection{8.2 H2 --- Long-context RAG (HELMET-Recall)}\label{h2-long-context-rag-helmet-recall}
+\subsection{H2 --- Long-context RAG (HELMET-Recall)}\label{h2-long-context-rag-helmet-recall}
 
 \textbf{Hypothesis.} Bayesian Beta-Bernoulli aggregation of conflicting passages (Section 5.3) outperforms naive precision-weighted RAG on HELMET-Recall.
 
@@ -54,7 +54,7 @@ The 32 K delta is \emph{larger} than the 8 K delta, contrary to the \emph{Lost-i
 
 Calibration on a 1,800-example held-out slice: Bayesian aggregator Brier \textbf{0.094}, ECE \textbf{0.041}; baseline PrecisionWeightedRAG Brier \textbf{0.176}, ECE \textbf{0.118}. The \textbf{47\%} relative reduction in Brier and \textbf{65\%} relative reduction in ECE materially improve calibration in addition to top-line accuracy --- exactly the regime the Bayesian-fusion / deep-ensembles literature \citep{ovadia2019can, gal2016dropout} predicts.
 
-\subsection{8.3 H3 --- Buddhi/Manas grounding gate}\label{h3-buddhimanas-grounding-gate}
+\subsection{H3 --- Buddhi/Manas grounding gate}\label{h3-buddhimanas-grounding-gate}
 
 \textbf{Hypothesis.} A two-stage Manas-then-Buddhi gate (Section 5.4) raises grounded-claim accuracy on a mixed-faithfulness corpus relative to a single-stage agent over the same model + same retrieval.
 
@@ -71,7 +71,7 @@ Calibration on a 1,800-example held-out slice: Bayesian aggregator Brier \textbf
 
 The two-stage gate's gain is structural: by \emph{requiring} Manas to declare which items it attended to before Buddhi judges, hallucinations of the \emph{ātmakhyāti} class (projection of the agent's own state, e.g.~inventing helper functions) are suppressed at the \emph{attention} step rather than at the \emph{answer} step. This matches the dual-process theoretical motivation \citep{evans2003duality, kahneman2011thinking, sloman1996two, stanovich2000individual} and the cognitive-architecture evidence \citep{laird1987soar, anderson1996actr}.
 
-\subsection{8.4 H4 --- Event-boundary compaction}\label{h4-event-boundary-compaction}
+\subsection{H4 --- Event-boundary compaction}\label{h4-event-boundary-compaction}
 
 \textbf{Hypothesis.} Surprise-driven event-boundary compaction (Section 5.6) preserves answer accuracy on a long-running session vs.~naive truncation under the same final budget.
 
@@ -88,7 +88,7 @@ The two-stage gate's gain is structural: by \emph{requiring} Manas to declare wh
 
 The very large Cohen's d reflects the binary nature of the underlying score (recall of a witness-protected fact past a compaction event). The harness's adaptive policy \emph{never} evicted a witness-protected fact, so it scored 1.0 on every paired example; the LRU baseline evicted protected facts \textasciitilde40\% of the time. The result is consistent with the predictive-coding/event-segmentation account of episode boundaries \citep{rao1999predictive, friston2010fep, zacks2007event, baldassano2017nested} as the right place to compress.
 
-\subsection{8.5 H5 --- Avacchedaka sublation}\label{h5-avacchedaka-sublation}
+\subsection{H5 --- Avacchedaka sublation}\label{h5-avacchedaka-sublation}
 
 \textbf{Hypothesis.} When fresh evidence supersedes stale evidence under a shared limitor, \passthrough{\lstinline!sublate\_with\_evidence!} resolves the conflict in favour of the fresh evidence, where the baseline keeps both and answers from the wrong one.
 
@@ -105,7 +105,7 @@ The very large Cohen's d reflects the binary nature of the underlying score (rec
 
 The 100\% / 0\% headline is structural rather than empirical: the experiment is constructed so that the only correct answer is to favour the fresh evidence, and the baseline (no sublation primitive) cannot. We retain it as a sanity-check on the harness's \emph{bādha} implementation rather than as a comparison of contenders.
 
-\subsection{8.6 H6 --- Khyātivāda hallucination classifier}\label{h6-khyux101tivux101da-hallucination-classifier}
+\subsection{H6 --- Khyātivāda hallucination classifier}\label{h6-khyux101tivux101da-hallucination-classifier}
 
 \textbf{Hypothesis.} The 7-class Khyātivāda classifier (Section 5.5) materially improves macro-F1 over a baseline 2-class (\passthrough{\lstinline!hallucinated!} / \passthrough{\lstinline!not!}) classifier, and produces inter-annotator agreement at substantial-or-better κ.
 
@@ -130,7 +130,7 @@ IAA (n=3,000): overall Cohen's κ \textbf{0.736} (``substantial'' per Landis \& 
 \input{tables/T6_khyativada_iaa.tex}
 \end{table}
 
-\subsection{8.7 H7 --- Adaptive forgetting}\label{h7-adaptive-forgetting}
+\subsection{H7 --- Adaptive forgetting}\label{h7-adaptive-forgetting}
 
 \textbf{Hypothesis.} A witness-protected exponential-decay forgetting policy (Section 5.7) preserves long-term recall of important facts where naive LRU forgets them.
 
@@ -147,7 +147,7 @@ IAA (n=3,000): overall Cohen's κ \textbf{0.736} (``substantial'' per Landis \& 
 
 As with H5, the 100\% / 0\% headline is structural rather than empirical: the witness-protection invariant is exactly the missing primitive in the LRU baseline.
 
-\subsection{8.8 Summary of L1}\label{summary-of-l1}
+\subsection{Summary of L1}\label{summary-of-l1}
 
 Across the seven L1 hypotheses, the treatment beats baseline at \textbf{p ≤ 0.0020} in \emph{every single study}. Mean treatment metric is \textbf{0.910}, mean baseline metric is \textbf{0.420}, mean paired delta is \textbf{+0.490}. The two structural hypotheses (H5, H7) are extreme by design; the five empirical hypotheses (H1, H2 ×2, H3, H4, H6) carry the load. Combining only those five via Stouffer-Z gives a one-tailed p \textless{} 10⁻¹³ in the harness's favour. The harness \emph{does} pay off on real, published benchmark surfaces, not just on internally-curated cases.
 
