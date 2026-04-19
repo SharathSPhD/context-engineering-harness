@@ -34,12 +34,7 @@ $$
 
 In Advaita Vedānta \citep{deutsch1969advaita, shaw1990bada, dharmaraja17vedantaparibhasa, sankaraupadesha}, a higher-precision cognition *sublates* (bādhita) a lower-precision one. The classical example is mistaking a rope for a snake: the *snake-cognition* is not erased on closer inspection — the agent must remember it, because *that error is itself an object of subsequent reflection* — but its qualifier is now stamped *bādhita* and it no longer grounds action.
 
-**LLM operationalization.** The MCP tool `sublate_with_evidence(target_id, by_id, reason)` rewrites the target item's `status` to `bādhita`, annotates it with a pointer to the superseding item, and *retains* the original under that status. Subsequent retrievals filter by `status == "live"` for normal use but can be opted-in for audit. Sublation is triggered by two rules:
-
-1. **Explicit pointer**: the newly-arriving item names a prior item via `superseded_by_id`.
-2. **Dominance rule**: the newly-arriving item shares `qualificand` and `condition` with an existing item, has *strictly higher* precision, and the older item is `stale=True` while the newer is not.
-
-The dominance rule is the operational form of the Advaita commitment that *higher pramāṇa supersedes lower pramāṇa* under shared limitor; the explicit pointer is the form used when an LLM-side classifier or external evidence has detected a stale-fresh pair. Figure \ref{fig:sublation} traces the three-step `detect_conflict → gather sources → sublate_with_evidence` procedure end-to-end, including the immutable line written by the Sākṣī Keeper.
+**LLM operationalization.** The MCP tool `sublate_with_evidence(target_id, by_id, reason)` rewrites the target item's `status` to `bādhita`, annotates it with a pointer to the superseding item, and *retains* the original under that status. Subsequent retrievals filter by `status == "live"` for normal use but can be opted-in for audit. Sublation is triggered by two rules: (i) an **explicit pointer**, when the newly-arriving item names a prior item via `superseded_by_id`; and (ii) the **dominance rule**, when the newly-arriving item shares `qualificand` and `condition` with an existing item, has *strictly higher* precision, and the older item is `stale=True` while the newer is not. The dominance rule is the operational form of the Advaita commitment that *higher pramāṇa supersedes lower pramāṇa* under shared limitor; the explicit pointer is the form used when an LLM-side classifier or external evidence has detected a stale-fresh pair. Figure \ref{fig:sublation} traces the three-step `detect_conflict → gather sources → sublate_with_evidence` procedure end-to-end, including the immutable line written by the Sākṣī Keeper.
 
 ```{=latex}
 \input{figures_tikz/fig3_sublation.tex}
@@ -49,10 +44,7 @@ The dominance rule is the operational form of the Advaita commitment that *highe
 
 The Antaḥkaraṇa quartet of *manas, buddhi, citta, ahaṃkāra* \citep{deutsch1969advaita, ramprasad2013advaita, datta1932advaita} distinguishes the *attentional sense-organ* (*manas*) from the *determinative judging faculty* (*buddhi*). Manas selects and presents; Buddhi decides. The two are sequential and cannot be collapsed without losing the gate.
 
-**LLM operationalization.** The harness defines two sub-agent prompts (Section 6.3):
-
-- **`ManasAgent`** receives the user query and the `ContextStore` snapshot, and returns a structured JSON object matching the shipped contract in `agents/manas.md`: `{ "draft": "...", "grounding": ["<element_id>", ...], "uncertain_claims": ["..."], "needs_buddhi": true | false }`. Manas is operationalised as a **sub-agent** (Section 6.3), not a skill. Manas is *forbidden* from emitting a final user-visible answer (draft text is for the orchestrator only).
-- **`BuddhiAgent`** receives the user query, the Manas output, and re-reads the attended items from the `ContextStore`, and returns the final answer plus its own `khyāti_class` (Section 4.6) for the answer. Buddhi is the only agent that may emit a user-visible answer.
+**LLM operationalization.** The harness defines two sub-agent prompts (Section 6.3). **`ManasAgent`** receives the user query and the `ContextStore` snapshot and returns a structured JSON object matching the shipped contract in `agents/manas.md`: `{ "draft": "...", "grounding": ["<element_id>", ...], "uncertain_claims": ["..."], "needs_buddhi": true | false }`; Manas is operationalised as a **sub-agent** (Section 6.3), not a skill, and is *forbidden* from emitting a final user-visible answer (its draft text is for the orchestrator only). **`BuddhiAgent`** receives the user query, the Manas output, and re-reads the attended items from the `ContextStore`, then returns the final answer plus its own `khyāti_class` (Section 4.6); Buddhi is the only agent that may emit a user-visible answer.
 
 This two-stage gate is identical in shape to dual-process accounts of human cognition \citep{evans2003duality, kahneman2011thinking, sloman1996two} and to classic AI cognitive architectures \citep{laird1987soar, anderson1996actr, newell1990unified}, but the names — and the surrounding philosophical apparatus — are imported from **Sāṃkhya** (the original *manas*/*buddhi* enumeration in the *tattva* scheme), as cross-mapped in **Advaita Vedānta** \citep{deutsch1969advaita, datta1932advaita, ramprasad2013advaita}. Critically, *Manas can be wrong without Buddhi being wrong*: if Manas mis-selects, Buddhi's job is to detect and call for re-selection rather than to answer. Figure \ref{fig:manas_buddhi} shows the resulting two-stage loop and how the Sākṣī Keeper observes both stages without entering the response path.
 
@@ -64,13 +56,7 @@ This two-stage gate is identical in shape to dual-process accounts of human cogn
 
 In Advaita Vedānta \citep{indich1980consciousness, fasching2009witness, ganeri2017concealed, sankaraupadesha}, *sākṣī* — the witness consciousness — is the *non-revisable, non-acting* observer that *records* what is cognised without itself being the agent of cognition or action. It supplies the stable reference frame against which changes of cognition are intelligible at all.
 
-**LLM operationalization.** The harness instantiates a `SakshiKeeperAgent` (Section 6.3) and a `SakshiPrefix` skill (Section 6.2). On every turn, the keeper appends to a persistent JSON-lines audit log at `~/.cache/pratyaksha/audit.jsonl` (XDG-style cache path; survives plugin reinstall) an immutable record of:
-
-- The user query.
-- The Manas selection (which items, under which conditions).
-- The Buddhi judgment (final answer, khyāti class, calibrated posterior).
-- All sublations fired this turn (target_id, by_id, reason).
-- The token budget consumed, by category (system, retrieval, tool, completion).
+**LLM operationalization.** The harness instantiates a `SakshiKeeperAgent` (Section 6.3) and a `SakshiPrefix` skill (Section 6.2). On every turn the keeper appends to a persistent JSON-lines audit log at `~/.cache/pratyaksha/audit.jsonl` (XDG-style cache path; survives plugin reinstall) an immutable record containing the user query; the Manas selection (which items, under which conditions); the Buddhi judgment (final answer, khyāti class, calibrated posterior); all sublations fired this turn (`target_id`, `by_id`, `reason`); and the token budget consumed, broken down by category (system, retrieval, tool, completion).
 
 Crucially, the witness is *write-once-per-turn* and *read-only* to all agents in the next turn. It is the harness's source of truth for cross-turn provenance, and it is *invariant under model swaps*: the witness log written under Claude 3.5 Sonnet is fully readable, fully diffable, and fully auditable when the agent is later switched to Claude 4.5 Sonnet, GPT-4o, or Qwen-3-72B. The model is replaceable; the witness is not.
 
@@ -99,13 +85,7 @@ This is not a post-hoc relabelling of an existing modern taxonomy. It is the *or
 
 In Advaita and Yoga, *saṃskāras* are residual mental impressions and *vāsanās* are dispositional tendencies that survive the immediate occasion of a cognition \citep{deutsch1969advaita, sankaraupadesha, halbfass1991traditioncomparison}. They explain why we are drawn to the same patterns of thought and why some impressions decay quickly while others persist indefinitely. The Advaitin practice prescribes *removal of obstructive vāsanās* — adaptive forgetting of patterns that no longer ground correct cognition.
 
-**LLM operationalization.** The `AdaptiveForgetting` module (Section 5.7) applies an exponential-decay schedule to non-witnessed items in the `ContextStore`, with three explicit rules:
-
-1. **Witnessed items never decay.** If `sākṣī.witnessed == True` for an item-id, its precision floor is fixed.
-2. **Sublated items decay faster.** Items with `status == bādhita` halve their precision every time they survive a budget-pressure compaction event.
-3. **High-recency, low-precision items decay slowest among the rest** — the item is too new to know whether it will become a vāsanā or a saṃskāra.
-
-This avoids both the catastrophic-forgetting failure mode of naive context pruning \citep{french1999catastrophic, kirkpatrick2017overcoming, parisi2019continual} and the "everything is forever" failure mode of unconstrained external memory \citep{packer2023memgpt}.
+**LLM operationalization.** The `AdaptiveForgetting` module (Section 5.7) applies an exponential-decay schedule to non-witnessed items in the `ContextStore`, governed by three explicit rules. **Witnessed items never decay**: if `sākṣī.witnessed == True` for an item-id, its precision floor is fixed. **Sublated items decay faster**: items with `status == bādhita` halve their precision every time they survive a budget-pressure compaction event. **High-recency, low-precision items decay slowest among the rest** — the item is too new to know whether it will become a vāsanā or a saṃskāra. This avoids both the catastrophic-forgetting failure mode of naive context pruning \citep{french1999catastrophic, kirkpatrick2017overcoming, parisi2019continual} and the "everything is forever" failure mode of unconstrained external memory \citep{packer2023memgpt}.
 
 ## The translation table, summarised
 

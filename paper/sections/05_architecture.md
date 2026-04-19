@@ -28,22 +28,11 @@ class ContextItem:
 
 Insertion is via a single MCP tool, `context_insert(...)`. Retrieval is via `context_retrieve(...)` (with optional `qualificand`, `qualifier_substring`, and `condition` filters) and `context_get(...)` for direct id fetch; none of these return `bādhita` or `evicted` rows by default. A debug flag exposes them for audit.
 
-Two design commitments distinguish this from a vector store:
-
-1. **Conditions are first-class.** Two rows that share `qualificand` and disagree on `qualifier` are *not* yet in conflict if their `condition` fields differ. This is the avacchedaka commitment.
-
-2. **Provenance never disappears.** Sublation rewrites `status`, never deletes. Eviction (under hard budget pressure) writes to a sidecar `evicted_log.jsonl` so the witness can replay the eviction reason.
+Two design commitments distinguish this from a vector store. **Conditions are first-class**: two rows that share `qualificand` and disagree on `qualifier` are *not* yet in conflict if their `condition` fields differ — the avacchedaka commitment. **Provenance never disappears**: sublation rewrites `status`, never deletes, and eviction under hard budget pressure writes to a sidecar `evicted_log.jsonl` so the witness can replay the eviction reason.
 
 ## The AvacchedakaQuery module
 
-`context_retrieve` with `qualificand` and `condition` set walks the `ContextStore` and returns the *set* of items matching `qualificand` whose `condition` is *consistent* with the supplied condition. Consistency is decided by a small rule engine:
-
-- **String equality** wins when conditions are identical.
-- **Temporal subsumption** wins when one condition is a strictly tighter time-window of the other (e.g. `"Django ≥ 5.0"` subsumes `"Django 5.0.4"`).
-- **Lexical-prefix subsumption** for versioned platforms (`"POSIX"` subsumes `"POSIX, Python ≥ 3.11"`).
-- **Otherwise**, items are returned in *both* groups and the conflict is left to be resolved downstream by Buddhi, possibly via `sublate_with_evidence`.
-
-This rule engine is intentionally simple. We are not building a description-logic reasoner; we are providing the agent with a typed surface on which to act.
+`context_retrieve` with `qualificand` and `condition` set walks the `ContextStore` and returns the *set* of items matching `qualificand` whose `condition` is *consistent* with the supplied condition. Consistency is decided by a small rule engine: (i) **string equality** wins when conditions are identical; (ii) **temporal subsumption** wins when one condition is a strictly tighter time-window of the other (e.g. `"Django ≥ 5.0"` subsumes `"Django 5.0.4"`); (iii) **lexical-prefix subsumption** applies for versioned platforms (`"POSIX"` subsumes `"POSIX, Python ≥ 3.11"`); (iv) otherwise, items are returned in *both* groups and the conflict is left to be resolved downstream by Buddhi, possibly via `sublate_with_evidence`. This rule engine is intentionally simple. We are not building a description-logic reasoner; we are providing the agent with a typed surface on which to act.
 
 ## The Sublation + Bayesian aggregation module
 
@@ -59,11 +48,7 @@ The posterior mean $\bar{H} = \alpha_n / (\alpha_n + \beta_n)$ is returned, alon
 
 ## Buddhi and Manas as plug-in sub-agents
 
-The two-stage gate is implemented as two MCP-side prompt templates and a single orchestration policy in the host agent (Buddhi-Manas Orchestrator). The data-flow is:
-
-1. The host agent enters the harness's `manas_step(query)` which returns the Manas JSON.
-2. The host agent enters `buddhi_step(query, manas_output)` which returns the final answer + khyāti class.
-3. The host agent enters `sakshi_record(...)` which appends the immutable witness log entry.
+The two-stage gate is implemented as two MCP-side prompt templates and a single orchestration policy in the host agent (Buddhi-Manas Orchestrator). The data-flow runs in three steps: (i) the host agent enters the harness's `manas_step(query)`, which returns the Manas JSON; (ii) the host agent enters `buddhi_step(query, manas_output)`, which returns the final answer plus the khyāti class; (iii) the host agent enters `sakshi_record(...)`, which appends the immutable witness log entry.
 
 Both Manas and Buddhi are *prompted-only* sub-agents. We deliberately do *not* fine-tune. The two-stage gate is a discipline, not a model: a different LLM (Claude 3.5 Sonnet, Claude 4.x, GPT-4o, Qwen-3) can be plugged in as the *runner* of either prompt without breaking the harness's invariants. This is the "host-platform-agnostic" design commitment, and it makes the plugin hot-swappable across Cursor / Claude Code / Claude Desktop \citep{anthropic2025mcp, cursor2025plugins}.
 
@@ -91,13 +76,7 @@ Sample exemplars are curated for the few-shot *experiment* path to maximize with
 
 For long-running sessions we want to compact whole *episodes* of context, not individual items. Following event-segmentation theory \citep{zacks2007event, baldassano2017nested} and predictive-coding accounts of surprise \citep{rao1999predictive, friston2010fep, feldman2010precision}, we segment the rolling token stream by per-token **negative-log-probability surprise** computed by a small open-weights model — Qwen3-1.7B served via vLLM \citep{kwon2023vllm, vllm2023, qwen2024technical}, with an optional fallback to Qwen3-0.6B and a final heuristic-Zipf fallback \citep{piantadosi2014zipf, shannon1948mathematical, mackay2003information} when the GPU path is unavailable.
 
-A boundary is declared when surprise exceeds a rolling-mean+2σ threshold sustained across $w=12$ tokens. At boundary, the EventBoundaryCompactor:
-
-1. Summarises the just-closed episode into a single new `ContextItem` with `qualifier="episode_summary"` and `precision = mean(precisions of contained items)`.
-2. Marks all contained items as `status="evicted"` (provenance retained).
-3. Notifies the SakshiKeeperAgent of the boundary.
-
-H4 (Section 8.4) tests this module against a no-compaction baseline.
+A boundary is declared when surprise exceeds a rolling-mean+2σ threshold sustained across $w=12$ tokens. At boundary, the EventBoundaryCompactor (i) summarises the just-closed episode into a single new `ContextItem` with `qualifier="episode_summary"` and `precision = mean(precisions of contained items)`, (ii) marks all contained items as `status="evicted"` (provenance retained), and (iii) notifies the SakshiKeeperAgent of the boundary. H4 (Section 8.4) tests this module against a no-compaction baseline.
 
 ## AdaptiveForgetting
 

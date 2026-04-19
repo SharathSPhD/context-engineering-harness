@@ -42,16 +42,7 @@ The orchestrator \passthrough{\lstinline!MultiSeedRunner!} sweeps every \passthr
 
 \subsection{Public benchmark adapters (L1)}\label{public-benchmark-adapters-l1}
 
-We implemented adapters for \textbf{seven} benchmark families. Two design principles applied across all of them:
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  \textbf{Token-exact context construction.} Whenever a long context is required, we use \passthrough{\lstinline!tiktoken!} (\passthrough{\lstinline!o200k\_base!}) to assemble exactly the configured number of tokens, never an approximation. This matters because most published RULER/HELMET numbers do not preserve token-exactness \citep{hsieh2024ruler, yen2024helmet, hong2025contextrot}.
-\item
-  \textbf{Real distractor corpora when available, synthetic fallback when not.} RULER, HELMET-Recall, HELMET-RAG, and NoCha use Wikipedia + arXiv distractors loaded via the HuggingFace \passthrough{\lstinline!datasets!} library \citep{huggingface2024datasets}; the same adapters fall back to a deterministic synthetic generator when the network or HF token is unavailable, which is the path actually exercised in every CI run for reproducibility. The synthetic generators are themselves seedable and produce \emph{qualitatively} the same difficulty profile (verified in P3).
-\end{enumerate}
+We implemented adapters for \textbf{seven} benchmark families. Two design principles applied across all of them. \textbf{Token-exact context construction.} Whenever a long context is required we use \passthrough{\lstinline!tiktoken!} (\passthrough{\lstinline!o200k\_base!}) to assemble exactly the configured number of tokens, never an approximation; this matters because most published RULER/HELMET numbers do not preserve token-exactness \citep{hsieh2024ruler, yen2024helmet, hong2025contextrot}. \textbf{Real distractor corpora when available, synthetic fallback when not.} RULER, HELMET-Recall, HELMET-RAG, and NoCha use Wikipedia + arXiv distractors loaded via the HuggingFace \passthrough{\lstinline!datasets!} library \citep{huggingface2024datasets}; the same adapters fall back to a deterministic synthetic generator when the network or HF token is unavailable, which is the path actually exercised in every CI run for reproducibility, and the synthetic generators are themselves seedable and produce \emph{qualitatively} the same difficulty profile (verified in P3).
 
 The seven adapters and the hypothesis each gates are:
 
@@ -84,19 +75,7 @@ For SWE-bench Verified \citep{openai2024sweverified, jimenez2024swebench} we shi
 
 \subsection{Statistical methodology}\label{statistical-methodology}
 
-We adopt a single statistical recipe across all studies:
-
-\begin{itemize}
-\tightlist
-\item
-  \textbf{Per-seed bootstrap CI.} For each \passthrough{\lstinline!(model, seed)!} we compute a 95\% percentile bootstrap CI \citep{efron1979bootstrap} on per-example deltas, with \(B=10^4\) resamples.
-\item
-  \textbf{Paired permutation test.} For each \passthrough{\lstinline!(model, seed)!} we run a paired two-sided permutation test \citep{good2005permutation} on the per-example deltas with \(\min(2^k, 10^4)\) permutations.
-\item
-  \textbf{Cohen's d.} Standardised effect size on paired deltas \citep{cohen1988statistical}.
-\item
-  \textbf{Stouffer-Z omnibus} \citep{stouffer1949combining, liptak1958combining}. To combine across studies we use the \emph{weighted} Stouffer-Z method with weights \(w_i = \sqrt{n_i}\), computing the inverse normal CDF and survival function via the Beasley-Springer-Moro routine \citep{beasley1977normal, moro1995tail} so we have \emph{zero} dependency on SciPy in the aggregator. The combined two-sided p is reported with both the studies' n and the sum of weights.
-\end{itemize}
+We adopt a single statistical recipe across all studies. \textbf{Per-seed bootstrap CI.} For each \passthrough{\lstinline!(model, seed)!} we compute a 95\% percentile bootstrap CI \citep{efron1979bootstrap} on per-example deltas, with \(B=10^4\) resamples. \textbf{Paired permutation test.} For each \passthrough{\lstinline!(model, seed)!} we run a paired two-sided permutation test \citep{good2005permutation} on the per-example deltas with \(\min(2^k, 10^4)\) permutations. \textbf{Cohen's d.} Standardised effect size on paired deltas \citep{cohen1988statistical}. \textbf{Stouffer-Z omnibus} \citep{stouffer1949combining, liptak1958combining}: to combine across studies we use the \emph{weighted} Stouffer-Z method with weights \(w_i = \sqrt{n_i}\), computing the inverse normal CDF and survival function via the Beasley-Springer-Moro routine \citep{beasley1977normal, moro1995tail} so the aggregator has \emph{zero} dependency on SciPy; the combined two-sided \(p\) is reported with both the studies' \(n\) and the sum of weights.
 
 Stouffer's method assumes independence among combined \(Z\)-scores. Several of our rows are \emph{not} independent (e.g.~H1@8K and H1@32K share the same generator and model family). We therefore report \textbf{both} a naïve Stouffer combination treating all \textbf{10} listed studies as separate and a \emph{correlation-corrected} combination that collapses each \passthrough{\lstinline!(hypothesis, family)!} configuration to one effective study (\textbf{7} effective studies). The conservative headline uses the corrected value; both appear in \textbf{Table T7}.
 
@@ -104,31 +83,15 @@ All statistics, figures, and tables are produced by the single Python module \pa
 
 \subsection{Models tested}\label{models-tested}
 
-Every L1 study sweeps at least two models:
-
-\begin{itemize}
-\tightlist
-\item
-  \textbf{\passthrough{\lstinline!claude-haiku-4-5!}} --- small, low-latency, cost-efficient.
-\item
-  \textbf{\passthrough{\lstinline!claude-sonnet-4-6!}} --- large, full-context-class.
-\end{itemize}
-
-Both treatment and baseline arms always use the \emph{same} model on the \emph{same} seed so the paired comparison is clean. We deliberately did \emph{not} introduce a third model family (e.g.~GPT-4o or Qwen-3-72B) to avoid confounding context-discipline with model-family differences; future work (Section 12) will sweep across families.
+Every L1 study sweeps at least two models. \textbf{\passthrough{\lstinline!claude-haiku-4-5!}} is the small, low-latency, cost-efficient configuration; \textbf{\passthrough{\lstinline!claude-sonnet-4-6!}} is the large, full-context-class configuration. Both treatment and baseline arms always use the \emph{same} model on the \emph{same} seed so the paired comparison is clean. We deliberately did \emph{not} introduce a third model family (e.g.~GPT-4o or Qwen-3-72B) to avoid confounding context-discipline with model-family differences; future work (Section 12) will sweep across families.
 
 \subsection{Live case study (L2) and SWE-bench Verified A/B (L3)}\label{live-case-study-l2-and-swe-bench-verified-ab-l3}
 
-These deserve methodology paragraphs of their own because they are not benchmark adapters in the L1 sense:
+These two studies sit outside the L1 benchmark-adapter scaffold and warrant their own methodology paragraphs.
 
-\subsubsection{P6-B (live case study)}\label{p6-b-live-case-study}
+\textbf{P6-B (live case study).} We curate three real GitHub issues --- Django request-body double-read, requests retry-adapter timeout, pandas iterrows dtype coercion --- each with 3--5 evidence items mixing stale and fresh sources. The harness arm enters every evidence item via \passthrough{\lstinline!context\_insert!} with the documented \passthrough{\lstinline!precision!}, \passthrough{\lstinline!condition!}, and \passthrough{\lstinline!stale!} flag, then issues \passthrough{\lstinline!sublate\_with\_evidence!} whenever a fresher item supersedes a stale one. The baseline arm processes evidence in \emph{discovery order} with a \emph{first-seen-wins} policy (Section 9), reflecting the Lost-in-the-Middle anchoring bias \citep{liu2023lostmiddle}. Both arms are LLM-free and deterministic --- the answer is the \emph{concatenated qualifier set of the live items the arm chose to keep} --- so the comparison strictly tests the \emph{context discipline}, not generation quality.
 
-We curate three real GitHub issues --- Django request-body double-read, requests retry-adapter timeout, pandas iterrows dtype coercion --- each with 3--5 evidence items mixing stale and fresh sources. The harness arm enters every evidence item via \passthrough{\lstinline!context\_insert!} with the documented \passthrough{\lstinline!precision!}, \passthrough{\lstinline!condition!}, and \passthrough{\lstinline!stale!} flag, then issues \passthrough{\lstinline!sublate\_with\_evidence!} whenever a fresher item supersedes a stale one. The baseline arm processes evidence in \emph{discovery order} with a \emph{first-seen-wins} policy (Section 9), reflecting the Lost-in-the-Middle anchoring bias \citep{liu2023lostmiddle}. Both arms are LLM-free and deterministic --- the answer is the \emph{concatenated qualifier set of the live items the arm chose to keep} --- so the comparison strictly tests the \emph{context discipline}, not generation quality.
-
-\subsubsection{P6-C (SWE-bench Verified A/B)}\label{p6-c-swe-bench-verified-ab}
-
-For each of \(n=120\) SWE-bench Verified-style instances and each of 3 seeds × 2 models (= 720 paired runs), we synthesise a \emph{research trail} (\passthrough{\lstinline!p6c/research\_evidence.py!}) of 4 evidence snippets per instance --- 2 stale (with wrong file paths and superseded API names, simulating low-precision Stack Overflow / blog posts) and 2 fresh (with correct paths and current APIs). The harness arm filters the trail through the plugin (drops \passthrough{\lstinline!stale=True!} items via \passthrough{\lstinline!sublate\_with\_evidence!} and budget-truncates the rest); the baseline arm naively concatenates and budget-truncates the trail. Both arms then build a fixed-budget research block. \textbf{Headline numbers in this paper} use the \textbf{\passthrough{\lstinline!--research-block-budget 512!}} token budget --- the value recorded in \passthrough{\lstinline!experiments/results/p6c/\_summary.json!} (\passthrough{\lstinline!spec.research\_budget\_tokens = 512!}) --- on the research block passed to the deterministic \passthrough{\lstinline!PatchSimulator!}; the runner also supports \passthrough{\lstinline!--research-block-budget 8192!} for larger-budget studies. The simulator emits a stub diff anchored on the \emph{first plausible file path in the research block}. We score via the heuristic \emph{target-path-hit-rate} and a paired permutation test over both per-instance and per-(model, seed) groupings.
-
-The PatchSimulator design choice is critical: by \emph{not} using a real LLM patch generator, we cleanly isolate the harness's contribution as a \emph{context discipline} rather than as generation quality, which is the only intervention the plugin actually makes.
+\textbf{P6-C (SWE-bench Verified A/B).} For each of \(n=120\) SWE-bench Verified-style instances and each of 3 seeds × 2 models (= 720 paired runs), we synthesise a \emph{research trail} (\passthrough{\lstinline!p6c/research\_evidence.py!}) of 4 evidence snippets per instance --- 2 stale (with wrong file paths and superseded API names, simulating low-precision Stack Overflow / blog posts) and 2 fresh (with correct paths and current APIs). The harness arm filters the trail through the plugin (drops \passthrough{\lstinline!stale=True!} items via \passthrough{\lstinline!sublate\_with\_evidence!} and budget-truncates the rest); the baseline arm naively concatenates and budget-truncates the trail. Both arms then build a fixed-budget research block. \textbf{Headline numbers in this paper} use the \textbf{\passthrough{\lstinline!--research-block-budget 512!}} token budget --- the value recorded in \passthrough{\lstinline!experiments/results/p6c/\_summary.json!} (\passthrough{\lstinline!spec.research\_budget\_tokens = 512!}) --- on the research block passed to the deterministic \passthrough{\lstinline!PatchSimulator!}; the runner also supports \passthrough{\lstinline!--research-block-budget 8192!} for larger-budget studies. The simulator emits a stub diff anchored on the \emph{first plausible file path in the research block}. We score via the heuristic \emph{target-path-hit-rate} and a paired permutation test over both per-instance and per-(model, seed) groupings. The PatchSimulator design choice is critical: by \emph{not} using a real LLM patch generator, we cleanly isolate the harness's contribution as a \emph{context discipline} rather than as generation quality, which is the only intervention the plugin actually makes.
 
 \subsection{Aggregation: P7}\label{aggregation-p7}
 

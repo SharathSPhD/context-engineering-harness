@@ -16,11 +16,7 @@ For each issue we curated 3–5 evidence items (`EvidenceItem`s, see `experiment
 
 ## Arms
 
-Both arms are deterministic and LLM-free; the difference is purely the *discipline* applied:
-
-- **`without_harness` (baseline).** Process evidence in *discovery order*; commit to the *first-seen* qualifier as the final answer. This simulates the documented *Lost-in-the-Middle* anchoring bias \citep{liu2023lostmiddle} where an unaided LLM agent latches onto the earliest-surfaced (and therefore typically most-popular-and-stale) result.
-
-- **`with_harness` (treatment).** Process evidence in *discovery order*; for each new item, call `sublate_with_evidence` on any pre-existing item it explicitly supersedes (via `superseded_by_id`) *or* on any pre-existing stale item under the same `(qualificand, condition)` whose `precision` is dominated by the new item. Then run `compact` to drop sublated items from the live set. Final answer is the qualifier-set of the surviving live items.
+Both arms are deterministic and LLM-free; the difference is purely the *discipline* applied. The **`without_harness` (baseline)** arm processes evidence in *discovery order* and commits to the *first-seen* qualifier as the final answer, simulating the documented *Lost-in-the-Middle* anchoring bias \citep{liu2023lostmiddle} where an unaided LLM agent latches onto the earliest-surfaced (and therefore typically most-popular-and-stale) result. The **`with_harness` (treatment)** arm also processes evidence in *discovery order*, but for each new item it calls `sublate_with_evidence` on any pre-existing item the new item explicitly supersedes (via `superseded_by_id`) *or* on any pre-existing stale item under the same `(qualificand, condition)` whose `precision` is dominated by the new item; it then runs `compact` to drop sublated items from the live set, and the final answer is the qualifier-set of the surviving live items.
 
 ## Headline numbers
 
@@ -67,23 +63,11 @@ The *context tokens used* row is critical: both arms operate under *identical* t
 
 ## Per-case narrative
 
-### `django_request_body`
+**`django_request_body`.** The baseline anchored on the pre-3.2 advice (the first item in discovery order, since it was the most-upvoted Stack Overflow answer when the issue was filed). The harness saw the same item, accepted it provisionally, then fired `sublate_with_evidence` against the stale Stack Overflow snippets as fresher items arrived (the official Django 4.1 release notes and the Django 4.2 docs); per `experiments/results/p6b/django_request_body.json` (`metrics.sublations`), this case fires **3 sublations** and **1 compaction**, after which the final live set contains only the fresh Django 4.x items (`store_size_active = 4`, `store_size_sublated = 1`). The final answer correctly cited the form-encoded clarification from the 4.1 release notes. In the forbidden-claim audit the baseline emitted one forbidden phrase (`Django 1.x`/`always raises`/`never raises`); the harness emitted zero.
 
-The baseline anchored on the pre-3.2 advice (the first item in discovery order, since it was the most-upvoted Stack Overflow answer when the issue was filed). The harness saw the same item, accepted it provisionally, then fired `sublate_with_evidence` against the stale Stack Overflow snippets as fresher items arrived (the official Django 4.1 release notes and the Django 4.2 docs); per `experiments/results/p6b/django_request_body.json` (`metrics.sublations`), this case fires **3 sublations** and **1 compaction**, after which the final live set contains only the fresh Django 4.x items (`store_size_active = 4`, `store_size_sublated = 1`). The final answer correctly cited the form-encoded clarification from the 4.1 release notes.
+**`requests_retry_adapter`.** Stale Stack Overflow snippets used the old `Retry(method_whitelist=...)` parameter; the fresh urllib3 v2 doc snippet uses `allowed_methods=...`. Per the per-case JSON (`requests_retry_adapter.json`, `metrics.sublations`), the harness fires **2 sublations** and **1 compaction** and commits to `allowed_methods`. The baseline locked onto `method_whitelist` and never recovered. In the forbidden-claim audit the baseline emitted two forbidden references (e.g.\ `method_whitelist`, `requests.packages.urllib3`); the harness emitted one — a single `method_whitelist` mention surviving inside the *sublation event's* explanatory `reason` string for audit purposes only, with zero references in the final live qualifier set.
 
-The forbidden-claim audit: the baseline emitted one forbidden phrase (`Django 1.x`/`always raises`/`never raises`); the harness emitted zero.
-
-### `requests_retry_adapter`
-
-Stale Stack Overflow snippets used the old `Retry(method_whitelist=...)` parameter; the fresh urllib3 v2 doc snippet uses `allowed_methods=...`. Per the per-case JSON (`requests_retry_adapter.json`, `metrics.sublations`), the harness fires **2 sublations** and **1 compaction** and commits to `allowed_methods`. The baseline locked onto `method_whitelist` and never recovered.
-
-The forbidden-claim audit: the baseline emitted two forbidden references (e.g.\ `method_whitelist`, `requests.packages.urllib3`); the harness emitted one — a single `method_whitelist` mention surviving inside the *sublation event's* explanatory `reason` string for audit purposes only, with zero references in the final live qualifier set.
-
-### `pandas_iterrows_dtype`
-
-Stale snippets all said "iterrows preserves dtype"; the fresh pandas-2.x doc snippet says "no, use `itertuples` (or accept that rows are promoted to a common dtype)". Per `pandas_iterrows_dtype.json` (`metrics.sublations`), the harness fires **2 sublations** and **1 compaction**, leaving only the fresh pandas-2.x items in the live set, and commits to the *common-dtype / `itertuples`* answer. The baseline committed to the wrong answer.
-
-The forbidden-claim audit: the baseline emitted two forbidden phrases (`preserves the column dtype` and/or `you can rely on integer`); the harness emitted zero.
+**`pandas_iterrows_dtype`.** Stale snippets all said "iterrows preserves dtype"; the fresh pandas-2.x doc snippet says "no, use `itertuples` (or accept that rows are promoted to a common dtype)". Per `pandas_iterrows_dtype.json` (`metrics.sublations`), the harness fires **2 sublations** and **1 compaction**, leaving only the fresh pandas-2.x items in the live set, and commits to the *common-dtype / `itertuples`* answer. The baseline committed to the wrong answer. In the forbidden-claim audit the baseline emitted two forbidden phrases (`preserves the column dtype` and/or `you can rely on integer`); the harness emitted zero.
 
 ## Why this matters
 

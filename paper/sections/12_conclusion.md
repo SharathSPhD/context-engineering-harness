@@ -6,13 +6,7 @@ We presented **Pratyakṣa**, a context-engineering system for long-context, hal
 
 ## What we claim
 
-We claim the *modest* version of three things:
-
-1. **Classical Indian epistemology supplies usable type signatures for context engineering.** *Avacchedaka* (Nyāya–Vaiśeṣika), *bādha* (Advaita Vedānta + Pūrva Mīmāṃsā), *buddhi*/*manas* (Sāṃkhya, cross-mapped in Advaita), *sākṣī* (Advaita Vedānta), and *khyātivāda* (cross-school) are not metaphors; they admit precise runtime operationalisations on an LLM context window, and those operationalisations measurably improve downstream agent behaviour across general agentic-AI workloads.
-
-2. **A drop-in plugin is the right delivery vehicle.** No model fine-tune, no client patch, no infrastructure dependency heavier than `tiktoken` and `pydantic`. The system installs in 30 seconds onto Cursor, Claude Code (CLI / VS Code), or Claude Desktop and is hot-swappable across all four hosts because the only inter-process surface is MCP.
-
-3. **The system improves performance under fixed token budgets**, *not* by buying more context but by using the same budget more disciplinedly. This is the orthogonal axis to the architectural-extensions literature \citep{chen2023pi, peng2023yarn, ding2024longrope, gu2023mamba, lieber2024jamba} and the compression-extensions literature \citep{jiang2023llmlingua, jiang2024longllmlingua, chevalier2023autocompressors}.
+We claim the *modest* version of three things. **Classical Indian epistemology supplies usable type signatures for context engineering.** *Avacchedaka* (Nyāya–Vaiśeṣika), *bādha* (Advaita Vedānta + Pūrva Mīmāṃsā), *buddhi*/*manas* (Sāṃkhya, cross-mapped in Advaita), *sākṣī* (Advaita Vedānta), and *khyātivāda* (cross-school) are not metaphors; they admit precise runtime operationalisations on an LLM context window, and those operationalisations measurably improve downstream agent behaviour across general agentic-AI workloads. **A drop-in plugin is the right delivery vehicle.** No model fine-tune, no client patch, no infrastructure dependency heavier than `tiktoken` and `pydantic`; the system installs in 30 seconds onto Cursor, Claude Code (CLI / VS Code), or Claude Desktop and is hot-swappable across all four hosts because the only inter-process surface is MCP. **The system improves performance under fixed token budgets**, *not* by buying more context but by using the same budget more disciplinedly — the orthogonal axis to the architectural-extensions literature \citep{chen2023pi, peng2023yarn, ding2024longrope, gu2023mamba, lieber2024jamba} and the compression-extensions literature \citep{jiang2023llmlingua, jiang2024longllmlingua, chevalier2023autocompressors}.
 
 ## What we do *not* claim
 
@@ -20,23 +14,11 @@ We do *not* claim a new model architecture, a new pre-training regime, a new pos
 
 ## Future work
 
-Eight follow-ups are well-defined enough to scope today:
+The follow-ups divide into two thematic clusters: *empirical extensions* of the validation portfolio, and *scholarly and community* extensions of the contribution itself.
 
-1. **Cross-family LLM sweep.** Run the L1+L3 pipeline against GPT-4o-class, Qwen-3-72B, Llama-3.x. The harness should not change; the deltas may.
+The empirical-extension thread starts with a **cross-family LLM sweep** that runs the L1+L3 pipeline against GPT-4o-class, Qwen-3-72B, and Llama-3.x — the harness should not change, but the baseline-vs-treatment deltas may compress or expand depending on each family's intrinsic context discipline. Closely paired with this is a **real-LLM-coder P6-C**, which replaces the deterministic PatchSimulator with a real Claude/GPT/Qwen coder and remeasures target-path-hit-rate, full pass-rate, and SWE-bench Verified pass@1; this directly addresses the cleanest gap named in §11. A **human-vs-human Khyātivāda IAA at $n \geq 1{,}000$** with at least three annotators would promote the $\kappa = 0.736$ from automated-vs-automated to human-validated. **Live-deployment telemetry** — shipping the plugin to a small pilot group of Cursor / Claude Code users and measuring (consensually) the rate of `sublate_with_evidence` events, the post-Buddhi `khyati_class` distribution, and per-session token-budget gauge curves — would close the loop from benchmark to ecosystem. Finally, **non-coding agentic surfaces at scale** — research-assistance, document QA, multi-tool orchestration, customer-service triage, and legal-document review agents, each with a per-domain analogue of "target-path-hit-rate" — would extend the L1 long-context and hallucination evidence into the cleanest cross-domain validation.
 
-2. **Real-LLM-coder P6-C.** Replace the deterministic PatchSimulator with a real Claude/GPT/Qwen coder and remeasure target-path-hit-rate, full pass-rate, and SWE-bench Verified pass@1.
-
-3. **Human-vs-human Khyātivāda IAA at n ≥ 1,000.** Promote the κ = 0.736 from automated-vs-automated to human-validated, with at least three annotators.
-
-4. **Live-deployment telemetry.** Ship the plugin to a small pilot group of Cursor / Claude Code users and measure (consensually) the rate of `sublate_with_evidence` events, the post-Buddhi `khyati_class` distribution, and per-session token-budget gauge curves.
-
-5. **Non-coding agentic surfaces at scale.** Although the L1 evidence already exercises general long-context and hallucination tasks, a systematic application to research-assistance, document QA, multi-tool orchestration, customer-service triage, and legal-document review agents — each with a per-domain analogue of "target-path-hit-rate" — is the cleanest cross-domain validation.
-
-6. **Philological refinement.** Engage Sanskritists to refine the avacchedaka, bādha, and khyātivāda operationalizations. Some commitments — e.g. our 4-tuple representation of avacchedaka — likely under-respect the Navya-Nyāya tradition's richer relational logic \citep{matilal1968navyanyaya, ingalls1951materials, gangesa14tattvacintamani}.
-
-7. **Cognitive-neuroscience cross-checks (aspirational).** The complementary-learning-systems prediction \citep{mcclelland1995cls, kumaran2016cls} is *in principle* testable — witness-protected items might show consolidation curves that differ from non-protected items — but we have not measured this and treat it as a long-horizon research programme, not a near-term deliverable.
-
-8. **A shared runtime contract for context-engineering plugins (aspirational).** Following Cognition's *Don't Build Multi-Agents* \citep{yan2025dontbuild} and Anthropic's context-engineering position \citep{anthropic2025contexteng}, an *industry-wide* MCP-side schema for typed limitor + sublation + witness-tracking could let host platforms interoperate; we propose `pratyaksha-context-eng-harness` as a **candidate** reference point and welcome co-design, while acknowledging that standardisation is uncertain and politically contingent.
+The scholarly-and-community thread has three planks. **Philological refinement** would engage Sanskritists to refine the avacchedaka, bādha, and khyātivāda operationalizations: some commitments — e.g.\ our 4-tuple representation of *avacchedaka* — likely under-respect the Navya-Nyāya tradition's richer relational logic \citep{matilal1968navyanyaya, ingalls1951materials, gangesa14tattvacintamani}. **Cognitive-neuroscience cross-checks (aspirational)** are *in principle* testable through the complementary-learning-systems prediction \citep{mcclelland1995cls, kumaran2016cls} — witness-protected items might show consolidation curves that differ from non-protected items — but we have not measured this and treat it as a long-horizon research programme rather than a near-term deliverable. **A shared runtime contract for context-engineering plugins (aspirational)**, following Cognition's *Don't Build Multi-Agents* \citep{yan2025dontbuild} and Anthropic's context-engineering position \citep{anthropic2025contexteng}, would let host platforms interoperate via a common MCP-side schema for typed limitor, sublation, and witness-tracking; we propose `pratyaksha-context-eng-harness` as a **candidate** reference point and welcome co-design while acknowledging that standardisation is uncertain and politically contingent.
 
 ## A closing methodological note
 

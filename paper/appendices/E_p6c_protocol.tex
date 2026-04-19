@@ -8,23 +8,7 @@ We sample \(n = 120\) instances from SWE-bench Verified \citep{jimenez2024sweben
 
 \subsection{Synthetic research-trail generator}\label{synthetic-research-trail-generator}
 
-The generator (\passthrough{\lstinline!experiments/v2/p6c/research\_evidence.py!}) emits, for each instance, a list of \passthrough{\lstinline!ResearchSnippet!} objects under the contract:
-
-\begin{itemize}
-\tightlist
-\item
-  For each instance, generate \(n_{\text{stale}} = 2\) stale snippets and \(n_{\text{fresh}} = 2\) fresh snippets.
-\item
-  Each stale snippet has \passthrough{\lstinline!precision!} \(\in [0.05, 0.30]\), points at a \emph{sibling} file path (a deterministic perturbation of the true target path), and is marked \passthrough{\lstinline!stale=True!}.
-\item
-  Each fresh snippet has \passthrough{\lstinline!precision!} \(\in [0.70, 0.95]\), points at the \emph{correct} target path, and is marked \passthrough{\lstinline!stale=False!}.
-\item
-  One fresh snippet's \passthrough{\lstinline!superseded\_by\_id!} points at one stale snippet, simulating the ``Stack-Overflow-superseded-by-blog'' pattern.
-\item
-  Snippets are then shuffled with \passthrough{\lstinline!random.Random(seed + hash(instance\_id) \% 10\_000)!} so the \emph{position} of the correct evidence in the research trail varies across seeds.
-\end{itemize}
-
-The generator is fully deterministic given \passthrough{\lstinline!(instance\_id, seed)!}; its tests live in \passthrough{\lstinline!tests/test\_v2/test\_p6c\_research\_evidence.py!}.
+The generator (\passthrough{\lstinline!experiments/v2/p6c/research\_evidence.py!}) emits, for each instance, a list of \passthrough{\lstinline!ResearchSnippet!} objects under a fixed contract: it produces \(n_{\text{stale}} = 2\) stale snippets and \(n_{\text{fresh}} = 2\) fresh snippets per instance; each stale snippet has \passthrough{\lstinline!precision!} \(\in [0.05, 0.30]\), points at a \emph{sibling} file path (a deterministic perturbation of the true target path), and is marked \passthrough{\lstinline!stale=True!}; each fresh snippet has \passthrough{\lstinline!precision!} \(\in [0.70, 0.95]\), points at the \emph{correct} target path, and is marked \passthrough{\lstinline!stale=False!}; one fresh snippet's \passthrough{\lstinline!superseded\_by\_id!} points at one stale snippet, simulating the ``Stack-Overflow-superseded-by-blog'' pattern; and the snippets are then shuffled with \passthrough{\lstinline!random.Random(seed + hash(instance\_id) \% 10\_000)!} so the \emph{position} of the correct evidence in the research trail varies across seeds. The generator is fully deterministic given \passthrough{\lstinline!(instance\_id, seed)!}; its tests live in \passthrough{\lstinline!tests/test\_v2/test\_p6c\_research\_evidence.py!}.
 
 \subsection{The two arms}\label{the-two-arms}
 
@@ -90,31 +74,11 @@ The simulator deterministically picks the \emph{first} \passthrough{\lstinline!p
 
 \subsection{Scoring}\label{scoring}
 
-Two scorers are computed for every instance:
-
-\begin{itemize}
-\tightlist
-\item
-  \textbf{Heuristic.} \passthrough{\lstinline!target\_path\_hit = 1!} iff \passthrough{\lstinline!metadata["anchored\_path"] == ground\_truth\_path!}. This is what we report in Section 10 because it is fully reproducible without Docker.
-\item
-  \textbf{Real SWE-bench (optional).} When \passthrough{\lstinline!--use-docker-eval!} is passed, the patch is fed to the upstream SWE-bench evaluation harness which runs the repository's tests in a pinned Docker image. Pass/fail joins the per-instance row.
-\end{itemize}
-
-We confirm in Section 10 that the heuristic scorer and the Docker scorer agree on the cases we ran with both (\(\kappa\) = 0.97 on a 30-instance sub-sample); this validates the heuristic as a faithful low-cost proxy.
+Two scorers are computed for every instance. \textbf{Heuristic}: \passthrough{\lstinline!target\_path\_hit = 1!} iff \passthrough{\lstinline!metadata["anchored\_path"] == ground\_truth\_path!} --- this is what we report in Section 10 because it is fully reproducible without Docker. \textbf{Real SWE-bench (optional)}: when \passthrough{\lstinline!--use-docker-eval!} is passed, the patch is fed to the upstream SWE-bench evaluation harness, which runs the repository's tests in a pinned Docker image, and pass/fail joins the per-instance row. We confirm in Section 10 that the heuristic scorer and the Docker scorer agree on the cases we ran with both (\(\kappa = 0.97\) on a 30-instance sub-sample); this validates the heuristic as a faithful low-cost proxy.
 
 \subsection{Statistical recipe}\label{statistical-recipe}
 
-Each (instance, seed, model) triple yields one paired observation \((y_{\text{with}}, y_{\text{without}})\). With 120 instances × 3 seeds × 2 models = 720 paired observations:
-
-\begin{itemize}
-\tightlist
-\item
-  \textbf{Per-instance pairing.} Permutation test over the 120 instance-mean pairs (averaging over 6 seed × model replicates). Reported \(p_{\text{instance}}\).
-\item
-  \textbf{Per-(model, seed) pairing.} Permutation test over the 6 model-seed pairs (each averaging over 120 instances). Reported \(p_{\text{model-seed}}\). This tests whether the harness's effect generalises across model and seed, not just across instance.
-\end{itemize}
-
-Both tests are two-sided permutation tests with \(10^4\) shuffles. Bootstrap CIs use \(10^4\) resamples.
+Each (instance, seed, model) triple yields one paired observation \((y_{\text{with}}, y_{\text{without}})\). With 120 instances × 3 seeds × 2 models = 720 paired observations, we report two paired statistics. \textbf{Per-instance pairing} runs a permutation test over the 120 instance-mean pairs (averaging over 6 seed × model replicates) and yields \(p_{\text{instance}}\). \textbf{Per-(model, seed) pairing} runs a permutation test over the 6 model-seed pairs (each averaging over 120 instances) and yields \(p_{\text{model-seed}}\), which tests whether the harness's effect generalises across model and seed, not just across instance. Both tests are two-sided permutation tests with \(10^4\) shuffles, and bootstrap CIs use \(10^4\) resamples.
 
 \subsection{Outputs}\label{outputs}
 

@@ -6,18 +6,7 @@ A faithful empirical paper must publish what \emph{did not work} with the same r
 
 \textbf{What we tried.} The v0 harness had a single \passthrough{\lstinline!PrecisionWeightedRAG!} aggregator that combined multiple sources by precision-weighted majority vote.
 
-\textbf{Why it failed.} Three reasons surfaced empirically:
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  \textbf{No calibration.} It reported binary ``agree/disagree'' without a calibrated posterior. ECE ran at \(\sim 0.18\) on H2.
-\item
-  \textbf{No conflict detection.} Conflicts that should have triggered sublation merely returned the higher-precision answer silently. The agent had no signal to \emph{audit} the disagreement.
-\item
-  \textbf{No witness.} Decisions were not traceable: the agent could not later explain \emph{why} one source had been preferred.
-\end{enumerate}
+\textbf{Why it failed.} Three reasons surfaced empirically. \textbf{No calibration}: it reported binary ``agree/disagree'' without a calibrated posterior, and ECE ran at \(\sim 0.18\) on H2. \textbf{No conflict detection}: conflicts that should have triggered sublation merely returned the higher-precision answer silently, leaving the agent with no signal to \emph{audit} the disagreement. \textbf{No witness}: decisions were not traceable, so the agent could not later explain \emph{why} one source had been preferred.
 
 \textbf{Replacement.} The Bayesian Beta-Bernoulli aggregator with explicit posterior margin and conflict detection (Section 5.3). H2 ECE dropped to \(0.07\).
 

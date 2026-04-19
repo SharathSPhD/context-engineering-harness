@@ -8,15 +8,7 @@ We sample $n = 120$ instances from SWE-bench Verified \citep{jimenez2024swebench
 
 ## Synthetic research-trail generator
 
-The generator (`experiments/v2/p6c/research_evidence.py`) emits, for each instance, a list of `ResearchSnippet` objects under the contract:
-
-- For each instance, generate $n_{\text{stale}} = 2$ stale snippets and $n_{\text{fresh}} = 2$ fresh snippets.
-- Each stale snippet has `precision` $\in [0.05, 0.30]$, points at a *sibling* file path (a deterministic perturbation of the true target path), and is marked `stale=True`.
-- Each fresh snippet has `precision` $\in [0.70, 0.95]$, points at the *correct* target path, and is marked `stale=False`.
-- One fresh snippet's `superseded_by_id` points at one stale snippet, simulating the "Stack-Overflow-superseded-by-blog" pattern.
-- Snippets are then shuffled with `random.Random(seed + hash(instance_id) % 10_000)` so the *position* of the correct evidence in the research trail varies across seeds.
-
-The generator is fully deterministic given `(instance_id, seed)`; its tests live in `tests/test_v2/test_p6c_research_evidence.py`.
+The generator (`experiments/v2/p6c/research_evidence.py`) emits, for each instance, a list of `ResearchSnippet` objects under a fixed contract: it produces $n_{\text{stale}} = 2$ stale snippets and $n_{\text{fresh}} = 2$ fresh snippets per instance; each stale snippet has `precision` $\in [0.05, 0.30]$, points at a *sibling* file path (a deterministic perturbation of the true target path), and is marked `stale=True`; each fresh snippet has `precision` $\in [0.70, 0.95]$, points at the *correct* target path, and is marked `stale=False`; one fresh snippet's `superseded_by_id` points at one stale snippet, simulating the "Stack-Overflow-superseded-by-blog" pattern; and the snippets are then shuffled with `random.Random(seed + hash(instance_id) % 10_000)` so the *position* of the correct evidence in the research trail varies across seeds. The generator is fully deterministic given `(instance_id, seed)`; its tests live in `tests/test_v2/test_p6c_research_evidence.py`.
 
 ## The two arms
 
@@ -82,21 +74,11 @@ The simulator deterministically picks the *first* `path.py` token mentioned in t
 
 ## Scoring
 
-Two scorers are computed for every instance:
-
-- **Heuristic.** `target_path_hit = 1` iff `metadata["anchored_path"] == ground_truth_path`. This is what we report in Section 10 because it is fully reproducible without Docker.
-- **Real SWE-bench (optional).** When `--use-docker-eval` is passed, the patch is fed to the upstream SWE-bench evaluation harness which runs the repository's tests in a pinned Docker image. Pass/fail joins the per-instance row.
-
-We confirm in Section 10 that the heuristic scorer and the Docker scorer agree on the cases we ran with both ($\kappa$ = 0.97 on a 30-instance sub-sample); this validates the heuristic as a faithful low-cost proxy.
+Two scorers are computed for every instance. **Heuristic**: `target_path_hit = 1` iff `metadata["anchored_path"] == ground_truth_path` — this is what we report in Section 10 because it is fully reproducible without Docker. **Real SWE-bench (optional)**: when `--use-docker-eval` is passed, the patch is fed to the upstream SWE-bench evaluation harness, which runs the repository's tests in a pinned Docker image, and pass/fail joins the per-instance row. We confirm in Section 10 that the heuristic scorer and the Docker scorer agree on the cases we ran with both ($\kappa = 0.97$ on a 30-instance sub-sample); this validates the heuristic as a faithful low-cost proxy.
 
 ## Statistical recipe
 
-Each (instance, seed, model) triple yields one paired observation $(y_{\text{with}}, y_{\text{without}})$. With 120 instances × 3 seeds × 2 models = 720 paired observations:
-
-- **Per-instance pairing.** Permutation test over the 120 instance-mean pairs (averaging over 6 seed × model replicates). Reported $p_{\text{instance}}$.
-- **Per-(model, seed) pairing.** Permutation test over the 6 model-seed pairs (each averaging over 120 instances). Reported $p_{\text{model-seed}}$. This tests whether the harness's effect generalises across model and seed, not just across instance.
-
-Both tests are two-sided permutation tests with $10^4$ shuffles. Bootstrap CIs use $10^4$ resamples.
+Each (instance, seed, model) triple yields one paired observation $(y_{\text{with}}, y_{\text{without}})$. With 120 instances × 3 seeds × 2 models = 720 paired observations, we report two paired statistics. **Per-instance pairing** runs a permutation test over the 120 instance-mean pairs (averaging over 6 seed × model replicates) and yields $p_{\text{instance}}$. **Per-(model, seed) pairing** runs a permutation test over the 6 model-seed pairs (each averaging over 120 instances) and yields $p_{\text{model-seed}}$, which tests whether the harness's effect generalises across model and seed, not just across instance. Both tests are two-sided permutation tests with $10^4$ shuffles, and bootstrap CIs use $10^4$ resamples.
 
 ## Outputs
 

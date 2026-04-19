@@ -32,18 +32,7 @@ Here \(a\) is the \emph{qualificand} (viśeṣya), \(Q\) the \emph{qualifier} (p
 
 In Advaita Vedānta \citep{deutsch1969advaita, shaw1990bada, dharmaraja17vedantaparibhasa, sankaraupadesha}, a higher-precision cognition \emph{sublates} (bādhita) a lower-precision one. The classical example is mistaking a rope for a snake: the \emph{snake-cognition} is not erased on closer inspection --- the agent must remember it, because \emph{that error is itself an object of subsequent reflection} --- but its qualifier is now stamped \emph{bādhita} and it no longer grounds action.
 
-\textbf{LLM operationalization.} The MCP tool \passthrough{\lstinline!sublate\_with\_evidence(target\_id, by\_id, reason)!} rewrites the target item's \passthrough{\lstinline!status!} to \passthrough{\lstinline!bādhita!}, annotates it with a pointer to the superseding item, and \emph{retains} the original under that status. Subsequent retrievals filter by \passthrough{\lstinline!status == "live"!} for normal use but can be opted-in for audit. Sublation is triggered by two rules:
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  \textbf{Explicit pointer}: the newly-arriving item names a prior item via \passthrough{\lstinline!superseded\_by\_id!}.
-\item
-  \textbf{Dominance rule}: the newly-arriving item shares \passthrough{\lstinline!qualificand!} and \passthrough{\lstinline!condition!} with an existing item, has \emph{strictly higher} precision, and the older item is \passthrough{\lstinline!stale=True!} while the newer is not.
-\end{enumerate}
-
-The dominance rule is the operational form of the Advaita commitment that \emph{higher pramāṇa supersedes lower pramāṇa} under shared limitor; the explicit pointer is the form used when an LLM-side classifier or external evidence has detected a stale-fresh pair. Figure \ref{fig:sublation} traces the three-step \passthrough{\lstinline!detect\_conflict → gather sources → sublate\_with\_evidence!} procedure end-to-end, including the immutable line written by the Sākṣī Keeper.
+\textbf{LLM operationalization.} The MCP tool \passthrough{\lstinline!sublate\_with\_evidence(target\_id, by\_id, reason)!} rewrites the target item's \passthrough{\lstinline!status!} to \passthrough{\lstinline!bādhita!}, annotates it with a pointer to the superseding item, and \emph{retains} the original under that status. Subsequent retrievals filter by \passthrough{\lstinline!status == "live"!} for normal use but can be opted-in for audit. Sublation is triggered by two rules: (i) an \textbf{explicit pointer}, when the newly-arriving item names a prior item via \passthrough{\lstinline!superseded\_by\_id!}; and (ii) the \textbf{dominance rule}, when the newly-arriving item shares \passthrough{\lstinline!qualificand!} and \passthrough{\lstinline!condition!} with an existing item, has \emph{strictly higher} precision, and the older item is \passthrough{\lstinline!stale=True!} while the newer is not. The dominance rule is the operational form of the Advaita commitment that \emph{higher pramāṇa supersedes lower pramāṇa} under shared limitor; the explicit pointer is the form used when an LLM-side classifier or external evidence has detected a stale-fresh pair. Figure \ref{fig:sublation} traces the three-step \passthrough{\lstinline!detect\_conflict → gather sources → sublate\_with\_evidence!} procedure end-to-end, including the immutable line written by the Sākṣī Keeper.
 
 \input{figures_tikz/fig3_sublation.tex}
 
@@ -51,15 +40,7 @@ The dominance rule is the operational form of the Advaita commitment that \emph{
 
 The Antaḥkaraṇa quartet of \emph{manas, buddhi, citta, ahaṃkāra} \citep{deutsch1969advaita, ramprasad2013advaita, datta1932advaita} distinguishes the \emph{attentional sense-organ} (\emph{manas}) from the \emph{determinative judging faculty} (\emph{buddhi}). Manas selects and presents; Buddhi decides. The two are sequential and cannot be collapsed without losing the gate.
 
-\textbf{LLM operationalization.} The harness defines two sub-agent prompts (Section 6.3):
-
-\begin{itemize}
-\tightlist
-\item
-  \textbf{\passthrough{\lstinline!ManasAgent!}} receives the user query and the \passthrough{\lstinline!ContextStore!} snapshot, and returns a structured JSON object matching the shipped contract in \passthrough{\lstinline!agents/manas.md!}: \passthrough{\lstinline!\{ "draft": "...", "grounding": ["<element\_id>", ...], "uncertain\_claims": ["..."], "needs\_buddhi": true | false \}!}. Manas is operationalised as a \textbf{sub-agent} (Section 6.3), not a skill. Manas is \emph{forbidden} from emitting a final user-visible answer (draft text is for the orchestrator only).
-\item
-  \textbf{\passthrough{\lstinline!BuddhiAgent!}} receives the user query, the Manas output, and re-reads the attended items from the \passthrough{\lstinline!ContextStore!}, and returns the final answer plus its own \passthrough{\lstinline!khyāti\_class!} (Section 4.6) for the answer. Buddhi is the only agent that may emit a user-visible answer.
-\end{itemize}
+\textbf{LLM operationalization.} The harness defines two sub-agent prompts (Section 6.3). \textbf{\passthrough{\lstinline!ManasAgent!}} receives the user query and the \passthrough{\lstinline!ContextStore!} snapshot and returns a structured JSON object matching the shipped contract in \passthrough{\lstinline!agents/manas.md!}: \passthrough{\lstinline!\{ "draft": "...", "grounding": ["<element\_id>", ...], "uncertain\_claims": ["..."], "needs\_buddhi": true | false \}!}; Manas is operationalised as a \textbf{sub-agent} (Section 6.3), not a skill, and is \emph{forbidden} from emitting a final user-visible answer (its draft text is for the orchestrator only). \textbf{\passthrough{\lstinline!BuddhiAgent!}} receives the user query, the Manas output, and re-reads the attended items from the \passthrough{\lstinline!ContextStore!}, then returns the final answer plus its own \passthrough{\lstinline!khyāti\_class!} (Section 4.6); Buddhi is the only agent that may emit a user-visible answer.
 
 This two-stage gate is identical in shape to dual-process accounts of human cognition \citep{evans2003duality, kahneman2011thinking, sloman1996two} and to classic AI cognitive architectures \citep{laird1987soar, anderson1996actr, newell1990unified}, but the names --- and the surrounding philosophical apparatus --- are imported from \textbf{Sāṃkhya} (the original \emph{manas}/\emph{buddhi} enumeration in the \emph{tattva} scheme), as cross-mapped in \textbf{Advaita Vedānta} \citep{deutsch1969advaita, datta1932advaita, ramprasad2013advaita}. Critically, \emph{Manas can be wrong without Buddhi being wrong}: if Manas mis-selects, Buddhi's job is to detect and call for re-selection rather than to answer. Figure \ref{fig:manas_buddhi} shows the resulting two-stage loop and how the Sākṣī Keeper observes both stages without entering the response path.
 
@@ -69,21 +50,7 @@ This two-stage gate is identical in shape to dual-process accounts of human cogn
 
 In Advaita Vedānta \citep{indich1980consciousness, fasching2009witness, ganeri2017concealed, sankaraupadesha}, \emph{sākṣī} --- the witness consciousness --- is the \emph{non-revisable, non-acting} observer that \emph{records} what is cognised without itself being the agent of cognition or action. It supplies the stable reference frame against which changes of cognition are intelligible at all.
 
-\textbf{LLM operationalization.} The harness instantiates a \passthrough{\lstinline!SakshiKeeperAgent!} (Section 6.3) and a \passthrough{\lstinline!SakshiPrefix!} skill (Section 6.2). On every turn, the keeper appends to a persistent JSON-lines audit log at \passthrough{\lstinline!\~/.cache/pratyaksha/audit.jsonl!} (XDG-style cache path; survives plugin reinstall) an immutable record of:
-
-\begin{itemize}
-\tightlist
-\item
-  The user query.
-\item
-  The Manas selection (which items, under which conditions).
-\item
-  The Buddhi judgment (final answer, khyāti class, calibrated posterior).
-\item
-  All sublations fired this turn (target\_id, by\_id, reason).
-\item
-  The token budget consumed, by category (system, retrieval, tool, completion).
-\end{itemize}
+\textbf{LLM operationalization.} The harness instantiates a \passthrough{\lstinline!SakshiKeeperAgent!} (Section 6.3) and a \passthrough{\lstinline!SakshiPrefix!} skill (Section 6.2). On every turn the keeper appends to a persistent JSON-lines audit log at \passthrough{\lstinline!\~/.cache/pratyaksha/audit.jsonl!} (XDG-style cache path; survives plugin reinstall) an immutable record containing the user query; the Manas selection (which items, under which conditions); the Buddhi judgment (final answer, khyāti class, calibrated posterior); all sublations fired this turn (\passthrough{\lstinline!target\_id!}, \passthrough{\lstinline!by\_id!}, \passthrough{\lstinline!reason!}); and the token budget consumed, broken down by category (system, retrieval, tool, completion).
 
 Crucially, the witness is \emph{write-once-per-turn} and \emph{read-only} to all agents in the next turn. It is the harness's source of truth for cross-turn provenance, and it is \emph{invariant under model swaps}: the witness log written under Claude 3.5 Sonnet is fully readable, fully diffable, and fully auditable when the agent is later switched to Claude 4.5 Sonnet, GPT-4o, or Qwen-3-72B. The model is replaceable; the witness is not.
 
@@ -130,20 +97,7 @@ This is not a post-hoc relabelling of an existing modern taxonomy. It is the \em
 
 In Advaita and Yoga, \emph{saṃskāras} are residual mental impressions and \emph{vāsanās} are dispositional tendencies that survive the immediate occasion of a cognition \citep{deutsch1969advaita, sankaraupadesha, halbfass1991traditioncomparison}. They explain why we are drawn to the same patterns of thought and why some impressions decay quickly while others persist indefinitely. The Advaitin practice prescribes \emph{removal of obstructive vāsanās} --- adaptive forgetting of patterns that no longer ground correct cognition.
 
-\textbf{LLM operationalization.} The \passthrough{\lstinline!AdaptiveForgetting!} module (Section 5.7) applies an exponential-decay schedule to non-witnessed items in the \passthrough{\lstinline!ContextStore!}, with three explicit rules:
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  \textbf{Witnessed items never decay.} If \passthrough{\lstinline!sākṣī.witnessed == True!} for an item-id, its precision floor is fixed.
-\item
-  \textbf{Sublated items decay faster.} Items with \passthrough{\lstinline!status == bādhita!} halve their precision every time they survive a budget-pressure compaction event.
-\item
-  \textbf{High-recency, low-precision items decay slowest among the rest} --- the item is too new to know whether it will become a vāsanā or a saṃskāra.
-\end{enumerate}
-
-This avoids both the catastrophic-forgetting failure mode of naive context pruning \citep{french1999catastrophic, kirkpatrick2017overcoming, parisi2019continual} and the ``everything is forever'' failure mode of unconstrained external memory \citep{packer2023memgpt}.
+\textbf{LLM operationalization.} The \passthrough{\lstinline!AdaptiveForgetting!} module (Section 5.7) applies an exponential-decay schedule to non-witnessed items in the \passthrough{\lstinline!ContextStore!}, governed by three explicit rules. \textbf{Witnessed items never decay}: if \passthrough{\lstinline!sākṣī.witnessed == True!} for an item-id, its precision floor is fixed. \textbf{Sublated items decay faster}: items with \passthrough{\lstinline!status == bādhita!} halve their precision every time they survive a budget-pressure compaction event. \textbf{High-recency, low-precision items decay slowest among the rest} --- the item is too new to know whether it will become a vāsanā or a saṃskāra. This avoids both the catastrophic-forgetting failure mode of naive context pruning \citep{french1999catastrophic, kirkpatrick2017overcoming, parisi2019continual} and the ``everything is forever'' failure mode of unconstrained external memory \citep{packer2023memgpt}.
 
 \subsection{The translation table, summarised}\label{the-translation-table-summarised}
 

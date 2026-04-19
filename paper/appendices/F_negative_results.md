@@ -6,11 +6,7 @@ A faithful empirical paper must publish what *did not work* with the same rigour
 
 **What we tried.** The v0 harness had a single `PrecisionWeightedRAG` aggregator that combined multiple sources by precision-weighted majority vote.
 
-**Why it failed.** Three reasons surfaced empirically:
-
-1. **No calibration.** It reported binary "agree/disagree" without a calibrated posterior. ECE ran at $\sim 0.18$ on H2.
-2. **No conflict detection.** Conflicts that should have triggered sublation merely returned the higher-precision answer silently. The agent had no signal to *audit* the disagreement.
-3. **No witness.** Decisions were not traceable: the agent could not later explain *why* one source had been preferred.
+**Why it failed.** Three reasons surfaced empirically. **No calibration**: it reported binary "agree/disagree" without a calibrated posterior, and ECE ran at $\sim 0.18$ on H2. **No conflict detection**: conflicts that should have triggered sublation merely returned the higher-precision answer silently, leaving the agent with no signal to *audit* the disagreement. **No witness**: decisions were not traceable, so the agent could not later explain *why* one source had been preferred.
 
 **Replacement.** The Bayesian Beta-Bernoulli aggregator with explicit posterior margin and conflict detection (Section 5.3). H2 ECE dropped to $0.07$.
 

@@ -4,17 +4,7 @@ The harness ships as a single plugin, \textbf{\passthrough{\lstinline!pratyaksha
 
 \subsection{Manifest and discovery}\label{manifest-and-discovery}
 
-Two manifests are shipped:
-
-\begin{itemize}
-\tightlist
-\item
-  \passthrough{\lstinline!.claude-plugin/plugin.json!} --- Claude-Code-format component manifest declaring the 3 agents, 4 commands, 3 skills, and the \passthrough{\lstinline!hooks/hooks.json!} registration.
-\item
-  \passthrough{\lstinline!marketplace.json!} --- top-level marketplace manifest used for \passthrough{\lstinline!/plugin install!} discovery, listing the canonical id, version, repository URL, license, keywords, and feature catalogue.
-\end{itemize}
-
-Both manifests are version-pinned to \passthrough{\lstinline!1.0.0!}, point to the same upstream URL, and resolve identically in Cursor (via the plugin marketplace \citep{cursor2025plugins}) and Claude Code (via the new plugin marketplace surface \citep{anthropic2025claudecode}). Setup is a single command: \passthrough{\lstinline!curl -LsSf https://astral.sh/uv/install.sh | sh!}; the MCP server's Python dependencies are installed lazily on first tool call by \passthrough{\lstinline!uv!} \citep{uv2025}, so a fresh user can install the plugin without ever invoking \passthrough{\lstinline!pip!}, creating a virtualenv, or running \passthrough{\lstinline!claude mcp add!}.
+Two manifests are shipped. \textbf{\passthrough{\lstinline!.claude-plugin/plugin.json!}} is the Claude-Code-format component manifest declaring the 3 agents, 4 commands, 3 skills, and the \passthrough{\lstinline!hooks/hooks.json!} registration. \textbf{\passthrough{\lstinline!marketplace.json!}} is the top-level marketplace manifest used for \passthrough{\lstinline!/plugin install!} discovery, listing the canonical id, version, repository URL, license, keywords, and feature catalogue. Both manifests are version-pinned to \passthrough{\lstinline!1.0.0!}, point to the same upstream URL, and resolve identically in Cursor (via the plugin marketplace \citep{cursor2025plugins}) and Claude Code (via the new plugin marketplace surface \citep{anthropic2025claudecode}). Setup is a single command --- \passthrough{\lstinline!curl -LsSf https://astral.sh/uv/install.sh | sh!} --- and the MCP server's Python dependencies are installed lazily on first tool call by \passthrough{\lstinline!uv!} \citep{uv2025}, so a fresh user can install the plugin without ever invoking \passthrough{\lstinline!pip!}, creating a virtualenv, or running \passthrough{\lstinline!claude mcp add!}.
 
 \subsection{The 15 MCP tools}\label{the-15-mcp-tools}
 
@@ -62,45 +52,15 @@ Every tool is typed via Pydantic v2 input/output models, returns JSON-serializab
 
 \subsection{The 3 sub-agents}\label{the-3-sub-agents}
 
-\begin{itemize}
-\tightlist
-\item
-  \textbf{\passthrough{\lstinline!agents/manas.md!}} --- defines the \emph{attentional sense-organ} \textbf{sub-agent}. System prompt instructs the model to call \passthrough{\lstinline!get\_sakshi!}, \passthrough{\lstinline!context\_retrieve!}, \passthrough{\lstinline!context\_window!}, \passthrough{\lstinline!classify\_khyativada!}, and \passthrough{\lstinline!budget\_record!}, and to return structured JSON of the form \passthrough{\lstinline!\{ "draft": "...", "grounding": ["<element\_id>", ...], "uncertain\_claims": ["..."], "needs\_buddhi": true | false \}!} (verbatim contract in the repository file). Manas must \emph{never} emit a user-visible final answer.
-\item
-  \textbf{\passthrough{\lstinline!agents/buddhi.md!}} --- the \emph{determinative judging} sub-agent. May call \passthrough{\lstinline!sublate\_with\_evidence!}, \passthrough{\lstinline!detect\_conflict!}, and \passthrough{\lstinline!classify\_khyativada!}. Emits the user-visible answer and its self-classified \passthrough{\lstinline!khyati\_class!} and \passthrough{\lstinline!confidence!}.
-\item
-  \textbf{\passthrough{\lstinline!agents/sakshi-keeper.md!}} --- the \emph{witness keeper}. Read-only on the live store; append-only on the JSON-lines audit log at \passthrough{\lstinline!\~/.cache/pratyaksha/audit.jsonl!}. Invoked from the lifecycle hooks (Section 6.5).
-\end{itemize}
-
-The choice to ship Manas and Buddhi as \emph{agents} (system-prompt-only sub-agents driven by the host LLM) rather than as fine-tunes is deliberate: it preserves the harness's host-platform-agnosticism (Section 5.4) and lets users swap the underlying model without re-training anything.
+\textbf{\passthrough{\lstinline!agents/manas.md!}} defines the \emph{attentional sense-organ} sub-agent: the system prompt instructs the model to call \passthrough{\lstinline!get\_sakshi!}, \passthrough{\lstinline!context\_retrieve!}, \passthrough{\lstinline!context\_window!}, \passthrough{\lstinline!classify\_khyativada!}, and \passthrough{\lstinline!budget\_record!}, and to return structured JSON of the form \passthrough{\lstinline!\{ "draft": "...", "grounding": ["<element\_id>", ...], "uncertain\_claims": ["..."], "needs\_buddhi": true | false \}!} (verbatim contract in the repository file); Manas must \emph{never} emit a user-visible final answer. \textbf{\passthrough{\lstinline!agents/buddhi.md!}} is the \emph{determinative judging} sub-agent, which may call \passthrough{\lstinline!sublate\_with\_evidence!}, \passthrough{\lstinline!detect\_conflict!}, and \passthrough{\lstinline!classify\_khyativada!}, and emits the user-visible answer together with its self-classified \passthrough{\lstinline!khyati\_class!} and \passthrough{\lstinline!confidence!}. \textbf{\passthrough{\lstinline!agents/sakshi-keeper.md!}} is the \emph{witness keeper}: read-only on the live store and append-only on the JSON-lines audit log at \passthrough{\lstinline!\~/.cache/pratyaksha/audit.jsonl!}; it is invoked from the lifecycle hooks (Section 6.5). The choice to ship Manas and Buddhi as \emph{agents} (system-prompt-only sub-agents driven by the host LLM) rather than as fine-tunes is deliberate: it preserves the harness's host-platform-agnosticism (Section 5.4) and lets users swap the underlying model without re-training anything.
 
 \subsection{The 3 skills}\label{the-3-skills}
 
-Following the Cursor/Claude-Code skill format (an \passthrough{\lstinline!SKILL.md!} per directory):
-
-\begin{itemize}
-\tightlist
-\item
-  \textbf{\passthrough{\lstinline!skills/context-discipline/SKILL.md!}} --- surfaces the harness's discipline as a triggered skill: \emph{``every retrieved item must be entered with avacchedaka qualifiers; no free-text dumps''}. Activates when the host agent is about to call a search/RAG tool.
-\item
-  \textbf{\passthrough{\lstinline!skills/sublate-on-conflict/SKILL.md!}} --- triggers Buddhi's call to \passthrough{\lstinline!sublate\_with\_evidence!} when \passthrough{\lstinline!detect\_conflict!} returns true.
-\item
-  \textbf{\passthrough{\lstinline!skills/witness-prefix/SKILL.md!}} --- wraps every Buddhi prompt with a stable \passthrough{\lstinline!<sakshi\_invariants>!} system block via \passthrough{\lstinline!get\_sakshi!}, so the witness frame is \emph{literally a system message}, not inlined into the user turn.
-\end{itemize}
+Following the Cursor/Claude-Code skill format (an \passthrough{\lstinline!SKILL.md!} per directory): \textbf{\passthrough{\lstinline!skills/context-discipline/SKILL.md!}} surfaces the harness's discipline as a triggered skill (\emph{``every retrieved item must be entered with avacchedaka qualifiers; no free-text dumps''}) and activates when the host agent is about to call a search/RAG tool; \textbf{\passthrough{\lstinline!skills/sublate-on-conflict/SKILL.md!}} triggers Buddhi's call to \passthrough{\lstinline!sublate\_with\_evidence!} when \passthrough{\lstinline!detect\_conflict!} returns true; and \textbf{\passthrough{\lstinline!skills/witness-prefix/SKILL.md!}} wraps every Buddhi prompt with a stable \passthrough{\lstinline!<sakshi\_invariants>!} system block via \passthrough{\lstinline!get\_sakshi!}, so the witness frame is \emph{literally a system message} rather than inlined into the user turn.
 
 \subsection{The 4 slash commands}\label{the-4-slash-commands}
 
-\begin{itemize}
-\tightlist
-\item
-  \textbf{\passthrough{\lstinline!/context-status!}} --- pretty-prints the visible context window, by category, with budget gauge.
-\item
-  \textbf{\passthrough{\lstinline!/sublate <target\_id> <by\_id> <reason>!}} --- manual sublation override (audit / debug).
-\item
-  \textbf{\passthrough{\lstinline!/budget!}} --- shorthand for \passthrough{\lstinline!budget\_status!} rendered as a one-line gauge.
-\item
-  \textbf{\passthrough{\lstinline!/compact-now [strategy]!}} --- manually trigger compaction; \passthrough{\lstinline!strategy ∈ \{adaptive, lru, none\}!} (default \passthrough{\lstinline!adaptive!}).
-\end{itemize}
+The four commands are \textbf{\passthrough{\lstinline!/context-status!}}, which pretty-prints the visible context window by category with a budget gauge; \textbf{\passthrough{\lstinline!/sublate <target\_id> <by\_id> <reason>!}}, the manual sublation override for audit and debug; \textbf{\passthrough{\lstinline!/budget!}}, a shorthand for \passthrough{\lstinline!budget\_status!} rendered as a one-line gauge; and \textbf{\passthrough{\lstinline!/compact-now [strategy]!}}, which manually triggers compaction with \passthrough{\lstinline!strategy ∈ \{adaptive, lru, none\}!} (default \passthrough{\lstinline!adaptive!}).
 
 \subsection{The 3 lifecycle hooks}\label{the-3-lifecycle-hooks}
 
@@ -122,17 +82,7 @@ Following the Cursor/Claude-Code skill format (an \passthrough{\lstinline!SKILL.
 }
 \end{lstlisting}
 
-Their roles are:
-
-\begin{itemize}
-\tightlist
-\item
-  \textbf{\passthrough{\lstinline!session-start.sh!}} seeds the session-stable Sākṣī invariants (working directory, git SHA, model id, plugin version) via \passthrough{\lstinline!set\_sakshi!}.
-\item
-  \textbf{\passthrough{\lstinline!pretooluse-budget.sh!}} consults \passthrough{\lstinline!budget\_status!} before any harness tool runs and \textbf{logs} over-threshold use by default (advisory hook). If \passthrough{\lstinline!PRATYAKSHA\_BUDGET\_STRICT=1!}, the same script can be configured to \textbf{deny} tool execution when the gauge exceeds a hard threshold (default 95\% of \passthrough{\lstinline!context\_budget!}).
-\item
-  \textbf{\passthrough{\lstinline!stop-compact.sh!}} invokes \passthrough{\lstinline!compact(strategy="adaptive")!} at the end of every turn so memory pressure does not accumulate across turns.
-\end{itemize}
+Their roles divide cleanly across the three phases of the turn. \textbf{\passthrough{\lstinline!session-start.sh!}} seeds the session-stable Sākṣī invariants (working directory, git SHA, model id, plugin version) via \passthrough{\lstinline!set\_sakshi!}. \textbf{\passthrough{\lstinline!pretooluse-budget.sh!}} consults \passthrough{\lstinline!budget\_status!} before any harness tool runs and \textbf{logs} over-threshold use by default (advisory hook); if \passthrough{\lstinline!PRATYAKSHA\_BUDGET\_STRICT=1!} is set, the same script can be configured to \textbf{deny} tool execution when the gauge exceeds a hard threshold (default 95\% of \passthrough{\lstinline!context\_budget!}). \textbf{\passthrough{\lstinline!stop-compact.sh!}} invokes \passthrough{\lstinline!compact(strategy="adaptive")!} at the end of every turn so memory pressure does not accumulate across turns.
 
 \subsection{Worked example: a Redis-caching turn, end-to-end}\label{worked-example-a-redis-caching-turn-end-to-end}
 
@@ -146,18 +96,7 @@ This single turn exercises every load-bearing primitive of Sections 4--5 in a no
 
 \subsection{\texorpdfstring{What the plugin does \emph{not} contain}{What the plugin does not contain}}\label{what-the-plugin-does-not-contain}
 
-We assert and audit two negative claims:
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  \textbf{Zero references to the dev-time orchestration tools} \passthrough{\lstinline!attractor-flow!}, \passthrough{\lstinline!ralph-loop!}, and \passthrough{\lstinline!triz-engine!}. Those tools were used to build the harness (Section 3) but are not runtime dependencies. A grep over the entire shipped plugin tree returns zero matches; the audit is preserved as \passthrough{\lstinline!docs/no\_dev\_deps\_audit.md!} in the repository.
-\item
-  \textbf{Zero hard dependencies on heavyweight stacks} like \passthrough{\lstinline!vllm!}, \passthrough{\lstinline!mlflow!}, \passthrough{\lstinline!chromadb!}, or \passthrough{\lstinline!huggingface-hub!}. The harness's runtime requirements are \passthrough{\lstinline!mcp!}, \passthrough{\lstinline!pydantic!}, \passthrough{\lstinline!tiktoken!}, \passthrough{\lstinline!numpy!}, and \passthrough{\lstinline!anthropic!}; the optional Qwen3-1.7B surprise backend is loaded only when the user opts in.
-\end{enumerate}
-
-This matters because the harness is a \emph{discipline}, not an infrastructure. Anything heavier than that would defeat the purpose of a plugin you can install in 30 seconds.
+We assert and audit two negative claims. \textbf{First, zero references to the dev-time orchestration tools} \passthrough{\lstinline!attractor-flow!}, \passthrough{\lstinline!ralph-loop!}, and \passthrough{\lstinline!triz-engine!}: those tools were used to build the harness (Section 3) but are not runtime dependencies, a grep over the entire shipped plugin tree returns zero matches, and the audit is preserved as \passthrough{\lstinline!docs/no\_dev\_deps\_audit.md!} in the repository. \textbf{Second, zero hard dependencies on heavyweight stacks} like \passthrough{\lstinline!vllm!}, \passthrough{\lstinline!mlflow!}, \passthrough{\lstinline!chromadb!}, or \passthrough{\lstinline!huggingface-hub!}: the harness's runtime requirements are \passthrough{\lstinline!mcp!}, \passthrough{\lstinline!pydantic!}, \passthrough{\lstinline!tiktoken!}, \passthrough{\lstinline!numpy!}, and \passthrough{\lstinline!anthropic!}, and the optional Qwen3-1.7B surprise backend is loaded only when the user opts in. This matters because the harness is a \emph{discipline}, not an infrastructure. Anything heavier than that would defeat the purpose of a plugin you can install in 30 seconds.
 
 \subsection{Smoke test and CI}\label{smoke-test-and-ci}
 
@@ -165,18 +104,4 @@ This matters because the harness is a \emph{discipline}, not an infrastructure. 
 
 \subsection{Hot-swappability across hosts}\label{hot-swappability-across-hosts}
 
-The same \passthrough{\lstinline!marketplace.json!} resolves in:
-
-\begin{itemize}
-\tightlist
-\item
-  \textbf{Cursor} --- via the IDE's plugin browser, registered by URL.
-\item
-  \textbf{Claude Code (CLI)} --- via \passthrough{\lstinline!/plugin install <url>!}.
-\item
-  \textbf{Claude Code (VS Code extension)} --- via the same \passthrough{\lstinline!/plugin install!} UI.
-\item
-  \textbf{Claude Desktop} --- via the Desktop app's MCP-based plugin surface.
-\end{itemize}
-
-We have manually exercised the install path on all four hosts during development. The harness's runtime invariants (Sections 4 and 5) hold identically across all four because the only inter-process surface is MCP, and MCP is host-agnostic by construction \citep{anthropic2025mcp}.
+The same \passthrough{\lstinline!marketplace.json!} resolves in \textbf{Cursor} (via the IDE's plugin browser, registered by URL), in \textbf{Claude Code (CLI)} (via \passthrough{\lstinline!/plugin install <url>!}), in \textbf{Claude Code (VS Code extension)} (via the same \passthrough{\lstinline!/plugin install!} UI), and in \textbf{Claude Desktop} (via the Desktop app's MCP-based plugin surface). We have manually exercised the install path on all four hosts during development. The harness's runtime invariants (Sections 4 and 5) hold identically across all four because the only inter-process surface is MCP, and MCP is host-agnostic by construction \citep{anthropic2025mcp}.
