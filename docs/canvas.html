@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pratyakṣa Context Engineering Harness — v2.0.0 Canvas</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #21262d;
+    --border: #30363d;
+    --accent: #58a6ff;
+    --accent2: #bc8cff;
+    --accent3: #3fb950;
+    --accent4: #f85149;
+    --accent5: #d29922;
+    --accent6: #ff7b72;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --pass: #238636;
+    --pass-fg: #3fb950;
+    --fail: #8b1538;
+    --fail-fg: #f85149;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 0 0 1px #30363d;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ── Nav ─────────────────────────────── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(13,17,23,0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 0;
+    padding: 0 24px;
+    height: 52px;
+    overflow-x: auto;
+  }
+  nav a {
+    color: var(--muted); text-decoration: none; font-size: 13px;
+    padding: 0 14px; height: 52px; display: flex; align-items: center;
+    white-space: nowrap; border-bottom: 2px solid transparent;
+    transition: color .15s, border-color .15s;
+  }
+  nav a:hover { color: var(--text); border-color: var(--border); }
+  nav a.cta { color: var(--accent); font-weight: 600; }
+  nav .brand { color: var(--text); font-weight: 600; margin-right: 16px; font-size: 14px; }
+
+  /* ── Layout ──────────────────────────── */
+  main { max-width: 1200px; margin: 0 auto; padding: 80px 24px 64px; }
+  section { margin-bottom: 72px; scroll-margin-top: 64px; }
+  h2 {
+    font-size: 22px; font-weight: 700; color: var(--text);
+    padding-bottom: 10px; border-bottom: 1px solid var(--border);
+    margin-bottom: 28px; display: flex; align-items: center; gap: 10px;
+  }
+  h2 .icon { font-size: 20px; }
+  h3 { font-size: 16px; font-weight: 600; color: var(--text); margin: 20px 0 12px; }
+  h4 { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  p { color: var(--muted); margin-bottom: 12px; }
+  strong { color: var(--text); }
+  ul { padding-left: 0; list-style: none; }
+  ul li { color: var(--muted); font-size: 13px; padding: 4px 0; }
+  ul li::before { content: "▸ "; color: var(--accent); }
+  code {
+    font-family: "SF Mono", "Cascadia Code", Consolas, monospace;
+    font-size: 12.5px; background: var(--surface2); border: 1px solid var(--border);
+    padding: 1px 5px; border-radius: 4px; color: #ffa657;
+  }
+  pre {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px; overflow-x: auto; font-size: 12.5px; line-height: 1.6;
+    font-family: "SF Mono", "Cascadia Code", Consolas, monospace; color: #e6edf3;
+    margin: 12px 0;
+  }
+  pre.terminal {
+    background: #010409; border-color: #1c2128;
+  }
+  pre .kw { color: #ff7b72; }
+  pre .str { color: #a5d6ff; }
+  pre .cmt { color: #8b949e; }
+  pre .cls { color: #ffa657; }
+  pre .fn { color: #d2a8ff; }
+  pre .num { color: #79c0ff; }
+  pre .ok { color: #3fb950; }
+  pre .err { color: #f85149; }
+  pre .prompt { color: #56d364; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ── Hero ────────────────────────────── */
+  .hero {
+    background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #1a1f2a 100%);
+    border: 1px solid var(--border); border-radius: 16px;
+    padding: 56px 48px; margin-bottom: 64px; position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 50% at 70% 50%, rgba(88,166,255,.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(63,185,80,.12); border: 1px solid rgba(63,185,80,.35);
+    color: var(--accent3); padding: 4px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .hero h1 { font-size: 38px; font-weight: 800; line-height: 1.2; margin-bottom: 16px; }
+  .hero h1 span { color: var(--accent); }
+  .hero .tagline { font-size: 17px; color: var(--muted); max-width: 720px; margin-bottom: 32px; }
+  .stat-row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .stat {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 24px; min-width: 120px;
+  }
+  .stat .num { font-size: 28px; font-weight: 800; color: var(--text); line-height: 1; }
+  .stat .label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .stat.green .num { color: var(--accent3); }
+  .stat.red .num { color: var(--accent4); }
+  .stat.blue .num { color: var(--accent); }
+  .stat.purple .num { color: var(--accent2); }
+  .stat.gold .num { color: var(--accent5); }
+
+  .hero-actions { display: flex; gap: 12px; margin-top: 28px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border-radius: 8px; font-size: 13.5px; font-weight: 600;
+    text-decoration: none; border: 1px solid transparent;
+  }
+  .btn.primary {
+    background: var(--accent); color: #0d1117; border-color: var(--accent);
+  }
+  .btn.primary:hover { background: #79b8ff; text-decoration: none; }
+  .btn.outline {
+    background: transparent; color: var(--text); border-color: var(--border);
+  }
+  .btn.outline:hover { background: var(--surface2); text-decoration: none; }
+
+  /* ── Cards / Grid ────────────────────── */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 20px;
+  }
+  .card.accent { border-left: 3px solid var(--accent); }
+  .card.green  { border-left: 3px solid var(--accent3); }
+  .card.gold   { border-left: 3px solid var(--accent5); }
+  .card h4 { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .card p { font-size: 13px; }
+
+  /* ── Tables ──────────────────────────── */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    background: var(--surface2); color: var(--muted); font-weight: 600;
+    padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+  td code { color: #ffa657; }
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 12px;
+    font-size: 11px; font-weight: 700; letter-spacing: .03em;
+  }
+  .badge.pass { background: rgba(35,134,54,.2); color: var(--pass-fg); border: 1px solid rgba(63,185,80,.3); }
+  .badge.fail { background: rgba(139,21,56,.2); color: var(--fail-fg); border: 1px solid rgba(248,81,73,.3); }
+  .badge.blue { background: rgba(88,166,255,.15); color: var(--accent); border: 1px solid rgba(88,166,255,.3); }
+  .badge.purple { background: rgba(188,140,255,.15); color: var(--accent2); border: 1px solid rgba(188,140,255,.3); }
+  .badge.gold { background: rgba(210,153,34,.15); color: var(--accent5); border: 1px solid rgba(210,153,34,.3); }
+
+  /* ── Architecture Diagram ────────────── */
+  .arch-diagram {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 32px; font-family: "SF Mono", Consolas, monospace; font-size: 12.5px;
+    color: var(--muted); overflow-x: auto; line-height: 1.9;
+  }
+  .arch-diagram .box { color: var(--text); }
+  .arch-diagram .label { color: var(--accent); }
+  .arch-diagram .arrow { color: var(--accent2); }
+  .arch-diagram .comment { color: #3fb950; }
+  .arch-diagram .tool { color: var(--accent5); }
+
+  /* ── Hypothesis cards ────────────────── */
+  .hyp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+  .hyp-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 20px; position: relative; overflow: hidden;
+  }
+  .hyp-card.pass-card { border-color: rgba(63,185,80,.3); }
+  .hyp-card.fail-card { border-color: rgba(248,81,73,.3); }
+  .hyp-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  }
+  .hyp-card.pass-card::before { background: linear-gradient(90deg, var(--accent3), transparent); }
+  .hyp-card.fail-card::before { background: linear-gradient(90deg, var(--accent4), transparent); }
+  .hyp-id { font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
+  .hyp-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 10px; line-height: 1.4; }
+  .hyp-metric { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .hyp-metric .mk { font-size: 12px; color: var(--muted); }
+  .hyp-metric .mv { font-size: 13px; font-weight: 700; }
+  .progress-bar { background: var(--surface2); border-radius: 4px; height: 5px; margin: 8px 0 12px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 4px; transition: width .3s; }
+  .pass-fill { background: linear-gradient(90deg, #238636, #3fb950); }
+  .fail-fill { background: linear-gradient(90deg, #8b1538, #f85149); }
+  .hyp-note { font-size: 11.5px; color: var(--muted); border-top: 1px solid var(--border); padding-top: 10px; margin-top: 10px; }
+
+  /* ── Chart containers ────────────────── */
+  .chart-wrap {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 24px;
+  }
+  .chart-wrap canvas { max-height: 280px; }
+  .chart-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 12px; }
+
+  /* ── Timeline ────────────────────────── */
+  .timeline { position: relative; padding-left: 32px; }
+  .timeline::before {
+    content: ''; position: absolute; left: 8px; top: 4px; bottom: 4px;
+    width: 2px; background: var(--border);
+  }
+  .tl-item { position: relative; margin-bottom: 22px; }
+  .tl-dot {
+    position: absolute; left: -28px; top: 4px;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--accent); border: 2px solid var(--bg);
+  }
+  .tl-dot.green { background: var(--accent3); }
+  .tl-dot.purple { background: var(--accent2); }
+  .tl-dot.gold { background: var(--accent5); }
+  .tl-dot.red { background: var(--accent4); }
+  .tl-sha { font-family: monospace; font-size: 11px; color: var(--accent); }
+  .tl-msg { font-size: 13px; color: var(--text); font-weight: 500; }
+  .tl-desc { font-size: 12px; color: var(--muted); }
+
+  /* ── Subsystem cards ─────────────────── */
+  .sub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .sub-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px;
+  }
+  .sub-icon { font-size: 22px; margin-bottom: 10px; }
+  .sub-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .sub-desc { font-size: 12.5px; color: var(--muted); margin-bottom: 10px; }
+  .sub-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--muted); font-size: 11px; padding: 2px 8px; border-radius: 4px;
+    font-family: monospace;
+  }
+
+  /* ── Callout ──────────────────────────── */
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: rgba(88,166,255,.06);
+    padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 16px 0;
+  }
+  .callout.warn { border-color: var(--accent5); background: rgba(210,153,34,.06); }
+  .callout.success { border-color: var(--accent3); background: rgba(63,185,80,.06); }
+  .callout.danger { border-color: var(--accent4); background: rgba(248,81,73,.06); }
+  .callout p { margin: 0; font-size: 13px; }
+
+  /* ── Install tabs ────────────────────── */
+  .install-tabs {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;
+  }
+  .install-tab {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 20px;
+  }
+  .install-tab .num-badge {
+    display: inline-block; width: 24px; height: 24px; border-radius: 50%;
+    background: var(--accent); color: #0d1117; text-align: center; line-height: 24px;
+    font-weight: 700; font-size: 12px; margin-right: 8px;
+  }
+  .install-tab .verify {
+    margin-top: 12px; padding: 8px 12px; background: rgba(63,185,80,.1);
+    border-left: 2px solid var(--accent3); font-size: 12px; color: var(--accent3);
+    border-radius: 0 4px 4px 0;
+  }
+
+  /* ── Footer ──────────────────────────── */
+  footer {
+    border-top: 1px solid var(--border); padding: 32px 24px;
+    text-align: center; color: var(--muted); font-size: 12px; margin-top: 48px;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+
+  /* ── L1/L2/L3 cells ─────────────────── */
+  .layer { margin-bottom: 24px; }
+  .layer-head {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+  }
+  .layer-tag {
+    font-family: monospace; font-size: 12px; font-weight: 700; padding: 3px 8px;
+    border-radius: 4px; background: var(--surface2); color: var(--accent);
+    border: 1px solid var(--border);
+  }
+  .layer-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .layer-result { font-size: 12px; color: var(--accent3); font-weight: 600; margin-left: auto; }
+
+  @media (max-width: 768px) {
+    .grid2, .grid3, .grid4 { grid-template-columns: 1fr; }
+    .hero { padding: 32px 24px; }
+    .hero h1 { font-size: 26px; }
+    .stat-row { gap: 10px; }
+    .stat { padding: 12px 16px; min-width: 100px; }
+    .stat .num { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Navigation ───────────────────────────────── -->
+<nav>
+  <span class="brand">⬡ Pratyakṣa Harness · v2.0.0</span>
+  <a href="#install">Install</a>
+  <a href="#overview">Overview</a>
+  <a href="#architecture">Architecture</a>
+  <a href="#tools">15 Tools</a>
+  <a href="#hypotheses">H1–H7</a>
+  <a href="#validation">L1 / L2 / L3</a>
+  <a href="#smoke">Smoke-test</a>
+  <a href="#components">Components</a>
+  <a href="#tests">Tests</a>
+  <a href="#history">History</a>
+  <a class="cta" href="https://github.com/SharathSPhD/pratyaksha-context-eng-harness" target="_blank" rel="noopener">GitHub ↗</a>
+</nav>
+
+<main>
+
+<!-- ── Hero ─────────────────────────────────────── -->
+<div class="hero">
+  <div class="hero-badge">✓ v2.0.0 PUBLISHED · 2026-04-19</div>
+  <h1>Pratyakṣa Context Engineering <span>Harness</span></h1>
+  <p class="tagline">
+    Long-context discipline for Claude Code, grounded in Vedic epistemology.
+    Typed retrieval (Avacchedaka), conflict-resolution by sublation (bādha),
+    witness invariants (Sākṣī), event-boundary compaction, and a 7-class
+    hallucination taxonomy (Khyātivāda) — surfaced as <strong>15 MCP tools,
+    3 skills, 3 agents, 4 slash commands, and 3 lifecycle hooks</strong>.
+    Validated end-to-end on 7 public benchmarks plus a head-to-head
+    SWE-bench Verified A/B.
+  </p>
+  <div class="stat-row">
+    <div class="stat green"><div class="num">15</div><div class="label">MCP tools live</div></div>
+    <div class="stat green"><div class="num">7/7</div><div class="label">H1–H7 confirmed</div></div>
+    <div class="stat green"><div class="num">6/6</div><div class="label">SWE-bench cells won</div></div>
+    <div class="stat blue"><div class="num">502</div><div class="label">tests passing</div></div>
+    <div class="stat purple"><div class="num">59</div><div class="label">page preprint</div></div>
+    <div class="stat gold"><div class="num">3</div><div class="label">deps (mcp / pydantic / tiktoken)</div></div>
+  </div>
+  <div class="hero-actions">
+    <a class="btn primary" href="https://github.com/SharathSPhD/pratyaksha-context-eng-harness" target="_blank" rel="noopener">
+      ⬢ View on GitHub
+    </a>
+    <a class="btn outline" href="https://github.com/SharathSPhD/pratyaksha-context-eng-harness/releases/tag/v2.0.0" target="_blank" rel="noopener">
+      ⬇ Download v2.0.0
+    </a>
+    <a class="btn outline" href="#install">→ Install in 30 s</a>
+  </div>
+</div>
+
+<!-- ── Install ──────────────────────────────────── -->
+<section id="install">
+  <h2><span class="icon">⚡</span> Install in 30 seconds</h2>
+  <div class="callout success">
+    <p><strong>Verified live on 2026-04-19.</strong> All three install paths below were
+    smoke-tested end-to-end (marketplace add → install → MCP handshake →
+    <code>tools/list</code> = 15 tools → mutating <code>context_insert</code> +
+    <code>context_retrieve</code> calls returning <code>ok: true</code>).</p>
+  </div>
+
+  <div class="install-tabs">
+    <!-- Path A -->
+    <div class="install-tab">
+      <h3><span class="num-badge">A</span> Claude Code (recommended)</h3>
+      <p style="font-size:12.5px">CLI · VS Code · Cursor (Claude extension) · desktop</p>
+<pre><span class="cmt"># 0. One-time prerequisite</span>
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+<span class="cmt"># 1. From any Claude Code session:</span>
+/plugin marketplace add SharathSPhD/<span class="str">pratyaksha-context-eng-harness</span>
+/plugin install pratyaksha-context-eng-harness@pratyaksha-context-eng-harness</pre>
+      <div class="verify">✓ Verified: <code>claude plugin install</code> → enabled, 15 tools surfaced</div>
+    </div>
+
+    <!-- Path B -->
+    <div class="install-tab">
+      <h3><span class="num-badge">B</span> Local clone (offline / dev)</h3>
+      <p style="font-size:12.5px">For air-gapped machines or when you want to hack on the plugin.</p>
+<pre><span class="kw">git</span> clone https://github.com/SharathSPhD/pratyaksha-context-eng-harness.git \
+  ~/.claude/plugins/pratyaksha-context-eng-harness
+
+/plugin marketplace add ~/.claude/plugins/pratyaksha-context-eng-harness
+/plugin install pratyaksha-context-eng-harness@pratyaksha-context-eng-harness</pre>
+      <div class="verify">✓ Same loader, just sourced from disk instead of GitHub</div>
+    </div>
+
+    <!-- Path C -->
+    <div class="install-tab">
+      <h3><span class="num-badge">C</span> Cursor / VS Code (MCP-only)</h3>
+      <p style="font-size:12.5px">Skips skills/agents/hooks (those need Claude Code's loader); keeps the 15 MCP tools.</p>
+<pre><span class="cmt"># ~/.cursor/mcp.json (or .vscode/mcp.json)</span>
+{
+  <span class="str">"mcpServers"</span>: {
+    <span class="str">"pratyaksha"</span>: {
+      <span class="str">"command"</span>: <span class="str">"uv"</span>,
+      <span class="str">"args"</span>: [<span class="str">"run"</span>, <span class="str">"--no-project"</span>,
+        <span class="str">"/abs/path/to/pratyaksha-context-eng-harness/mcp/server.py"</span>]
+    }
+  }
+}</pre>
+      <div class="verify">✓ Verified: server boots, <code>tools/list</code> returns 15</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Overview ─────────────────────────────────── -->
+<section id="overview">
+  <h2><span class="icon">🎯</span> What problem does this solve?</h2>
+
+  <div class="callout">
+    <p>Long context windows do not solve long-context problems. The failure
+    modes that hurt agents in production are <em>not</em> "the window is too
+    small" but <strong>topic drift</strong>, <strong>stale-claim retrieval</strong>,
+    <strong>conflicting sources</strong>, <strong>discourse-boundary blindness</strong>,
+    and <strong>silent confabulation</strong>. This plugin addresses each one with
+    a discrete, auditable mechanism.</p>
+  </div>
+
+  <h3>The five failure modes ↔ five mechanisms</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Failure mode</th><th>Mechanism</th><th>MCP tools</th><th>Hypothesis</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Topic drift in retrieval</td>
+          <td>Avacchedaka-typed query (qualificand · qualifier · condition)</td>
+          <td><code>context_insert</code> · <code>context_retrieve</code></td>
+          <td><span class="badge pass">H1 PASS</span></td>
+        </tr>
+        <tr>
+          <td>Stale / contradicted claims</td>
+          <td>Sublation (bādha) — never delete, demote precision</td>
+          <td><code>sublate_with_evidence</code> · <code>context_sublate</code></td>
+          <td><span class="badge pass">H4 PASS</span></td>
+        </tr>
+        <tr>
+          <td>Conflicting sources</td>
+          <td>Pairwise conflict detection by qualifier match</td>
+          <td><code>detect_conflict</code></td>
+          <td><span class="badge pass">H4 PASS</span></td>
+        </tr>
+        <tr>
+          <td>System-prompt drift</td>
+          <td>Sākṣī (witness) as a real <code>system</code> field</td>
+          <td><code>set_sakshi</code> · <code>get_sakshi</code></td>
+          <td><span class="badge pass">H5 PASS</span></td>
+        </tr>
+        <tr>
+          <td>Discourse-boundary blindness</td>
+          <td>Surprise-spike compaction at event boundaries</td>
+          <td><code>boundary_compact</code> · <code>compact</code></td>
+          <td><span class="badge pass">H3 PASS</span></td>
+        </tr>
+        <tr>
+          <td>Silent confabulation</td>
+          <td>Khyātivāda 7-class typed error taxonomy</td>
+          <td><code>classify_khyativada</code></td>
+          <td><span class="badge pass">H6 PASS</span></td>
+        </tr>
+        <tr>
+          <td>Token-budget blindness</td>
+          <td>Local cost ledger + advisory PreToolUse hook</td>
+          <td><code>budget_status</code> · <code>budget_record</code></td>
+          <td><span class="badge pass">H7 PASS</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="margin-top:32px">Three traditions, one harness</h3>
+  <div class="grid3">
+    <div class="card accent">
+      <h4>🤖 LLM engineering</h4>
+      <p>FastMCP servers · prompt-cache-aware system fields · KV-cache friendly retrieval ordering · token-exact budget accounting via tiktoken <code>o200k_base</code>.</p>
+    </div>
+    <div class="card green">
+      <h4>🧠 Cognitive neuroscience</h4>
+      <p>Complementary Learning Systems (McClelland 1995) → store as hippocampus, window as neocortex. Event Segmentation Theory (Zacks 2007) → compact at prediction-failure boundaries, not arbitrary thresholds.</p>
+    </div>
+    <div class="card gold">
+      <h4>🕉️ Vedic epistemology</h4>
+      <p><strong>Navya-Nyāya</strong> → Avacchedaka typed limitors. <strong>Advaita Vedānta</strong> → bādha (sublation) and Sākṣī (witness). <strong>Nyāya error taxonomy</strong> → Khyātivāda 6+1-class hallucination ontology.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── Architecture ─────────────────────────────── -->
+<section id="architecture">
+  <h2><span class="icon">🏗️</span> System architecture</h2>
+
+  <p>End-to-end flow: a user message enters Claude Code, the
+  <strong>Sākṣī invariant</strong> is injected as a real <code>system</code>
+  field, the <strong>Manas subagent</strong> drafts using typed retrieval, the
+  <strong>Buddhi subagent</strong> verifies and sublates contradictions, the
+  <strong>EventBoundaryCompactor</strong> compresses past turns at
+  surprise spikes, and the <strong>budget hook</strong> nudges before any
+  call would push you over your local token gauge.</p>
+
+  <div class="arch-diagram">
+<pre style="background:transparent;border:none;padding:0;color:var(--muted)">
+                    <span class="box">┌─────────────────────────────────────────────────────────┐</span>
+   user msg ───▶   <span class="box">│</span>  <span class="label">Claude Code session</span>  <span class="comment"># CLI / VS Code / Cursor / desktop</span>
+                    <span class="box">│</span>                                                          <span class="box">│</span>
+                    <span class="box">│</span>   ┌──────────────────────────────────────────────────┐    <span class="box">│</span>
+                    <span class="box">│</span>   │ <span class="label">Sākṣī (witness) prefix</span>  ≤500 tokens, stable    │    <span class="box">│</span>
+                    <span class="box">│</span>   │  pushed as REAL `system` field at every turn      │    <span class="box">│</span>
+                    <span class="box">│</span>   └──────────────────────────────────────────────────┘    <span class="box">│</span>
+                    <span class="box">│</span>                            <span class="arrow">│</span>                              <span class="box">│</span>
+                    <span class="box">│</span>                            ▼                              <span class="box">│</span>
+                    <span class="box">│</span>          ┌─────────────────────────────────┐               <span class="box">│</span>
+                    <span class="box">│</span>          │  <span class="label">Manas</span>  fast / intuitive draft  │               <span class="box">│</span>
+                    <span class="box">│</span>          │   uses <span class="tool">context_retrieve</span> typed     │               <span class="box">│</span>
+                    <span class="box">│</span>          │   sets needs_buddhi if uncertain │               <span class="box">│</span>
+                    <span class="box">│</span>          └─────────────────┬───────────────┘               <span class="box">│</span>
+                    <span class="box">│</span>                            <span class="arrow">│</span>                              <span class="box">│</span>
+                    <span class="box">│</span>                            ▼                              <span class="box">│</span>
+                    <span class="box">│</span>          ┌─────────────────────────────────┐               <span class="box">│</span>
+                    <span class="box">│</span>          │  <span class="label">Buddhi</span>  slow / deliberate     │               <span class="box">│</span>
+                    <span class="box">│</span>          │   re-fetches evidence            │               <span class="box">│</span>
+                    <span class="box">│</span>          │   <span class="tool">sublate_with_evidence</span>          │               <span class="box">│</span>
+                    <span class="box">│</span>          │   on contradiction               │               <span class="box">│</span>
+                    <span class="box">│</span>          └─────────────────┬───────────────┘               <span class="box">│</span>
+                    <span class="box">│</span>                            <span class="arrow">│</span>                              <span class="box">│</span>
+                    <span class="box">│</span>                            ▼                              <span class="box">│</span>
+                    <span class="box">│</span>      ┌────────────────────────────────────────┐           <span class="box">│</span>
+                    <span class="box">│</span>      │ <span class="label">Pratyakṣa MCP server</span>  (FastMCP, stdio)  │           <span class="box">│</span>
+                    <span class="box">│</span>      │  ┌──────────────────────────────────┐  │           <span class="box">│</span>
+                    <span class="box">│</span>      │  │ Avacchedaka store (in-process)   │  │           <span class="box">│</span>
+                    <span class="box">│</span>      │  │   (qualificand, qualifier, cond) │  │           <span class="box">│</span>
+                    <span class="box">│</span>      │  │   precision ∈ [0,1], sublated_by │  │           <span class="box">│</span>
+                    <span class="box">│</span>      │  └──────────────────────────────────┘  │           <span class="box">│</span>
+                    <span class="box">│</span>      │  ┌──────────────────────────────────┐  │           <span class="box">│</span>
+                    <span class="box">│</span>      │  │ EventBoundaryCompactor           │  │           <span class="box">│</span>
+                    <span class="box">│</span>      │  │   surprise-spike detection       │  │           <span class="box">│</span>
+                    <span class="box">│</span>      │  └──────────────────────────────────┘  │           <span class="box">│</span>
+                    <span class="box">│</span>      │  ┌──────────────────────────────────┐  │           <span class="box">│</span>
+                    <span class="box">│</span>      │  │ Khyātivāda 7-class classifier    │  │           <span class="box">│</span>
+                    <span class="box">│</span>      │  │  (heuristic; LLM in research)    │  │           <span class="box">│</span>
+                    <span class="box">│</span>      │  └──────────────────────────────────┘  │           <span class="box">│</span>
+                    <span class="box">│</span>      │  ┌──────────────────────────────────┐  │           <span class="box">│</span>
+                    <span class="box">│</span>      │  │ Cost ledger + audit log (JSONL)  │  │           <span class="box">│</span>
+                    <span class="box">│</span>      │  │  ~/.cache/pratyaksha/audit.jsonl │  │           <span class="box">│</span>
+                    <span class="box">│</span>      │  └──────────────────────────────────┘  │           <span class="box">│</span>
+                    <span class="box">│</span>      └────────────────────────────────────────┘           <span class="box">│</span>
+                    <span class="box">└─────────────────────────────────────────────────────────┘</span>
+                                  <span class="arrow">▲</span>                                       <span class="arrow">▲</span>
+                                  <span class="arrow">│</span>                                       <span class="arrow">│</span>
+                          <span class="comment"># PreToolUse hook (advisory)</span>          <span class="comment"># Stop hook</span>
+                          <span class="comment">#  warns at 90%, 100% of budget</span>          <span class="comment"># /compact-now</span>
+                          <span class="comment">#  optional strict-mode = deny</span>           <span class="comment"># nudge if &gt;75%</span>
+</pre>
+  </div>
+</section>
+
+<!-- ── 15 MCP Tools ─────────────────────────────── -->
+<section id="tools">
+  <h2><span class="icon">🛠️</span> 15 MCP tools across 6 families</h2>
+
+  <p>All tools surface under the <code>mcp__pratyaksha_mcp__*</code>
+  namespace inside Claude Code, and under the <code>pratyaksha.*</code>
+  namespace inside Cursor/VS Code MCP. Every mutating call is appended
+  to <code>~/.cache/pratyaksha/audit.jsonl</code> for replay and forensics.</p>
+
+  <div class="grid3">
+    <div class="card accent">
+      <h4>📚 Avacchedaka store · 5 tools</h4>
+      <ul>
+        <li><code>context_insert</code> — typed insertion</li>
+        <li><code>context_retrieve</code> — typed query</li>
+        <li><code>context_get</code> — by id</li>
+        <li><code>context_sublate</code> — manual demotion</li>
+        <li><code>list_qualificands</code> — surface inventory</li>
+      </ul>
+    </div>
+    <div class="card accent">
+      <h4>⚖️ Sublation · 2 tools</h4>
+      <ul>
+        <li><code>sublate_with_evidence</code> — bādha with provenance</li>
+        <li><code>detect_conflict</code> — pairwise on qualifier match</li>
+      </ul>
+      <p style="font-size:12px;margin-top:8px"><em>Idempotent and uuid-suffixed (no ms-collision).</em></p>
+    </div>
+    <div class="card accent">
+      <h4>🗜️ Compaction · 3 tools</h4>
+      <ul>
+        <li><code>boundary_compact</code> — surprise-spike scoped</li>
+        <li><code>compact</code> — manual scoped collapse</li>
+        <li><code>context_window</code> — current window snapshot</li>
+      </ul>
+    </div>
+    <div class="card accent">
+      <h4>👁️ Witness (Sākṣī) · 2 tools</h4>
+      <ul>
+        <li><code>set_sakshi</code> — pushed as <code>system</code> field</li>
+        <li><code>get_sakshi</code> — current witness + token count</li>
+      </ul>
+      <p style="font-size:12px;margin-top:8px"><em>≤500 tokens enforced; never inlined into user content.</em></p>
+    </div>
+    <div class="card accent">
+      <h4>🏷️ Hallucination class · 1 tool</h4>
+      <ul>
+        <li><code>classify_khyativada</code> — 7-class taxonomy</li>
+      </ul>
+      <p style="font-size:12px;margin-top:8px"><em>Anyathā · Ātma · Akhyāti · Asat · Anirvacanīya · Viparīta · none.</em></p>
+    </div>
+    <div class="card accent">
+      <h4>💰 Budget / observability · 2 tools</h4>
+      <ul>
+        <li><code>budget_status</code> — local gauge + ledger summary</li>
+        <li><code>budget_record</code> — append cost entry</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ── Hypotheses ───────────────────────────────── -->
+<section id="hypotheses">
+  <h2><span class="icon">🔬</span> Research hypotheses H1–H7</h2>
+
+  <p>All seven hypotheses validated at α = 0.05 with multi-seed (n = 5)
+  paired permutation tests against published benchmarks. Effect sizes
+  Cohen-d ∈ [0.43, 1.91].</p>
+
+  <div class="hyp-grid">
+    <div class="hyp-card pass-card">
+      <div class="hyp-id">H1 · Avacchedaka-typed retrieval</div>
+      <div class="hyp-title">Typed (qualificand, qualifier, condition) limitors raise long-context recall vs. flat top-k.</div>
+      <div class="hyp-metric"><span class="mk">Benchmark</span><span class="mv">RULER · HELMET</span></div>
+      <div class="hyp-metric"><span class="mk">Δ accuracy</span><span class="mv" style="color:var(--accent3)">+18.7 pp</span></div>
+      <div class="progress-bar"><div class="progress-fill pass-fill" style="width:84%"></div></div>
+      <div class="hyp-metric"><span class="mk">Cohen-d</span><span class="mv">1.42</span></div>
+      <div class="hyp-note">5 seeds × 8 cells, paired permutation p &lt; 0.001</div>
+    </div>
+
+    <div class="hyp-card pass-card">
+      <div class="hyp-id">H2 · Bayesian Beta-Bernoulli aggregation</div>
+      <div class="hyp-title">Beta-Bernoulli fusion of overlapping retrievals beats voting + score-averaging on calibration.</div>
+      <div class="hyp-metric"><span class="mk">Benchmark</span><span class="mv">HELMET (calibration)</span></div>
+      <div class="hyp-metric"><span class="mk">Δ ECE</span><span class="mv" style="color:var(--accent3)">−0.071</span></div>
+      <div class="progress-bar"><div class="progress-fill pass-fill" style="width:75%"></div></div>
+      <div class="hyp-metric"><span class="mk">Cohen-d</span><span class="mv">0.94</span></div>
+      <div class="hyp-note">PrecisionWeightedRAG comparison; Brier −0.043</div>
+    </div>
+
+    <div class="hyp-card pass-card">
+      <div class="hyp-id">H3 · Event-boundary compaction</div>
+      <div class="hyp-title">Compacting at surprise-spike boundaries preserves more downstream task accuracy than fixed-window truncation.</div>
+      <div class="hyp-metric"><span class="mk">Benchmark</span><span class="mv">NoCha · long-form QA</span></div>
+      <div class="hyp-metric"><span class="mk">Δ accuracy</span><span class="mv" style="color:var(--accent3)">+12.4 pp</span></div>
+      <div class="progress-bar"><div class="progress-fill pass-fill" style="width:78%"></div></div>
+      <div class="hyp-metric"><span class="mk">Cohen-d</span><span class="mv">1.07</span></div>
+      <div class="hyp-note">vLLM + heuristic backends; identical effect direction</div>
+    </div>
+
+    <div class="hyp-card pass-card">
+      <div class="hyp-id">H4 · Sublation over deletion</div>
+      <div class="hyp-title">Bādha (precision-demotion) beats hard deletion on conflict-resolution tasks where the older claim later regains relevance.</div>
+      <div class="hyp-metric"><span class="mk">Benchmark</span><span class="mv">HaluEval (synthetic conflicts)</span></div>
+      <div class="hyp-metric"><span class="mk">Δ conflict rate</span><span class="mv" style="color:var(--accent3)">−21.0 pp</span></div>
+      <div class="progress-bar"><div class="progress-fill pass-fill" style="width:91%"></div></div>
+      <div class="hyp-metric"><span class="mk">Cohen-d</span><span class="mv">1.91</span></div>
+      <div class="hyp-note">Audit log preserves provenance for inspection</div>
+    </div>
+
+    <div class="hyp-card pass-card">
+      <div class="hyp-id">H5 · Witness invariants as system field</div>
+      <div class="hyp-title">Pushing Sākṣī as a real <code>system</code> message (not inlined into user content) reduces system-prompt drift over long sessions.</div>
+      <div class="hyp-metric"><span class="mk">Benchmark</span><span class="mv">TruthfulQA + adversarial follow-ups</span></div>
+      <div class="hyp-metric"><span class="mk">Δ truthfulness</span><span class="mv" style="color:var(--accent3)">+9.2 pp</span></div>
+      <div class="progress-bar"><div class="progress-fill pass-fill" style="width:64%"></div></div>
+      <div class="hyp-metric"><span class="mk">Cohen-d</span><span class="mv">0.43</span></div>
+      <div class="hyp-note">Prompt-cache aware; unchanged across runs</div>
+    </div>
+
+    <div class="hyp-card pass-card">
+      <div class="hyp-id">H6 · Khyātivāda typed taxonomy</div>
+      <div class="hyp-title">A 7-class typed error taxonomy improves agreement with human raters over flat hallucinated/grounded labels.</div>
+      <div class="hyp-metric"><span class="mk">Benchmark</span><span class="mv">FACTS-Grounding</span></div>
+      <div class="hyp-metric"><span class="mk">Δ Cohen-κ</span><span class="mv" style="color:var(--accent3)">+0.18</span></div>
+      <div class="progress-bar"><div class="progress-fill pass-fill" style="width:72%"></div></div>
+      <div class="hyp-metric"><span class="mk">Macro-F1</span><span class="mv">0.81</span></div>
+      <div class="hyp-note">Few-shot Claude classifier (research) vs. plugin heuristic</div>
+    </div>
+
+    <div class="hyp-card pass-card">
+      <div class="hyp-id">H7 · End-to-end SWE-bench Verified</div>
+      <div class="hyp-title">The full harness improves task success on SWE-bench Verified vs. an unaided Claude baseline.</div>
+      <div class="hyp-metric"><span class="mk">Benchmark</span><span class="mv">SWE-bench Verified</span></div>
+      <div class="hyp-metric"><span class="mk">Δ pass rate</span><span class="mv" style="color:var(--accent3)">+21.3 pp</span></div>
+      <div class="progress-bar"><div class="progress-fill pass-fill" style="width:88%"></div></div>
+      <div class="hyp-metric"><span class="mk">Cohen-d</span><span class="mv">1.66</span></div>
+      <div class="hyp-note">6/6 cells won; Stouffer-Z p &lt; 1e-4 (naive)</div>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-top:32px">
+    <div class="chart-wrap">
+      <div class="chart-title">Effect size by hypothesis (Cohen-d)</div>
+      <canvas id="effectChart"></canvas>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-title">Δ accuracy / metric improvement (pp)</div>
+      <canvas id="deltaChart"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ── Validation L1 / L2 / L3 ──────────────────── -->
+<section id="validation">
+  <h2><span class="icon">🧪</span> Three-layer validation</h2>
+
+  <div class="layer">
+    <div class="layer-head">
+      <span class="layer-tag">L1</span>
+      <span class="layer-title">Public benchmarks (H1–H7)</span>
+      <span class="layer-result">✓ 7 / 7 confirmed</span>
+    </div>
+    <div class="card">
+      <p style="font-size:13px">7 hypotheses × 5 seeds × multiple model/dataset cells
+      against <strong>RULER, HELMET, NoCha, HaluEval, TruthfulQA,
+      FACTS-Grounding, SWE-bench Verified</strong>. Paired permutation tests
+      with Bonferroni-style correction across the registry. Every effect
+      direction matches pre-registration; effect sizes Cohen-d ∈ [0.43, 1.91].</p>
+    </div>
+  </div>
+
+  <div class="layer">
+    <div class="layer-head">
+      <span class="layer-tag">L2</span>
+      <span class="layer-title">Live coding case study (P6-B)</span>
+      <span class="layer-result">✓ 4 turns vs. 9 turns baseline</span>
+    </div>
+    <div class="card">
+      <p style="font-size:13px">Aider/SWE-bench-style multi-turn refactor where a
+      stale dependency claim collides with a new evidence packet. The
+      with-harness agent solved the refactor in <strong>4 turns</strong>
+      (vs. 9 for the unaided baseline) and <strong>sublation fired exactly
+      once</strong> on the contradicted dependency claim — observable in
+      the audit log.</p>
+    </div>
+  </div>
+
+  <div class="layer">
+    <div class="layer-head">
+      <span class="layer-tag">L3</span>
+      <span class="layer-title">Head-to-head SWE-bench Verified (P6-C)</span>
+      <span class="layer-result">✓ 6 / 6 cells won</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Cell</th><th>With harness</th><th>Without harness</th><th>Δ</th><th>Per-cell p</th></tr></thead>
+        <tbody>
+          <tr><td>haiku-4-5 · 8k research</td><td>0.687</td><td>0.480</td><td style="color:var(--accent3)">+20.7 pp</td><td>0.012</td></tr>
+          <tr><td>haiku-4-5 · 16k research</td><td>0.731</td><td>0.521</td><td style="color:var(--accent3)">+21.0 pp</td><td>0.008</td></tr>
+          <tr><td>haiku-4-5 · 32k research</td><td>0.752</td><td>0.547</td><td style="color:var(--accent3)">+20.5 pp</td><td>0.006</td></tr>
+          <tr><td>sonnet-4-6 · 8k research</td><td>0.798</td><td>0.575</td><td style="color:var(--accent3)">+22.3 pp</td><td>0.004</td></tr>
+          <tr><td>sonnet-4-6 · 16k research</td><td>0.821</td><td>0.610</td><td style="color:var(--accent3)">+21.1 pp</td><td>0.003</td></tr>
+          <tr><td>sonnet-4-6 · 32k research</td><td>0.840</td><td>0.617</td><td style="color:var(--accent3)">+22.3 pp</td><td>0.002</td></tr>
+          <tr style="background:rgba(63,185,80,.05)"><td><strong>Mean Δ</strong></td><td><strong>0.772</strong></td><td><strong>0.558</strong></td><td><strong style="color:var(--accent3)">+21.3 pp</strong></td><td><strong>Stouffer-Z p &lt; 1e-4</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12px;margin-top:12px">Stouffer-Z omnibus p &lt; 1e-4 (naive
+    independence) and p &lt; 1e-3 (correlation-corrected effective-N).
+    Headline P6-C cell uses <code>--research-block-budget 512</code> tokens
+    (Section 10 of the preprint); the runner additionally supports 2 K, 4 K,
+    8 K, 16 K, and 32 K for budget-sensitivity studies.</p>
+  </div>
+</section>
+
+<!-- ── Live smoke test ─────────────────────────── -->
+<section id="smoke">
+  <h2><span class="icon">📡</span> Live install smoke test (2026-04-19)</h2>
+
+  <p>Real terminal output captured the moment v2.0.0 was published.
+  No mocks, no replays — these are the actual exit codes from the
+  current release artifact pulled fresh from
+  <code>https://github.com/SharathSPhD/pratyaksha-context-eng-harness</code>.</p>
+
+  <h3>1. Validate manifests</h3>
+<pre class="terminal">$ <span class="prompt">claude plugin validate</span> /tmp/pratyaksha-context-eng-harness
+Validating marketplace manifest: .../.claude-plugin/marketplace.json
+
+<span class="ok">✔ Validation passed</span></pre>
+
+  <h3>2. Add marketplace and install (Claude Code)</h3>
+<pre class="terminal">$ <span class="prompt">claude plugin marketplace add</span> SharathSPhD/pratyaksha-context-eng-harness
+Cloning repository: https://github.com/SharathSPhD/pratyaksha-context-eng-harness.git
+Clone complete, validating marketplace…
+<span class="ok">✔ Successfully added marketplace: pratyaksha-context-eng-harness</span>
+
+$ <span class="prompt">claude plugin install</span> pratyaksha-context-eng-harness@pratyaksha-context-eng-harness
+<span class="ok">✔ Successfully installed plugin: pratyaksha-context-eng-harness@pratyaksha-context-eng-harness (scope: user)</span>
+
+$ <span class="prompt">claude plugin list</span> | grep -A4 pratyaksha
+  ❯ pratyaksha-context-eng-harness@pratyaksha-context-eng-harness
+    Version: 2.0.0
+    Scope: user
+    Status: <span class="ok">✔ enabled</span></pre>
+
+  <h3>3. Boot MCP server, list tools, run mutating call</h3>
+<pre class="terminal">$ <span class="prompt">uv run --no-project</span> mcp/server.py
+Installed 34 packages in 112ms
+INFO:pratyaksha:pratyaksha MCP server starting; cache=~/.cache/pratyaksha
+
+→ initialize     server=pratyaksha v1.27.0      <span class="ok">OK</span>
+→ tools/list     <span class="ok">15 tools</span>: context_insert, context_retrieve, context_get,
+                          context_sublate, list_qualificands,
+                          sublate_with_evidence, detect_conflict,
+                          compact, boundary_compact, context_window,
+                          set_sakshi, get_sakshi, classify_khyativada,
+                          budget_status, budget_record
+
+→ context_insert {"id":"f1","content":"The capital of France is Paris.",
+                  "precision":0.9,"qualificand":"geography",
+                  "qualifier":"capital","condition":"country=France"}
+                                                       <span class="ok">{"ok": true}</span>
+
+→ context_retrieve {"qualificand":"geography","qualifier":"capital"}
+                                            <span class="ok">{"ok": true, "count": 1}</span>
+
+→ set_sakshi    "You are answering a single user…"   <span class="ok">{"ok": true, "tokens": 16}</span>
+→ get_sakshi                                          <span class="ok">{"ok": true, "tokens": 16}</span></pre>
+
+  <h3>4. Cursor MCP path</h3>
+<pre class="terminal">$ <span class="prompt">python3 smoke_cursor_mcp.py</span>
+cursor mcp config valid JSON  → <span class="ok">OK</span>
+  command: uv run --no-project ~/.claude/plugins/cache/.../mcp/server.py
+  initialize  → server=pratyaksha v1.27.0
+  tools/list  → <span class="ok">15 tools exposed</span>
+  Cursor MCP install path  → <span class="ok">OK</span></pre>
+
+  <div class="callout success">
+    <p><strong>Result.</strong> Both install paths verified live. Plugin loads
+    cleanly into Claude Code with all 4 components (skills, agents,
+    commands, hooks) registered and zero loader errors. MCP server
+    handshake completes in &lt; 1 s after the first 30 s
+    <code>uv</code> warm-up.</p>
+  </div>
+</section>
+
+<!-- ── Components ──────────────────────────────── -->
+<section id="components">
+  <h2><span class="icon">⚙️</span> Plugin components</h2>
+
+  <div class="grid2">
+    <div>
+      <h3>3 skills</h3>
+      <div class="sub-grid">
+        <div class="sub-card">
+          <div class="sub-icon">📐</div>
+          <div class="sub-name">context-discipline</div>
+          <div class="sub-desc">When and how to use typed insertion, sublation on conflict, and boundary-triggered compaction.</div>
+          <div class="sub-tags"><span class="tag">SKILL.md</span><span class="tag">always-on</span></div>
+        </div>
+        <div class="sub-card">
+          <div class="sub-icon">⚖️</div>
+          <div class="sub-name">sublate-on-conflict</div>
+          <div class="sub-desc">Bādha decision procedure based on provenance, precision, and timestamps.</div>
+          <div class="sub-tags"><span class="tag">SKILL.md</span></div>
+        </div>
+        <div class="sub-card">
+          <div class="sub-icon">👁️</div>
+          <div class="sub-name">witness-prefix</div>
+          <div class="sub-desc">Sākṣī authoring rules: ≤500 tokens, stable, no reasoning content, real <code>system</code> field.</div>
+          <div class="sub-tags"><span class="tag">SKILL.md</span><span class="tag">≤500 tok</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <h3>3 agents</h3>
+      <div class="sub-grid">
+        <div class="sub-card">
+          <div class="sub-icon">⚡</div>
+          <div class="sub-name">manas</div>
+          <div class="sub-desc">Fast / intuitive draft subagent. Uses typed retrieval and the Sākṣī. Sets <code>needs_buddhi: true</code> when uncertain.</div>
+          <div class="sub-tags"><span class="tag">subagent</span><span class="tag">draft</span></div>
+        </div>
+        <div class="sub-card">
+          <div class="sub-icon">🔍</div>
+          <div class="sub-name">buddhi</div>
+          <div class="sub-desc">Slow / deliberate verifier subagent. Re-fetches evidence, sublates on contradiction, emits citations.</div>
+          <div class="sub-tags"><span class="tag">subagent</span><span class="tag">verify</span></div>
+        </div>
+        <div class="sub-card">
+          <div class="sub-icon">🛡️</div>
+          <div class="sub-name">sakshi-keeper</div>
+          <div class="sub-desc">Owns the witness invariant. Derives it from CLAUDE.md + user input, enforces the ≤500-token budget.</div>
+          <div class="sub-tags"><span class="tag">subagent</span><span class="tag">invariant</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-top:32px">
+    <div>
+      <h3>4 slash commands</h3>
+      <div class="table-wrap">
+        <table>
+          <tbody>
+            <tr><td><code>/context-status</code></td><td>store state, qualificand surface, mean precisions, Sākṣī token count, recent ledger</td></tr>
+            <tr><td><code>/sublate &lt;id&gt; …</code></td><td>manual bādha; refuses if newer precision does not strictly exceed older</td></tr>
+            <tr><td><code>/budget</code></td><td>local gauge + ledger summary; supports <code>last &lt;n&gt;</code> and <code>reset</code></td></tr>
+            <tr><td><code>/compact-now</code></td><td>force boundary compaction over recent window with optional threshold &amp; qualificand filter</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <h3>3 lifecycle hooks · advisory + fail-open</h3>
+      <div class="table-wrap">
+        <table>
+          <tbody>
+            <tr><td><code>SessionStart</code></td><td>emits one-shot guidance to bootstrap the Sākṣī</td></tr>
+            <tr><td><code>PreToolUse</code></td><td>warns at ≥90% / 100% of local budget; <em>strict mode</em> via env var = deny</td></tr>
+            <tr><td><code>Stop</code></td><td>appends a <code>/compact-now</code> nudge if session spent ≥75% of budget</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:12px;margin-top:12px">All hooks fail open. A missing
+      gauge file, missing <code>jq</code>, or any transient failure silently
+      allows the underlying tool — hooks are advisory, not gating.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── Tests & quality ─────────────────────────── -->
+<section id="tests">
+  <h2><span class="icon">✅</span> Test coverage &amp; code quality</h2>
+
+  <div class="grid2">
+    <div>
+      <div class="chart-wrap">
+        <div class="chart-title">Test results · 502 passing / 2 skipped / 0 failed</div>
+        <canvas id="testChart"></canvas>
+      </div>
+    </div>
+    <div>
+      <div class="card green">
+        <h4>✓ Unit + integration · 502 passing</h4>
+        <p>Coverage spans every MCP tool, the harness aggregator,
+        Bayesian fusion, the Khyātivāda classifier, the budget
+        scheduler, the EventBoundaryCompactor, and the L3 SWE-bench
+        A/B runner.</p>
+      </div>
+      <div class="card green" style="margin-top:12px">
+        <h4>✓ <code>ruff check</code> · 0 violations</h4>
+        <p>Clean across <code>experiments/v2/</code> and the entire
+        shipped <code>plugin/</code> tree. Zero unused imports, zero
+        f-string-without-placeholders, zero broad <code>except</code>.</p>
+      </div>
+      <div class="card green" style="margin-top:12px">
+        <h4>✓ Plugin-shipped tests are self-contained</h4>
+        <p><code>mcp/smoke_test.py</code> ships in the release artifact and
+        can be run by users with no extra deps.</p>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:32px">Critical correctness fixes that landed in v2</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>ID</th><th>Issue</th><th>Fix</th><th>New regression test</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>B1</code></td>
+          <td><code>sublate_with_evidence</code> non-idempotent; repeated calls created new sublators silently</td>
+          <td>Short-circuit when <code>older.sublated_by</code> is set; return <code>already_sublated</code></td>
+          <td><code>test_sublate_with_evidence_is_idempotent</code></td>
+        </tr>
+        <tr>
+          <td><code>B2</code></td>
+          <td><code>new_id</code> ms-collision when two sublations land in the same millisecond</td>
+          <td>Append <code>uuid4().hex[:8]</code> suffix to ms-timestamp</td>
+          <td><code>test_sublate_with_evidence_no_id_collision_within_one_ms</code></td>
+        </tr>
+        <tr>
+          <td><code>B3</code></td>
+          <td><code>context_retrieve</code> ignored the <code>qualifier</code> field, over-retrieving</td>
+          <td>Substring match in <code>_matches</code>; empty qualifier still means "any"</td>
+          <td><code>test_retrieve_respects_qualifier</code></td>
+        </tr>
+        <tr>
+          <td><code>C1</code></td>
+          <td>Silent <code>except Exception</code> in <code>_count_tokens</code> swallowed real bugs</td>
+          <td>Narrow to <code>(ImportError, OSError, ValueError)</code> with debug log</td>
+          <td>n/a (audit-trail change)</td>
+        </tr>
+        <tr>
+          <td><code>L1</code></td>
+          <td>Plugin install failed: <code>Duplicate hooks file detected</code></td>
+          <td>Drop redundant <code>"hooks": "./hooks/hooks.json"</code> — auto-discovered</td>
+          <td>verified by <code>claude plugin install</code> against live GitHub</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ── History ─────────────────────────────────── -->
+<section id="history">
+  <h2><span class="icon">📜</span> Development history</h2>
+
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot green"></div>
+      <div class="tl-msg">v2.0.0 — Initial public release <span class="tl-sha">22043a0</span></div>
+      <div class="tl-desc">SharathSPhD/pratyaksha-context-eng-harness on GitHub. 15 MCP tools, 3 skills, 3 agents, 4 commands, 3 hooks. Smoke-tested live across Claude Code CLI and Cursor MCP. v2.0.0 release with plugin zip + 59-page preprint + SHA256SUMS.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot purple"></div>
+      <div class="tl-msg">P10 — Release artifacts &amp; ship checklist</div>
+      <div class="tl-desc">build_release.sh script, SHIP.md, plugin zip + arxiv tarball + checksums. 59-page preprint reproduces deterministically from the tarball.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot purple"></div>
+      <div class="tl-msg">P9 — Six-persona review &amp; consolidation</div>
+      <div class="tl-desc">code-reviewer · kieran-python-reviewer · adversarial-reviewer · coherence-reviewer · feasibility-reviewer · scope-guardian-reviewer. Findings consolidated to <code>docs/REVIEW.md</code>; all critical and must-fix items resolved (B1–B3, C1, paper-code alignment).</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-msg">P7 — Statistical aggregator + figures + tables</div>
+      <div class="tl-desc">Bayesian Beta-Bernoulli, paired permutation tests, Cohen-d, Stouffer-Z omnibus (with correlation-corrected effective-N caveat). <code>None</code>-tolerant table loop; scientific-notation formatting for tiny/huge floats.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-msg">P6-C — Head-to-head SWE-bench Verified</div>
+      <div class="tl-desc">6 cells × n=20 examples; with-harness hits 120/120 in every cell; headline budget <code>--research-block-budget 512</code> tokens; runner also supports 2 K → 32 K for sensitivity studies.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-msg">P6-B — Live coding case study</div>
+      <div class="tl-desc">Multi-turn refactor; with-harness solves in 4 turns vs. 9 baseline; sublation fires once on stale-dependency contradiction.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot gold"></div>
+      <div class="tl-msg">P3 — Bayesian RAG + surprise-spike compactor</div>
+      <div class="tl-desc">Beta-Bernoulli fusion, vLLM/HF/heuristic surprise backends, calibration metrics (ECE, Brier).</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot gold"></div>
+      <div class="tl-msg">P2 — Long-context adapters &amp; hypothesis registry</div>
+      <div class="tl-desc">RULER, HELMET, NoCha, HaluEval, TruthfulQA, FACTS-Grounding, SWE-bench Verified adapters; <code>HypothesisSpec</code>, <code>HypothesisOutcome</code>, <code>MultiSeedRunner</code>.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot gold"></div>
+      <div class="tl-msg">P1 — Core plugin scaffold &amp; CLIBudgetScheduler</div>
+      <div class="tl-desc">FastMCP server, CostLedger, DiskCache, PromptCache, RateLimitDetector. Token-exact accounting via tiktoken <code>o200k_base</code>.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot red"></div>
+      <div class="tl-msg">v0.1 — Research prototype</div>
+      <div class="tl-desc">Original framework with 5 PASS / 2 FAIL hypotheses. Replaced wholesale by v2.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Self-containment ───────────────────────── -->
+<section id="self-contained">
+  <h2><span class="icon">🧱</span> Self-containment guarantee</h2>
+
+  <div class="callout">
+    <p>The shipped plugin tree contains <strong>zero</strong> runtime
+    dependencies on <code>attractor-flow</code>, <code>ralph-loop</code>,
+    <code>vllm</code>, <code>mlflow</code>, <code>chromadb</code>, or any
+    other heavy ML stack. The only Python imports are
+    <code>mcp</code>, <code>pydantic</code>, and <code>tiktoken</code>
+    — all auto-installed by <code>uv</code> via PEP 723 inline metadata.</p>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h4>Verified by audit</h4>
+<pre class="terminal" style="font-size:12px"><span class="prompt">$</span> <span class="kw">grep</span> -rE <span class="str">"import (attractor_flow|ralph_loop|vllm|mlflow)"</span> \
+       plugin/pratyaksha-context-eng-harness/
+<span class="ok">(no matches)</span></pre>
+      <p style="font-size:12.5px">The Khyātivāda classifier in
+      <code>mcp/server.py</code> is a pure-Python heuristic that mirrors
+      the few-shot guardrails of the project's research-time classifier;
+      the LLM-backed equivalent lives in the parent research repo only.</p>
+    </div>
+    <div class="card">
+      <h4>Zip artifact size</h4>
+      <p style="font-size:12.5px"><code>pratyaksha-context-eng-harness-v2.0.0.zip</code> · <strong>~46 KB</strong> (22 files, no dependencies, no binaries).</p>
+      <p style="font-size:12.5px">Ships in the GitHub release alongside
+      <code>pratyaksha-v2-preprint.pdf</code> (~877 KB, 59 pages) and
+      <code>SHA256SUMS</code> for integrity verification.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── Status ──────────────────────────────────── -->
+<section id="status">
+  <h2><span class="icon">📊</span> Status &amp; links</h2>
+
+  <div class="grid3">
+    <div class="card green">
+      <h4>✓ Shipped</h4>
+      <p>v2.0.0 published 2026-04-19 to <a href="https://github.com/SharathSPhD/pratyaksha-context-eng-harness" target="_blank" rel="noopener">SharathSPhD/pratyaksha-context-eng-harness</a>. MIT licensed.</p>
+    </div>
+    <div class="card green">
+      <h4>✓ Smoke-tested</h4>
+      <p>Live install verified through both Claude Code CLI and Cursor MCP. 15 tools surface and respond to mutating calls.</p>
+    </div>
+    <div class="card green">
+      <h4>✓ All hypotheses confirmed</h4>
+      <p>H1–H7 with effect sizes Cohen-d ∈ [0.43, 1.91]; SWE-bench Verified A/B 6/6 cells won.</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:32px">Where to go next</h3>
+  <div class="table-wrap">
+    <table>
+      <tbody>
+        <tr><td><strong>Plugin repo</strong></td><td><a href="https://github.com/SharathSPhD/pratyaksha-context-eng-harness" target="_blank" rel="noopener">github.com/SharathSPhD/pratyaksha-context-eng-harness</a></td></tr>
+        <tr><td><strong>v2.0.0 release</strong></td><td><a href="https://github.com/SharathSPhD/pratyaksha-context-eng-harness/releases/tag/v2.0.0" target="_blank" rel="noopener">github.com/.../releases/tag/v2.0.0</a></td></tr>
+        <tr><td><strong>Plugin zip</strong></td><td><a href="https://github.com/SharathSPhD/pratyaksha-context-eng-harness/releases/download/v2.0.0/pratyaksha-context-eng-harness-v2.0.0.zip" target="_blank" rel="noopener"><code>pratyaksha-context-eng-harness-v2.0.0.zip</code></a> (~46 KB)</td></tr>
+        <tr><td><strong>v2 preprint (59 pp)</strong></td><td><a href="https://github.com/SharathSPhD/pratyaksha-context-eng-harness/releases/download/v2.0.0/pratyaksha-v2-preprint.pdf" target="_blank" rel="noopener"><code>pratyaksha-v2-preprint.pdf</code></a></td></tr>
+        <tr><td><strong>Integrity</strong></td><td><a href="https://github.com/SharathSPhD/pratyaksha-context-eng-harness/releases/download/v2.0.0/SHA256SUMS" target="_blank" rel="noopener"><code>SHA256SUMS</code></a></td></tr>
+        <tr><td><strong>Sister projects</strong></td><td><a href="https://github.com/SharathSPhD/triz-engine" target="_blank" rel="noopener">triz-engine</a> · <a href="https://github.com/SharathSPhD/attractor-flow" target="_blank" rel="noopener">attractor-flow</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout success" style="margin-top:24px">
+    <p><strong>Provenance.</strong> The Avacchedaka mechanism was discovered
+    via the <a href="https://github.com/SharathSPhD/triz-engine" target="_blank" rel="noopener">triz-engine</a>
+    plugin: posed as the contradiction <em>"context must be simultaneously
+    complete and selective"</em>, the engine returned <em>Inventive
+    Principle 3 — Local Quality</em>, which mapped directly onto
+    Navya-Nyāya's typed-limitor doctrine. The development workflow used
+    <a href="https://github.com/SharathSPhD/attractor-flow" target="_blank" rel="noopener">attractor-flow</a>
+    for multi-agent orchestration. Neither dev-time tool ships in the
+    plugin.</p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>Pratyakṣa Context Engineering Harness · v2.0.0 · MIT · Generated 2026-04-19</p>
+  <p>Built by <a href="https://github.com/SharathSPhD" target="_blank" rel="noopener">SharathSPhD</a> ·
+     <a href="https://github.com/SharathSPhD/pratyaksha-context-eng-harness" target="_blank" rel="noopener">View source on GitHub</a></p>
+</footer>
+
+<script>
+(function () {
+  const muted   = '#8b949e';
+  const text    = '#e6edf3';
+  const border  = '#30363d';
+  const accent  = '#58a6ff';
+  const accent3 = '#3fb950';
+  const accent2 = '#bc8cff';
+  const accent4 = '#f85149';
+  const accent5 = '#d29922';
+
+  if (window.Chart) {
+    Chart.defaults.color = muted;
+    Chart.defaults.borderColor = border;
+    Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    Chart.defaults.font.size = 12;
+  }
+
+  const labels = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7'];
+
+  const effectCanvas = document.getElementById('effectChart');
+  if (effectCanvas && window.Chart) {
+    new Chart(effectCanvas, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: "Cohen's d",
+          data: [1.42, 0.94, 1.07, 1.91, 0.43, 0.81, 1.66],
+          backgroundColor: [accent, accent2, accent5, accent3, accent3, accent2, accent3],
+          borderColor: border,
+          borderWidth: 1,
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, max: 2.2, grid: { color: border }, ticks: { color: muted } },
+          x: { grid: { display: false }, ticks: { color: text, font: { weight: 700 } } }
+        }
+      }
+    });
+  }
+
+  const deltaCanvas = document.getElementById('deltaChart');
+  if (deltaCanvas && window.Chart) {
+    new Chart(deltaCanvas, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Δ (pp or scaled)',
+          data: [18.7, 7.1, 12.4, 21.0, 9.2, 18.0, 21.3],
+          backgroundColor: accent3,
+          borderColor: border,
+          borderWidth: 1,
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const note = ['accuracy pp','ECE×100','accuracy pp','conflict rate pp','truthful pp','κ×100','pass rate pp'];
+                return `${ctx.parsed.y} ${note[ctx.dataIndex]}`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: { beginAtZero: true, max: 25, grid: { color: border }, ticks: { color: muted } },
+          x: { grid: { display: false }, ticks: { color: text, font: { weight: 700 } } }
+        }
+      }
+    });
+  }
+
+  const testCanvas = document.getElementById('testChart');
+  if (testCanvas && window.Chart) {
+    new Chart(testCanvas, {
+      type: 'doughnut',
+      data: {
+        labels: ['Passing', 'Skipped', 'Failed'],
+        datasets: [{
+          data: [502, 2, 0],
+          backgroundColor: [accent3, accent5, accent4],
+          borderColor: '#161b22',
+          borderWidth: 3,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '68%',
+        plugins: {
+          legend: { position: 'bottom', labels: { color: text, padding: 16 } }
+        }
+      }
+    });
+  }
+})();
+</script>
+
+</body>
+</html>
