@@ -44,10 +44,6 @@ In a thatched commentary-school in the rice-growing plains of Mithila, the Nyāy
 
 Classical Indian epistemology — the systematic study of *what counts as a justified belief*, developed across the schools called Nyāya–Vaiśeṣika, Advaita Vedānta, Pūrva Mīmāṃsā, and Sāṃkhya — spent centuries refining a small set of concepts that map almost exactly onto the operations a context-engineered agent needs to perform.
 
-![A circular knowledge-mandala connecting five Sanskrit terms in Devanāgarī (avacchedaka, bādha, manas/buddhi, sākṣī, khyātivāda) by gold filaments to their modern operational counterparts at the centre.](pratyaksha_images/mandala.png)
-
-*The vocabulary, mapped to operations. Five concepts from the darśana-śāstras, each connected to the operational primitive it becomes inside a context-engineered agent.*
-
 Five concepts do most of the work, and each can be glossed in one sentence.
 
 **Avacchedaka** (Nyāya–Vaiśeṣika) is the ancient Indian logician's insistence that *every cognition carries its conditions*. To say "the cup is on the table" is, in this tradition, never quite enough; the proper form is "the cup is on the table *under the conditions* C₁ … Cₙ". In the harness, this becomes typed insertion: every retrieved fact lands in the agent's working store *with* the conditions that make it true.
@@ -116,7 +112,7 @@ $ tail -f ~/.cache/pratyaksha/audit.jsonl
 
 Five lines. One conflict, one sublation, one verdict, one audit trail an SRE can replay tomorrow morning. The point is not the JSON — the point is that a human can read it.
 
-![A two-panel illustration. Left: a chaotic desk overflowing with papers, two stacks visibly mixed — some sheets stamped 'Redis 4 — blog post', others stamped 'Redis 7 — official docs', a small confused agent silhouette in front. Right: same desk, neatly organised, with the official docs at the front, the blog-post stack set aside and visibly stamped 'sublated' in red ink, and a small glowing paper labelled 'audit log' on the side.](pratyaksha_images/before-after.png)
+![A two-panel illustration. Left: a chaotic desk overflowing with papers, two stacks visibly mixed — some sheets stamped 'Redis 4 — blog post', others stamped 'Redis 7 — official docs', a small confused agent silhouette in front. Right: same desk, neatly organised, with the official docs at the front, the blog-post stack set aside and visibly stamped 'sublated' in red ink, and a small glowing paper labelled 'audit log' on the side.](pratyaksha_images/links.png)
 
 *Before and after the discipline. The same context window, with and without typed insertion + sublation. The unaided agent (left) anchors on whatever snippet appears first. The harness (right) keeps the older sources in the audit trail but routes the answer through the newer authoritative documentation.*
 
@@ -213,7 +209,7 @@ Four slash commands cover almost everything a user will want to do interactively
 
 A 90-second first-turn recipe: open a long-running task — a multi-file refactor, a multi-source research synthesis, a long policy-QA conversation — type `/context-status` before and after a few turns, and `tail -f ~/.cache/pratyaksha/audit.jsonl` in a side terminal to watch the sublation events fire.
 
-![A polished visualisation of the plugin's install flow: a dark-mode terminal showing the curl uv install line and the /plugin install command, alongside the rendered token-budget gauge with five categories.](pratyaksha_images/links.png)
+![A polished visualisation of the plugin's install flow: a dark-mode terminal showing the curl uv install line and the /plugin install command, alongside the rendered token-budget gauge with five categories.](pratyaksha_images/final.png)
 
 *Installable in two commands, hot-swappable across hosts. The same MCP-based plugin resolves identically inside Cursor, Claude Code (CLI and VS Code extension), and Claude Desktop.*
 
@@ -228,8 +224,6 @@ This is also not a coding-agent fix. The same operators apply, unchanged, wherev
 The Pratyakṣa harness is one delivery vehicle. The plugin will get refined; model families will turn over; the budget gauges will get smarter. The lasting contribution is the recognition that the vocabulary already exists, the schools that built it were thinking carefully about *what counts as a justified belief*, and a modern context-engineered agent does not have to invent the discipline from scratch.
 
 Install the plugin. Watch the audit log. The vocabulary was waiting.
-
-![A single oil lamp (diya) glowing softly, illuminating a vertical stack of paper that fades from old palm-leaf manuscripts at the bottom to a modern laptop screen at the top.](pratyaksha_images/final.png)
 
 *Pratyakṣa — direct perception. The lasting contribution is the type signatures; the plugin is one delivery vehicle.*
 

@@ -301,6 +301,17 @@
     text-wrap: balance;
   }
 
+  /* Closing italic tag (replaces the old closing oil-lamp figure) */
+  .closing-tag {
+    font-family: var(--serif);
+    font-size: 17px; line-height: 1.55;
+    color: var(--muted);
+    text-align: center;
+    margin: 32px auto 8px;
+    font-style: italic;
+    max-width: 560px;
+  }
+
   /* Tables */
   .table-wrap {
     margin: 32px 0;
@@ -514,8 +525,6 @@
     <div class="meta">
       <span>By <a href="https://www.linkedin.com/in/sharath-s/" target="_blank" rel="noopener"><strong>Sharath Sathish</strong></a></span>
       <span class="dot">·</span>
-      <span>University of York</span>
-      <span class="dot">·</span>
       <span>April 2026 · ~14 min read</span>
       <span class="dot">·</span>
       <a href="https://zenodo.org/records/19653013" target="_blank" rel="noopener">Cite the preprint</a>
@@ -571,11 +580,6 @@
 </div>
 
 <p>Classical Indian epistemology &mdash; the systematic study of <em>what counts as a justified belief</em>, developed across the schools called Nyāya–Vaiśeṣika, Advaita Vedānta, Pūrva Mīmāṃsā, and Sāṃkhya &mdash; spent centuries refining a small set of concepts that map almost exactly onto the operations a context-engineered agent needs to perform.</p>
-
-<figure>
-  <img src="pratyaksha_images/mandala.png" alt="A circular knowledge-mandala connecting five Sanskrit terms in Devanāgarī (avacchedaka, bādha, manas/buddhi, sākṣī, khyātivāda) by gold filaments to their modern operational counterparts at the centre." loading="lazy">
-  <figcaption><strong>The vocabulary, mapped to operations.</strong> Five concepts from the <em>darśana-śāstras</em>, each connected to the operational primitive it becomes inside a context-engineered agent.</figcaption>
-</figure>
 
 <p>Five concepts do most of the work, and each can be glossed in one sentence.</p>
 
@@ -686,7 +690,7 @@
 <p>Five lines. One conflict, one sublation, one verdict, one audit trail an SRE can replay tomorrow morning. The point is not the JSON &mdash; the point is that a human can read it.</p>
 
 <figure class="wide">
-  <img src="pratyaksha_images/before-after.png" alt="A two-panel illustration. Left: a chaotic desk overflowing with papers, two stacks visibly mixed — some sheets stamped 'Redis 4 — blog post', others stamped 'Redis 7 — official docs', a small confused agent silhouette in front. Right: same desk, neatly organised, with the official docs at the front, the blog-post stack set aside and visibly stamped 'sublated' in red ink, and a small glowing paper labelled 'audit log' on the side." loading="lazy">
+  <img src="pratyaksha_images/links.png" alt="A two-panel illustration. Left: a chaotic desk overflowing with papers, two stacks visibly mixed — some sheets stamped 'Redis 4 — blog post', others stamped 'Redis 7 — official docs', a small confused agent silhouette in front. Right: same desk, neatly organised, with the official docs at the front, the blog-post stack set aside and visibly stamped 'sublated' in red ink, and a small glowing paper labelled 'audit log' on the side." loading="lazy">
   <figcaption><strong>Before and after the discipline.</strong> The same context window, with and without typed insertion + sublation. The unaided agent (left) anchors on whatever snippet appears first. The harness (right) keeps the older sources in the audit trail but routes the answer through the newer authoritative documentation.</figcaption>
 </figure>
 
@@ -830,7 +834,7 @@
 <p>A 90-second first-turn recipe: open a long-running task &mdash; a multi-file refactor, a multi-source research synthesis, a long policy-QA conversation &mdash; type <code>/context-status</code> before and after a few turns, and <code>tail -f ~/.cache/pratyaksha/audit.jsonl</code> in a side terminal to watch the sublation events fire.</p>
 
 <figure>
-  <img src="pratyaksha_images/links.png" alt="A polished visualisation of the plugin's install flow: a dark-mode terminal showing the curl uv install line and the /plugin install command, alongside the rendered token-budget gauge with five categories." loading="lazy">
+  <img src="pratyaksha_images/final.png" alt="A polished visualisation of the plugin's install flow: a dark-mode terminal showing the curl uv install line and the /plugin install command, alongside the rendered token-budget gauge with five categories." loading="lazy">
   <figcaption><strong>Installable in two commands, hot-swappable across hosts.</strong> The same MCP-based plugin resolves identically inside Cursor, Claude Code (CLI and VS Code extension), and Claude Desktop.</figcaption>
 </figure>
 
@@ -848,10 +852,7 @@
 
 <p class="pullquote">Install the plugin. Watch the audit log. The vocabulary was waiting.</p>
 
-<figure>
-  <img src="pratyaksha_images/final.png" alt="A single oil lamp (diya) glowing softly, illuminating a vertical stack of paper that fades from old palm-leaf manuscripts at the bottom to a modern laptop screen at the top." loading="lazy">
-  <figcaption><em>Pratyakṣa</em> &mdash; direct perception. The lasting contribution is the type signatures; the plugin is one delivery vehicle.</figcaption>
-</figure>
+<p class="closing-tag"><em>Pratyakṣa</em> &mdash; direct perception. The lasting contribution is the type signatures; the plugin is one delivery vehicle.</p>
 
 <div class="bottom-cta">
   <h3>Try it, read it, cite it</h3>
