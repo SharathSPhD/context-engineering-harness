@@ -1,10 +1,10 @@
 \section{Appendix C · Reproducibility Manifest}\label{appendix-c-reproducibility-manifest}
 
-This manifest gives a deterministic recipe to re-run every numerical claim in the paper. Every command below is exactly what we ran; outputs are written to \texttt{experiments/results/} under deterministic file names.
+This manifest gives a deterministic recipe to re-run every numerical claim in the paper. Every command below is exactly what we ran; outputs are written to \passthrough{\lstinline!experiments/results/!} under deterministic file names.
 
 \subsection{C.1 Pinned dependencies}\label{c.1-pinned-dependencies}
 
-\begin{verbatim}
+\begin{lstlisting}
 python  >= 3.11
 uv      >= 0.4.0
 anthropic>= 0.34
@@ -13,26 +13,26 @@ pydantic>= 2.6
 tiktoken>= 0.7
 numpy   >= 1.26
 pytest  >= 8.0
-\end{verbatim}
+\end{lstlisting}
 
-Optional (only for Qwen3 surprise backend in \texttt{boundary\_compact}):
+Optional (only for Qwen3 surprise backend in \passthrough{\lstinline!boundary\_compact!}):
 
-\begin{verbatim}
+\begin{lstlisting}
 vllm  >= 0.5.0
 transformers>= 4.43.0
 torch >= 2.3.0
-\end{verbatim}
+\end{lstlisting}
 
-\texttt{tectonic} (for paper PDF) is installed via \texttt{brew\ install\ tectonic}. No other system dependencies are required.
+\passthrough{\lstinline!tectonic!} (for paper PDF) is installed via \passthrough{\lstinline!brew install tectonic!}. No other system dependencies are required.
 
 \subsection{C.2 One-shot environment bootstrap}\label{c.2-one-shot-environment-bootstrap}
 
-\begin{verbatim}
+\begin{lstlisting}[language=bash]
 git clone https://github.com/SharathSPhD/pratyaksha-context-eng-harness.git
 cd pratyaksha-context-eng-harness
 uv sync                               # creates .venv, pins versions
 uv run pytest tests/ -q               # 499 passes, 2 skipped
-\end{verbatim}
+\end{lstlisting}
 
 \subsection{C.3 Random-seed contract}\label{c.3-random-seed-contract}
 
@@ -42,83 +42,176 @@ Every experiment fixes seeds in three places:
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  The Python \texttt{random} module: \texttt{random.seed(seed)}.
+  The Python \passthrough{\lstinline!random!} module: \passthrough{\lstinline!random.seed(seed)!}.
 \item
-  NumPy: \texttt{np.random.default\_rng(seed)}.
+  NumPy: \passthrough{\lstinline!np.random.default\_rng(seed)!}.
 \item
-  Anthropic API: an explicit \texttt{seed} keyword on every \texttt{Messages.create} call (when supported by the model).
+  Anthropic API: an explicit \passthrough{\lstinline!seed!} keyword on every \passthrough{\lstinline!Messages.create!} call (when supported by the model).
 \end{enumerate}
 
-Seeds used are \texttt{{[}1,\ 2,\ 3{]}} for the canonical L1/L3 runs, and a single \texttt{seed=0} for the deterministic L2 case study.
+Seeds used are \passthrough{\lstinline![1, 2, 3]!} for the canonical L1/L3 runs, and a single \passthrough{\lstinline!seed=0!} for the deterministic L2 case study.
 
 \subsection{C.4 Re-running each layer}\label{c.4-re-running-each-layer}
 
 \subsubsection{L1 --- public benchmarks (H1--H7)}\label{l1-public-benchmarks-h1h7}
 
-H1--H2 use the registered \texttt{BenchmarkAdapter} runner:
+H1--H2 use the registered \passthrough{\lstinline!BenchmarkAdapter!} runner:
 
-\begin{verbatim}
+\begin{lstlisting}[language=bash]
 uv run python -m experiments.v2.p6a.run --hypotheses H1 H2 --seeds 1 2 3
-\end{verbatim}
+\end{lstlisting}
 
 H3--H7 use the deterministic plugin-in-process harness:
 
-\begin{verbatim}
+\begin{lstlisting}[language=bash]
 uv run python -m experiments.v2.p6a.run_plugin_inloop --hypotheses H3 H4 H5 H6 H7 --seeds 1 2 3
-\end{verbatim}
+\end{lstlisting}
 
-(Each module also accepts \texttt{all} in place of explicit hypothesis lists.)
+(Each module also accepts \passthrough{\lstinline!all!} in place of explicit hypothesis lists.)
 
-Outputs: JSON under \texttt{experiments/results/p6a/} consumed by P7 (tables \textbf{T1}--\textbf{T3}, figures \textbf{F01}--\textbf{F07}).
+Outputs: JSON under \passthrough{\lstinline!experiments/results/p6a/!} consumed by P7 (tables \textbf{T1}--\textbf{T3}, figures \textbf{F01}--\textbf{F07}).
 
 \subsubsection{L2 --- live case study (P6-B)}\label{l2-live-case-study-p6-b}
 
-\begin{verbatim}
+\begin{lstlisting}[language=bash]
 uv run python -m experiments.v2.p6b.run_case_study
-\end{verbatim}
+\end{lstlisting}
 
-Output: \texttt{experiments/results/p6b/summary.json} (deterministic across machines because the harness is LLM-free for this layer).
+Output: \passthrough{\lstinline!experiments/results/p6b/summary.json!} (deterministic across machines because the harness is LLM-free for this layer).
 
 \subsubsection{L3 --- SWE-bench Verified A/B (P6-C)}\label{l3-swe-bench-verified-ab-p6-c}
 
-\begin{verbatim}
+\begin{lstlisting}[language=bash]
 uv run python -m experiments.v2.p6c.run_swebench_ab \
   --n-instances 120 \
   --seeds 1 2 3 \
   --models claude-haiku-4-5 claude-sonnet-4-6 \
   --research-block-budget 8192
-\end{verbatim}
+\end{lstlisting}
 
-The headline numbers in the paper use \textbf{\texttt{-\/-research-block-budget\ 8192}}. Fast CI smoke re-runs may pass \textbf{\texttt{-\/-research-block-budget-fast\ 512}} instead.
+The headline numbers in the paper use \textbf{\passthrough{\lstinline!--research-block-budget 8192!}}. Fast CI smoke re-runs may pass \textbf{\passthrough{\lstinline!--research-block-budget-fast 512!}} instead.
 
-Output: \texttt{experiments/results/p6c/summary.json} and per-instance traces under \texttt{experiments/results/p6c/runs/}.
+Output: \passthrough{\lstinline!experiments/results/p6c/summary.json!} and per-instance traces under \passthrough{\lstinline!experiments/results/p6c/runs/!}.
 
 \subsubsection{Aggregator --- figures and tables (P7)}\label{aggregator-figures-and-tables-p7}
 
-\begin{verbatim}
+\begin{lstlisting}[language=bash]
 uv run python -m experiments.v2.p7.aggregate \
   --in experiments/results \
   --out experiments/results/p7
-\end{verbatim}
+\end{lstlisting}
 
-Output: \texttt{experiments/results/p7/figures/F01.png} \ldots{} \texttt{F13.png}, \texttt{experiments/results/p7/tables/T1\_*.md} \ldots{} \texttt{T7\_*.md}, plus \texttt{\_index.json} and \texttt{\_summary.md}.
+Output: \passthrough{\lstinline!experiments/results/p7/figures/F01.png!} \ldots{} \passthrough{\lstinline!F13.png!}, \passthrough{\lstinline!experiments/results/p7/tables/T1\_*.md!} \ldots{} \passthrough{\lstinline!T7\_*.md!}, plus \passthrough{\lstinline!\_index.json!} and \passthrough{\lstinline!\_summary.md!}.
 
 \subsection{C.5 Cost ledger}\label{c.5-cost-ledger}
 
-The custom \texttt{CLIBudgetScheduler} writes \texttt{cost\_ledger.db} with one row per outgoing API call. To re-derive total token usage and total wall-clock spend:
+The custom \passthrough{\lstinline!CLIBudgetScheduler!} writes \passthrough{\lstinline!cost\_ledger.db!} with one row per outgoing API call. To re-derive total token usage and total wall-clock spend:
 
-\begin{verbatim}
+\begin{lstlisting}[language=bash]
 uv run python -m harness.scheduler.report --db cost_ledger.db
-\end{verbatim}
+\end{lstlisting}
 
-The ledger from our run is shipped as \texttt{experiments/results/cost\_ledger.snapshot.db} for inspection.
+The ledger from our run is shipped as \passthrough{\lstinline!experiments/results/cost\_ledger.snapshot.db!} for inspection.
 
 \subsection{C.6 Determinism audit}\label{c.6-determinism-audit}
 
-\texttt{tests/test\_v2/test\_p7\_aggregate.py::test\_aggregate\_is\_deterministic} asserts that two consecutive runs of the aggregator produce byte-identical figure binaries and table strings. This pins the entire pipeline against silent stochastic drift.
+\passthrough{\lstinline!tests/test\_v2/test\_p7\_aggregate.py::test\_aggregate\_is\_deterministic!} asserts that two consecutive runs of the aggregator produce byte-identical figure binaries and table strings. This pins the entire pipeline against silent stochastic drift.
 
 \subsection{\texorpdfstring{C.7 What is \emph{not} deterministic}{C.7 What is not deterministic}}\label{c.7-what-is-not-deterministic}
 
-The L1 and L3 layers depend on the Anthropic API. Anthropic does not guarantee bitwise-identical completions across provisioning windows even with a fixed \texttt{seed}. We therefore report multi-seed means with bootstrap CIs and paired permutation tests, not point estimates. The deltas reported in Sections 8 and 10 are robust to single-seed drift on the order of \(\pm 0.02\) on every metric we tested.
+The L1 and L3 layers depend on the Anthropic API. Anthropic does not guarantee bitwise-identical completions across provisioning windows even with a fixed \passthrough{\lstinline!seed!}. We therefore report multi-seed means with bootstrap CIs and paired permutation tests, not point estimates. The deltas reported in Sections 8 and 10 are robust to single-seed drift on the order of \(\pm 0.02\) on every metric we tested.
 
 The L2 layer is fully deterministic: it is LLM-free.
+
+\subsection{C.8 Worked-example payloads (Redis-caching turn, §6.7)}\label{c.8-worked-example-payloads-redis-caching-turn-6.7}
+
+The five host-visible artefacts of the §6.7 / Fig.\textasciitilde{}\ref{fig:swimlane} worked example. All payloads are reproduced verbatim from \passthrough{\lstinline!docs/worked\_example\_redis.jsonl!} in the plugin repo; they replay byte-for-byte against the cached evidence trail under \passthrough{\lstinline!examples/redis\_session/!}.
+
+\subsubsection{\texorpdfstring{C.8.1 \texttt{mcp\_\_pratyaksha\_mcp\_\_manas\_step} (request)}{C.8.1 mcp\_\_pratyaksha\_mcp\_\_manas\_step (request)}}\label{c.8.1-mcp__pratyaksha_mcp__manas_step-request}
+
+\begin{lstlisting}
+{
+  "jsonrpc": "2.0", "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "mcp__pratyaksha_mcp__manas_step",
+    "arguments": {
+      "query": "how do I cache a user session in Redis?",
+      "k": 3,
+      "budget_tokens": 1200
+    }
+  }
+}
+\end{lstlisting}
+
+\subsubsection{\texorpdfstring{C.8.2 \texttt{detect\_conflict} (response excerpt)}{C.8.2 detect\_conflict (response excerpt)}}\label{c.8.2-detect_conflict-response-excerpt}
+
+\begin{lstlisting}
+{
+  "jsonrpc": "2.0", "id": 2,
+  "result": {
+    "conflicted": true,
+    "kind": "TYPE_CLASH",
+    "qualificand": "Redis-session",
+    "qualifier_slot": "expiry-policy",
+    "items": [
+      {"id": "item_71", "qualifier": "use SETEX with ttl=3600",
+       "condition": "blog 2019-03",   "precision": 0.55, "source": "blog"},
+      {"id": "item_88", "qualifier": "use SET ... EX 3600 XX KEEPTTL",
+       "condition": "Redis 7.x docs",  "precision": 0.95, "source": "docs"}
+    ]
+  }
+}
+\end{lstlisting}
+
+\subsubsection{\texorpdfstring{C.8.3 \texttt{sublate\_with\_evidence} (request + verdict)}{C.8.3 sublate\_with\_evidence (request + verdict)}}\label{c.8.3-sublate_with_evidence-request-verdict}
+
+\begin{lstlisting}
+{
+  "jsonrpc": "2.0", "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "sublate_with_evidence",
+    "arguments": {
+      "target_id":  "item_71",
+      "by_id":      "item_88",
+      "reason":     "Redis 7 docs (prec=8) > blog (prec=2) under shared limitor"
+    }
+  }
+}
+\end{lstlisting}
+
+\subsubsection{\texorpdfstring{C.8.4 \texttt{mcp\_\_pratyaksha\_mcp\_\_buddhi\_step} (final answer envelope)}{C.8.4 mcp\_\_pratyaksha\_mcp\_\_buddhi\_step (final answer envelope)}}\label{c.8.4-mcp__pratyaksha_mcp__buddhi_step-final-answer-envelope}
+
+\begin{lstlisting}
+{
+  "jsonrpc": "2.0", "id": 4,
+  "result": {
+    "answer":      "Use SET key value EX 3600 XX KEEPTTL ...",
+    "khyati_class":"yathārtha",
+    "confidence":   0.91,
+    "grounding":  ["item_88"],
+    "sublations": ["item_71"]
+  }
+}
+\end{lstlisting}
+
+\subsubsection{\texorpdfstring{C.8.5 Sākṣī audit-log (one line per stage; \texttt{\textasciitilde{}/.cache/pratyaksha/audit.jsonl})}{C.8.5 Sākṣī audit-log (one line per stage; \textasciitilde/.cache/pratyaksha/audit.jsonl)}}\label{c.8.5-sux101kux1e63ux12b-audit-log-one-line-per-stage-.cachepratyakshaaudit.jsonl}
+
+\begin{lstlisting}
+{"turn":42,"evt":"USER_TURN","query":"how do I cache a user session in Redis?","ts":1734519301.12}
+{"turn":42,"evt":"ATTEND","k":3,"budget_tokens":1200,"items":["item_55","item_71","item_88"]}
+{"turn":42,"evt":"BADHA_DETECT","kind":"TYPE_CLASH","slot":"Redis-session/expiry-policy"}
+{"turn":42,"evt":"BADHA_RESOLVE","sublated":"item_71","survivor":"item_88","reason":"docs>blog","hash":"sha256:af3..."}
+{"turn":42,"evt":"ANSWER","khyati":"yathārtha","conf":0.91,"grounding":["item_88"]}
+\end{lstlisting}
+
+\subsubsection{\texorpdfstring{C.8.6 \texttt{/context-status} snapshot (post-turn, abridged)}{C.8.6 /context-status snapshot (post-turn, abridged)}}\label{c.8.6-context-status-snapshot-post-turn-abridged}
+
+\begin{lstlisting}
+context window  :  3 live, 1 sublated, 0 evicted
+budget          :  1{,}214 / 1{,}200 hard cap (101.2%, soft-warn)
+sublations turn :  1 (item_71 → item_88, reason "docs>blog")
+witness file    :  ~/.cache/pratyaksha/audit.jsonl  (last line: turn=42 evt=ANSWER)
+khyati class    :  yathārtha   (conf 0.91)
+\end{lstlisting}

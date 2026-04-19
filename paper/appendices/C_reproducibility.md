@@ -115,3 +115,96 @@ The ledger from our run is shipped as `experiments/results/cost_ledger.snapshot.
 The L1 and L3 layers depend on the Anthropic API. Anthropic does not guarantee bitwise-identical completions across provisioning windows even with a fixed `seed`. We therefore report multi-seed means with bootstrap CIs and paired permutation tests, not point estimates. The deltas reported in Sections 8 and 10 are robust to single-seed drift on the order of $\pm 0.02$ on every metric we tested.
 
 The L2 layer is fully deterministic: it is LLM-free.
+
+## C.8 Worked-example payloads (Redis-caching turn, §6.7)
+
+The five host-visible artefacts of the §6.7 / Fig.~\ref{fig:swimlane} worked example. All payloads are reproduced verbatim from `docs/worked_example_redis.jsonl` in the plugin repo; they replay byte-for-byte against the cached evidence trail under `examples/redis_session/`.
+
+### C.8.1 `mcp__pratyaksha_mcp__manas_step` (request)
+
+```json
+{
+  "jsonrpc": "2.0", "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "mcp__pratyaksha_mcp__manas_step",
+    "arguments": {
+      "query": "how do I cache a user session in Redis?",
+      "k": 3,
+      "budget_tokens": 1200
+    }
+  }
+}
+```
+
+### C.8.2 `detect_conflict` (response excerpt)
+
+```json
+{
+  "jsonrpc": "2.0", "id": 2,
+  "result": {
+    "conflicted": true,
+    "kind": "TYPE_CLASH",
+    "qualificand": "Redis-session",
+    "qualifier_slot": "expiry-policy",
+    "items": [
+      {"id": "item_71", "qualifier": "use SETEX with ttl=3600",
+       "condition": "blog 2019-03",   "precision": 0.55, "source": "blog"},
+      {"id": "item_88", "qualifier": "use SET ... EX 3600 XX KEEPTTL",
+       "condition": "Redis 7.x docs",  "precision": 0.95, "source": "docs"}
+    ]
+  }
+}
+```
+
+### C.8.3 `sublate_with_evidence` (request + verdict)
+
+```json
+{
+  "jsonrpc": "2.0", "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "sublate_with_evidence",
+    "arguments": {
+      "target_id":  "item_71",
+      "by_id":      "item_88",
+      "reason":     "Redis 7 docs (prec=8) > blog (prec=2) under shared limitor"
+    }
+  }
+}
+```
+
+### C.8.4 `mcp__pratyaksha_mcp__buddhi_step` (final answer envelope)
+
+```json
+{
+  "jsonrpc": "2.0", "id": 4,
+  "result": {
+    "answer":      "Use SET key value EX 3600 XX KEEPTTL ...",
+    "khyati_class":"yathārtha",
+    "confidence":   0.91,
+    "grounding":  ["item_88"],
+    "sublations": ["item_71"]
+  }
+}
+```
+
+### C.8.5 Sākṣī audit-log (one line per stage; `~/.cache/pratyaksha/audit.jsonl`)
+
+```json
+{"turn":42,"evt":"USER_TURN","query":"how do I cache a user session in Redis?","ts":1734519301.12}
+{"turn":42,"evt":"ATTEND","k":3,"budget_tokens":1200,"items":["item_55","item_71","item_88"]}
+{"turn":42,"evt":"BADHA_DETECT","kind":"TYPE_CLASH","slot":"Redis-session/expiry-policy"}
+{"turn":42,"evt":"BADHA_RESOLVE","sublated":"item_71","survivor":"item_88","reason":"docs>blog","hash":"sha256:af3..."}
+{"turn":42,"evt":"ANSWER","khyati":"yathārtha","conf":0.91,"grounding":["item_88"]}
+```
+
+### C.8.6 `/context-status` snapshot (post-turn, abridged)
+
+```text
+context window  :  3 live, 1 sublated, 0 evicted
+budget          :  1{,}214 / 1{,}200 hard cap (101.2%, soft-warn)
+sublations turn :  1 (item_71 → item_88, reason "docs>blog")
+witness file    :  ~/.cache/pratyaksha/audit.jsonl  (last line: turn=42 evt=ANSWER)
+khyati class    :  yathārtha   (conf 0.91)
+```

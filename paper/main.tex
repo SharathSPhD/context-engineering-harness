@@ -1,18 +1,28 @@
-\documentclass[11pt,a4paper]{article}
+% =====================================================================
+% Pratyaksha: A Context-Engineering System for Long-Context,
+% Hallucination-Resistant Agentic AI
+% Author: Sharath Sathish (University of York, UK)
+% arXiv-clean single-column template (10pt, Times)
+% =====================================================================
+
+\documentclass[10pt]{article}
 
 % --- Layout ---
-\usepackage[a4paper,margin=1in]{geometry}
-\usepackage{setspace}
-\onehalfspacing
+\usepackage[a4paper,margin=0.85in,top=1in,bottom=1in]{geometry}
 \usepackage{titlesec}
-\titleformat*{\section}{\Large\bfseries}
-\titleformat*{\subsection}{\large\bfseries}
-\titleformat*{\subsubsection}{\normalsize\bfseries}
+\titleformat*{\section}{\large\bfseries}
+\titleformat*{\subsection}{\normalsize\bfseries}
+\titleformat*{\subsubsection}{\normalsize\bfseries\itshape}
+\titlespacing*{\section}{0pt}{2.5ex plus 1ex minus .2ex}{1.4ex plus .2ex}
+\titlespacing*{\subsection}{0pt}{2.0ex plus 0.8ex minus .2ex}{1.0ex plus .2ex}
+\setlength{\parskip}{0.4ex plus 0.2ex}
+\setlength{\parindent}{1.2em}
 
-% --- Encoding & fonts ---
+% --- Encoding & fonts (arxiv-clean: Times via newtx) ---
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern}
+\usepackage{newtxtext,newtxmath}
+\usepackage{microtype}
 \usepackage{newunicodechar}
 % Sanskrit/IAST diacritics fallback for pdflatex
 \newunicodechar{ā}{\=a}
@@ -95,75 +105,114 @@
 \newunicodechar{‑}{-}
 
 % --- Math, science, code ---
+% newtxmath (loaded above) already defines \Bbbk and \openbox; clear them so
+% amssymb does not error with "Command \Bbbk already defined".
+\let\Bbbk\relax
+\let\openbox\relax
 \usepackage{amsmath,amssymb,amsthm,mathtools}
-\usepackage{booktabs,longtable,array,multirow}
+\usepackage{booktabs,longtable,array,multirow,tabularx,makecell}
 \usepackage{graphicx}
 \graphicspath{{figures/}}
-\usepackage[font=small,labelfont=bf]{caption}
+\usepackage[font=small,labelfont=bf,skip=4pt]{caption}
+\usepackage{subcaption}
+
+% Listings: breakable code blocks (fixes "text out of boundary")
 \usepackage{listings}
+\usepackage{xcolor}
+\definecolor{lstbg}{RGB}{248,248,248}
+\definecolor{lstframe}{RGB}{210,210,210}
+\definecolor{lstkeyword}{RGB}{0,80,160}
+\definecolor{lststring}{RGB}{160,40,40}
+\definecolor{lstcomment}{RGB}{120,120,120}
 \lstset{
-  basicstyle=\ttfamily\small,
+  basicstyle=\ttfamily\footnotesize,
   breaklines=true,
+  breakatwhitespace=false,
+  breakautoindent=true,
+  keepspaces=true,
   columns=fullflexible,
   showstringspaces=false,
   frame=single,
+  rulecolor=\color{lstframe},
+  backgroundcolor=\color{lstbg},
   framesep=4pt,
+  framerule=0.4pt,
   xleftmargin=8pt,
-  xrightmargin=8pt
+  xrightmargin=8pt,
+  aboveskip=1.0em,
+  belowskip=1.0em,
+  keywordstyle=\color{lstkeyword}\bfseries,
+  stringstyle=\color{lststring},
+  commentstyle=\color{lstcomment}\itshape,
+  postbreak=\mbox{\textcolor{gray}{\(\hookrightarrow\)}\space}
+}
+\lstdefinelanguage{json}{
+  string=[s]{"}{"},
+  stringstyle=\color{lststring},
+  comment=[l]{//},
+  commentstyle=\color{lstcomment}\itshape,
+  morestring=[b]",
 }
 \usepackage{verbatim}
 \usepackage{enumitem}
 \setlist{topsep=2pt,parsep=2pt,itemsep=2pt}
+\usepackage{seqsplit}        % break long identifiers (e.g. tool names)
+\usepackage{rotating}         % sidewaystable for the wide T4/T5
+\usepackage{tcolorbox}        % callouts
+\tcbuselibrary{breakable,skins}
+
+% --- TikZ for concept/flow diagrams ---
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,shapes.geometric,shapes.symbols,calc,backgrounds,decorations.pathreplacing,matrix}
+\usepackage{pgfplots}
+\pgfplotsset{compat=newest}
 
 % --- References ---
 \usepackage[round,authoryear]{natbib}
 \bibliographystyle{plainnat}
 \setcitestyle{round}
 
-% --- Color & hyperlinks (last) ---
-\usepackage{xcolor}
+% --- Color & hyperlinks (xurl before hyperref so URLs break) ---
+\usepackage{xurl}
 \usepackage[colorlinks=true,
             linkcolor=black,
             citecolor=blue!50!black,
             urlcolor=blue!50!black]{hyperref}
 \usepackage{cleveref}
 
-% Pandoc tightlist compat
+% Pandoc compat
 \providecommand{\tightlist}{\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-% Pandoc passthrough (bare URLs etc.)
 \providecommand{\passthrough}[1]{#1}
-% Pandoc emits {\def\LTcaptype{none} ... } around uncaptioned longtables.
-% Define a no-op `none' counter so this does not fail.
-\newcounter{none}
-% Pandoc occasionally emits \real{...} for column widths; provide a fallback.
-\providecommand{\real}[1]{#1}
+\newcounter{none}              % \LTcaptype{none} guard
+\providecommand{\real}[1]{#1}  % column-width fallback
+
+% Floats: keep figures close to their reference
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.9}
+\renewcommand{\textfraction}{0.05}
+\renewcommand{\floatpagefraction}{0.7}
+
+% Aggressive line-breaking budget: eliminates the long tail of small
+% Overfull hboxes (sub-50pt) that come from URLs, identifiers, and code
+% snippets in body text. Pairs with xurl + seqsplit already loaded.
+\setlength{\emergencystretch}{3em}
+\tolerance=2000
+\hbadness=4000
+\hfuzz=2pt
+\vfuzz=2pt
+\sloppy
 
 \begin{document}
 
-\begin{titlepage}
-\begin{center}
-\vspace*{2cm}
-{\LARGE\bfseries The Pratyak\d{s}a Context-Engineering Harness:\\
-A Vedic-Epistemology-Grounded Plugin for\\
-Long-Context, Hallucination-Resistant\\
-LLM Coding Agents\par}
-\vspace{1.5cm}
-{\large Sharath Phulari\par}
-{\normalsize Independent Researcher\par}
-{\normalsize \texttt{SharathSPhD@github}\par}
-\vfill
-{\small Preprint v1.0 \quad\textbar\quad 2026-04-18\par}
-\vspace{0.5cm}
-{\small Code: \url{https://github.com/SharathSPhD/pratyaksha-context-eng-harness}\par}
-{\small Plugin marketplace manifest: \texttt{.claude-plugin/marketplace.json}\par}
-{\small Reproducibility: \texttt{experiments/results/p7/\_index.json}, \texttt{\_summary.md}\par}
-\end{center}
-\end{titlepage}
+% --- Title block (no titlepage; arxiv-style) ---
+\title{\vspace{-2.0em}\Large\bfseries Pratyak\d{s}a: A Context-Engineering System for\\
+Long-Context, Hallucination-Resistant Agentic AI}
+\author{Sharath Sathish\thanks{Correspondence: \texttt{ss4422@york.ac.uk}.}\\[2pt]
+\normalsize University of York, United Kingdom}
+\date{Preprint v2.0 \quad \textbar\quad \today}
+\maketitle
 
 \input{sections/00_frontmatter.tex}
-\clearpage
-\tableofcontents
-\clearpage
 
 \input{sections/01_introduction.tex}
 \input{sections/02_related_work.tex}
@@ -187,14 +236,6 @@ LLM Coding Agents\par}
 \input{appendices/D_prompts.tex}
 \input{appendices/E_p6c_protocol.tex}
 \input{appendices/F_negative_results.tex}
-
-\clearpage
-\section*{All Figures}
-\input{generated/figures.tex}
-
-\clearpage
-\section*{All Tables}
-\input{generated/tables.tex}
 
 \clearpage
 \bibliography{references}

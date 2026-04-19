@@ -1,6 +1,6 @@
 \section{10 · Results --- Layer 3: SWE-bench Verified A/B Head-to-Head (P6-C)}\label{results-layer-3-swe-bench-verified-ab-head-to-head-p6-c}
 
-Layer 3 supplies the most ecologically valid \emph{coding-context} evidence in the paper: a head-to-head A/B test on \textbf{120 real SWE-bench Verified \citep{openai2024sweverified, jimenez2024swebench}} instances, \textbf{3 seeds × 2 models} (= \textbf{720 paired runs}), under a \emph{fixed} research-block budget. Both arms see the same instances, the same \textbf{synthetic} evidence trail, and the same model; the only difference is whether the harness is in the loop. \textbf{On synthetic research trails over the SWE-bench Verified instance set}, with patch generation deterministically anchored on the first plausible file path of the research block, we compare harness vs.~baseline; the optional Docker scorer agreement is reported on a 30-instance sub-sample (κ = 0.97). Headline runs set \textbf{\texttt{-\/-research-block-budget\ 8192}} (8 K tokens); smoke re-runs may use \textbf{\texttt{-\/-research-block-budget-fast\ 512}}. The numbers below come from \texttt{experiments/results/p6c/swebench\_ab.json} and are aggregated in tables \textbf{T4} (headline) and \textbf{T5} (per-seed breakdown) and figures \textbf{F10} (paired-difference histogram), \textbf{F11} (target-path-hit rate).
+Layer 3 supplies the most ecologically valid \emph{coding-context} evidence in the paper, but it is not the headline claim. The mechanisms validated in Layers 1 (general long-context and hallucination benchmarks, §8) and 2 (live multi-domain case study, §9) are agent- and domain-agnostic; SWE-bench Verified is included here because it is \emph{one challenging coding-specific instantiation} of the same mechanisms under a fixed token budget. We run a head-to-head A/B test on \textbf{120 SWE-bench Verified \citep{openai2024sweverified, jimenez2024swebench}}-style instances, \textbf{3 seeds × 2 models} (= \textbf{720 paired runs}). Both arms see the same instances, the same \textbf{synthetic} evidence trail, and the same model; the only difference is whether the system is in the loop. Patch generation is deterministically anchored on the first plausible file path of the research block. The headline run reported here uses the \textbf{deterministic patch-simulator} path (no Docker harness) with the fast research-block budget \textbf{\passthrough{\lstinline!--research-block-budget 512!}} as recorded in \passthrough{\lstinline!experiments/results/p6c/\_summary.json!} (\passthrough{\lstinline!spec.research\_budget\_tokens = 512!}, \passthrough{\lstinline!spec.use\_docker\_harness = false!}). A separate Docker-harness sub-sample at 30 instances reports scorer agreement \(\kappa = 0.97\) between the heuristic and the official Docker grader; the larger budget (\passthrough{\lstinline!--research-block-budget 8192!}) is supported by the runner but is not the source of the numbers below. The numbers come from \passthrough{\lstinline!experiments/results/p6c/swebench\_ab.json!} and are aggregated in Table\textasciitilde{}\ref{tab:t4_p6c_headline} (headline) and Table\textasciitilde{}\ref{tab:t5_p6c_per_seed} (per-seed breakdown) and Figures\textasciitilde{}\ref{fig:f10}--\ref{fig:f11}.
 
 \subsection{10.1 Design}\label{design}
 
@@ -9,21 +9,21 @@ For each SWE-bench Verified instance we:
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
 \item
-  \textbf{Generate a research trail of four snippets.} Two are \emph{stale} (low precision in \([0.20, 0.45]\), point at \emph{wrong} file paths constructed by perturbing the correct path with a synthetic typo, and reference superseded API names typical of pre-issue Stack Overflow / blog answers). Two are \emph{fresh} (precision in \([0.80, 0.97]\), point at the \emph{correct} file path, reference the current API). Stale items carry \texttt{superseded\_by\_id} pointers to fresh items; the four are then \emph{shuffled} so the agent cannot use ordering as a signal. (Implementation: \texttt{experiments/v2/p6c/research\_evidence.py}, deterministic per-seed.)
+  \textbf{Generate a research trail of four snippets.} Two are \emph{stale} (low precision in \([0.20, 0.45]\), point at \emph{wrong} file paths constructed by perturbing the correct path with a synthetic typo, and reference superseded API names typical of pre-issue Stack Overflow / blog answers). Two are \emph{fresh} (precision in \([0.80, 0.97]\), point at the \emph{correct} file path, reference the current API). Stale items carry \passthrough{\lstinline!superseded\_by\_id!} pointers to fresh items; the four are then \emph{shuffled} so the agent cannot use ordering as a signal. (Implementation: \passthrough{\lstinline!experiments/v2/p6c/research\_evidence.py!}, deterministic per-seed.)
 \item
-  \textbf{Build a research block under a fixed token budget} (headline runs: \textbf{\texttt{-\/-research-block-budget\ 8192}}; smoke tests: \textbf{\texttt{-\/-research-block-budget-fast\ 512}}):
+  \textbf{Build a research block under a fixed token budget.} The headline run reported here uses the deterministic patch-simulator path with \textbf{\passthrough{\lstinline!--research-block-budget 512!}} (the run-card value \passthrough{\lstinline!spec.research\_budget\_tokens = 512!} recorded in \passthrough{\lstinline!\_summary.json!}). The runner also supports \textbf{\passthrough{\lstinline!--research-block-budget 8192!}}; that larger budget would compress the gain (the system's contribution shifts from truncation to sublation), and the headline numbers below should not be interpreted as a 8,K-budget claim.
 
   \begin{itemize}
   \tightlist
   \item
-    \textbf{\texttt{with\_harness} arm.} Insert every snippet via \texttt{context\_insert}; trigger \texttt{sublate\_with\_evidence} for every stale-vs-fresh pair via the dominance rule; then assemble the block from \texttt{live} items only, truncating from the end if the budget is exceeded.
+    \textbf{\passthrough{\lstinline!with\_harness!} arm.} Insert every snippet via \passthrough{\lstinline!context\_insert!}; trigger \passthrough{\lstinline!sublate\_with\_evidence!} for every stale-vs-fresh pair via the dominance rule; then assemble the block from \passthrough{\lstinline!live!} items only, truncating from the end if the budget is exceeded.
   \item
-    \textbf{\texttt{without\_harness} arm.} Concatenate raw snippets in shuffle order and truncate to the same token budget.
+    \textbf{\passthrough{\lstinline!without\_harness!} arm.} Concatenate raw snippets in shuffle order and truncate to the same token budget.
   \end{itemize}
 \item
-  \textbf{Feed the research block to a deterministic \texttt{PatchSimulator}} that scans the block for the \emph{first} file path mentioned in backtick-quoted form and emits a stub diff anchored on that path. The simulator is \emph{not} an LLM; it is a deterministic anchoring function. This is intentional --- it makes the experiment a clean A/B on the \emph{research-block contents}, not on the model's coding skill, which the harness does not address.
+  \textbf{Feed the research block to a deterministic \passthrough{\lstinline!PatchSimulator!}} that scans the block for the \emph{first} file path mentioned in backtick-quoted form and emits a stub diff anchored on that path. The simulator is \emph{not} an LLM; it is a deterministic anchoring function. This is intentional --- it makes the experiment a clean A/B on the \emph{research-block contents}, not on the model's coding skill, which the system does not address.
 \item
-  \textbf{Score the resulting diff} by a binary \emph{target-path-hit} metric: 1.0 if the diff modifies the SWE-bench Verified ground-truth file, 0.0 otherwise. We additionally record \texttt{n\_target\_path\_hit}, \texttt{n\_research\_sublations}, and \texttt{mean\_score} per (model, seed) cell.
+  \textbf{Score the resulting diff} by a binary \emph{target-path-hit} metric: 1.0 if the diff modifies the SWE-bench Verified ground-truth file, 0.0 otherwise. We additionally record \passthrough{\lstinline!n\_target\_path\_hit!}, \passthrough{\lstinline!n\_research\_sublations!}, and \passthrough{\lstinline!mean\_score!} per (model, seed) cell.
 \item
   \textbf{Statistics.} Two paired permutation tests are computed: (i) per-instance, \(n=720\) pairs (every (instance, model, seed) triple is its own pair); (ii) per-(model, seed), \(n=6\) pairs (every cell's mean score is a pair).
 \end{enumerate}
@@ -62,23 +62,57 @@ target\_met & \textbf{True} \\
 \end{longtable}
 }
 
-Source: \texttt{experiments/results/p6c/\_summary.json} and table T4. Visualised by figures F10 (paired difference histogram, all positive) and F11 (target-path-hit-rate bars). The per-instance permutation \(p = 0.0005\) and the per-(model, seed) \(p = 0.03125\) are both load-bearing: the latter is the \textbf{floor} of the exact permutation distribution on six cells, so we supplement it with bootstrap CIs as in Section 7.4.
+Source: \passthrough{\lstinline!experiments/results/p6c/\_summary.json!} and Table\textasciitilde{}\ref{tab:t4_p6c_headline}. Visualised by Figures\textasciitilde{}\ref{fig:f10} (paired-difference histogram, all positive) and \ref{fig:f11} (target-path-hit-rate bars). The per-instance permutation \(p = 0.0005\) and the per-(model, seed) \(p = 0.03125\) are both load-bearing: the latter is the \textbf{floor} of the exact permutation distribution on six cells, so we supplement it with bootstrap CIs as in Section 7.4.
+
+\begin{table}[!tbp]
+\centering
+\caption{\textbf{T4 --- P6-C SWE-bench Verified A/B (headline).} Per-instance and per-(model, seed) deltas with paired permutation $p$-values, 95\% bootstrap CIs, and Cohen's $d$. Source: \texttt{experiments/results/p6c/swebench\_ab.json}.}
+\label{tab:t4_p6c_headline}
+\small
+\input{tables/T4_p6c_swebench_ab_headline.tex}
+\end{table}
+
+\begin{figure}[!tbp]
+\centering
+\begin{subfigure}[t]{0.49\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{F10_P6C_paired_diff_histogram.png}
+  \caption{Paired-difference histogram, $n = 720$.}
+  \label{fig:f10}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.49\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{F11_P6C_target_path_hitrate.png}
+  \caption{Target-path-hit rate per (model, seed) cell.}
+  \label{fig:f11}
+\end{subfigure}
+\caption{\textbf{P6-C SWE-bench Verified A/B head-to-head.} Treatment hits the target file path in 720/720 paired runs (100\% in every (model, seed) cell); baseline hits 362/720 (50.3\%) under an identical 512-token research-block budget (the headline run; \texttt{spec.research\_budget\_tokens = 512}).}
+\label{fig:f10f11}
+\end{figure}
 
 \subsection{10.3 Per-(model, seed) breakdown}\label{per-model-seed-breakdown}
 
-The harness's behaviour is \emph{identical} across \texttt{claude-haiku-4-5} and \texttt{claude-sonnet-4-6} (because the patch simulator is deterministic, by design --- see Section 10.1). The baseline's behaviour varies slightly across seeds (because the seed determines the shuffle order of the four snippets, and the baseline's \texttt{first-seen} anchoring is order-sensitive). Concretely, treatment hits target-path \textbf{120/120} in every cell; baseline hits 57, 66, 58, 57, 66, 58 across the six cells --- a near-coin-flip outcome, exactly as the \emph{Lost-in-the-Middle}-style anchoring \citep{liu2023lostmiddle, kazemnejad2024impact, narang2024longctxfailure} predicts when the wrong-path snippet appears first. Table T5 reports the full breakdown.
+The system's behaviour is \emph{identical} across \passthrough{\lstinline!claude-haiku-4-5!} and \passthrough{\lstinline!claude-sonnet-4-6!} (because the patch simulator is deterministic, by design --- see Section 10.1). The baseline's behaviour varies slightly across seeds (because the seed determines the shuffle order of the four snippets, and the baseline's \passthrough{\lstinline!first-seen!} anchoring is order-sensitive). Concretely, treatment hits target-path \textbf{120/120} in every cell; baseline hits 57, 66, 58, 57, 66, 58 across the six cells --- a near-coin-flip outcome, exactly as the \emph{Lost-in-the-Middle}-style anchoring \citep{liu2023lostmiddle, kazemnejad2024impact} predicts when the wrong-path snippet appears first. Table\textasciitilde{}\ref{tab:t5_p6c_per_seed} reports the full breakdown.
+
+\begin{table}[!tbp]
+\centering
+\caption{\textbf{T5 --- P6-C per-(model, seed) breakdown.} Treatment hits 120/120 in every cell; baseline varies with shuffle order. Source: \texttt{experiments/results/p6c/swebench\_ab.json}.}
+\label{tab:t5_p6c_per_seed}
+{\scriptsize\setlength{\tabcolsep}{3pt}%
+\input{tables/T5_p6c_per_seed_breakdown.tex}}
+\end{table}
 
 \subsection{10.4 What this measures and what it does not}\label{what-this-measures-and-what-it-does-not}
 
-This study measures the harness's effect \emph{exactly} on what the harness exists to address: \emph{which snippets the agent sees, in which order, with which provenance, with which sublations applied}. It does \textbf{not} measure the harness's effect on the agent's ability to write correct code, because the patch simulator is a deterministic anchoring function rather than an LLM coder. We deliberately split these concerns. A natural follow-up (Section 12) is to repeat the study with a real LLM coder; we predict the gain will compress somewhat (because a strong coder will sometimes recover from a wrong-path anchor) but remain large, because the wrong-path anchor frequently surfaces in agent transcripts published in the SWE-bench Verified leaderboard analysis \citep{openai2024sweverified, narang2024longctxfailure}.
+This study measures the system's effect \emph{exactly} on what the system exists to address: \emph{which snippets the agent sees, in which order, with which provenance, with which sublations applied}. It does \textbf{not} measure the system's effect on the agent's ability to write correct code, because the patch simulator is a deterministic anchoring function rather than an LLM coder. We deliberately split these concerns. A natural follow-up (Section 12) is to repeat the study with a real LLM coder; we predict the gain will compress somewhat (because a strong coder will sometimes recover from a wrong-path anchor) but remain large, because the wrong-path anchor frequently surfaces in agent transcripts published in the SWE-bench Verified leaderboard analysis \citep{openai2024sweverified}. Crucially, the \emph{same} mechanism --- sublation under a shared \emph{avacchedaka} --- explains the gains observed on the \emph{non-coding} L1 surfaces (RULER, HELMET, NoCha, HaluEval, TruthfulQA, FACTS-Grounding) in §8; SWE-bench is one challenging \emph{coding} instance of an agent-level effect.
 
-\subsection{10.5 Sensitivity to budget size}\label{sensitivity-to-budget-size}
+\subsection{10.5 Sensitivity to budget size (predicted, not in headline JSON)}\label{sensitivity-to-budget-size-predicted-not-in-headline-json}
 
-The default budget is 8 K tokens. We additionally swept budgets ∈ \{2 K, 4 K, 8 K, 16 K, 32 K\} (n=120, 1 seed × 1 model = 120 pairs each) and observed monotonic-decreasing gain as the budget grows, as expected: when the budget is large enough to fit the full unshuffled trail, the harness's contribution is mainly its \emph{sublation} rather than its \emph{truncation} policy, and the baseline's anchoring bias still dominates. At 32 K the harness still hits target-path 120/120 vs.~baseline 71/120 (delta +0.408). The full sweep is plotted in \texttt{experiments/results/p7/figures/F10\_P6C\_paired\_diff\_histogram.png} (paired-diff histogram is positive across budgets).
+The headline run is at \textbf{512 tokens}. The runner additionally supports \passthrough{\lstinline!--research-block-budget!} ∈ \{2 K, 4 K, 8 K, 16 K, 32 K\}; we \emph{predict} (and the runner is wired to confirm) monotonically \emph{decreasing} gain as the budget grows: when the budget is large enough to fit the full unshuffled trail, the system's contribution shifts from \emph{truncation} to \emph{sublation}, and the baseline's anchoring bias still dominates the wrong-file outcome. The full budget sweep is left for the next release; the headline JSON in \passthrough{\lstinline!experiments/results/p6c/\_summary.json!} covers only the 512-token cell. Figure\textasciitilde{}\ref{fig:f10}'s paired-diff histogram is positive at this budget.
 
-\subsection{10.6 What the harness contributes, in one sentence}\label{what-the-harness-contributes-in-one-sentence}
+\subsection{10.6 What the system contributes, in one sentence}\label{what-the-system-contributes-in-one-sentence}
 
-\emph{Under a fixed token budget, on synthetic research trails over the SWE-bench Verified instance set (patch generation deterministically anchored on the first plausible file path of the research block), the harness anchors the stub patch on the correct file in \textbf{100\% of the 6 (model × seed) cells (720 / 720 paired runs)} versus \textbf{50.3\%} for the budgeted baseline}, with per-instance permutation \(p = 0.0005\) and per-(model, seed) \(p = 0.03125\) as in Section 10.2. This is not a claim about unconstrained LLM patch generation on the full upstream harness; it is the operational expression of \emph{avacchedaka} + \emph{bādha} + the \emph{first-seen-wins} failure mode of unaided agents under the stated simulator.
+\emph{Under a fixed 512-token research-block budget, on synthetic research trails constructed over the SWE-bench Verified instance set (patch generation deterministically anchored on the first plausible file path of the research block), the system anchors the stub patch on the correct file in \textbf{100\% of the 6 (model × seed) cells (720 / 720 paired runs)} versus \textbf{50.3\%} for the budgeted baseline}, with per-instance permutation \(p = 0.0005\) and per-(model, seed) \(p = 0.03125\) as in Section 10.2. This is not a claim about unconstrained LLM patch generation on the full upstream harness; it is the operational expression of \emph{avacchedaka} + \emph{bādha} + the \emph{first-seen-wins} failure mode of unaided agents under the stated simulator --- and the same operational pattern is what produces the Layer-1 long-context and hallucination effects.
 
 \subsection{10.7 Aggregate across all studies}\label{aggregate-across-all-studies}
 
@@ -101,4 +135,30 @@ mean Cohen's d (excluding the two structural-100\% studies) & 9.62 \\
 \end{longtable}
 }
 
-The single combined statistic crosses \emph{every} conventional significance threshold by orders of magnitude. Because several stacked rows share generators and model families, we also report a correlation-corrected Stouffer variant alongside the naïve 10-study value (\textbf{Table T7}). We discuss the appropriate epistemic weight to give these numbers, and the limitations that temper them, in Section 11.
+The single combined statistic crosses \emph{every} conventional significance threshold by orders of magnitude. Because several stacked rows share generators and model families, we also report a correlation-corrected Stouffer variant alongside the naïve 10-study value (Table\textasciitilde{}\ref{tab:t7_omnibus}). Figures\textasciitilde{}\ref{fig:f12} and \ref{fig:f13} visualise effect-size magnitudes and a forest plot of the per-hypothesis deltas. We discuss the appropriate epistemic weight to give these numbers, and the limitations that temper them, in Section 11.
+
+\begin{table}[!tbp]
+\centering
+\caption{\textbf{T7 --- Omnibus Stouffer-Z combination.} Naive 10-study value alongside the correlation-corrected 7-effective-study value used as the conservative headline statistic.}
+\label{tab:t7_omnibus}
+\small
+\input{tables/T7_omnibus_stouffer.tex}
+\end{table}
+
+\begin{figure}[!tbp]
+\centering
+\begin{subfigure}[t]{0.49\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{F12_effect_sizes.png}
+  \caption{Effect-size magnitudes by hypothesis.}
+  \label{fig:f12}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.49\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{F13_forest_plot.png}
+  \caption{Forest plot of per-hypothesis paired deltas (95\% CIs).}
+  \label{fig:f13}
+\end{subfigure}
+\caption{\textbf{Aggregate effect across all 10 quantitative studies.} The two structural-100\% rows (H5, H7) are excluded from the mean Cohen's $d$; the headline omnibus uses the correlation-corrected Stouffer-Z (Table~\ref{tab:t7_omnibus}).}
+\label{fig:f12f13}
+\end{figure}

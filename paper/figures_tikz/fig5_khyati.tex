@@ -1,0 +1,65 @@
+% =====================================================================
+% Fig 5 -- Khyativada 6-class error taxonomy
+% =====================================================================
+\begin{figure}[!tbp]
+\centering
+\resizebox{0.96\linewidth}{!}{%
+\begin{tikzpicture}[
+  font=\small,
+  every node/.style={rounded corners=2pt},
+  root/.style ={draw=black!60,fill=blue!8,inner sep=4pt,minimum width=42mm,
+                minimum height=10mm,align=center,font=\bfseries},
+  cls/.style  ={draw=black!60,fill=orange!7,inner sep=3pt,minimum width=32mm,
+                minimum height=14mm,align=center,font=\footnotesize},
+  ex/.style   ={draw=black!50,fill=gray!4,inner sep=2pt,minimum width=32mm,
+                minimum height=10mm,align=center,font=\scriptsize\itshape},
+  arr/.style  ={-{Latex[length=2mm]},gray!70},
+  >=Latex
+]
+
+% --- Root ---
+\node[root] (root) at (0,0) {Khy\=ativ\=ada\\\footnotesize 6-class hallucination taxonomy};
+
+% --- Six leaves ---
+\node[cls,below left =14mm and  44mm of root]  (asat)
+   {\textbf{0. asat-khy\=ati}\\ Fabricated entity\\ (does not exist)};
+\node[cls,below left =14mm and  -2mm of root]  (atma)
+   {\textbf{1. \=atma-khy\=ati}\\ Self-projection /\\ confabulated identity};
+\node[cls,below left =14mm and -48mm of root]  (akhy)
+   {\textbf{2. akhy\=ati}\\ Omission /\\ missing fact};
+
+\node[cls,below right=14mm and -48mm of root]  (anya)
+   {\textbf{3. anyath\=a-khy\=ati}\\ Misidentification /\\ wrong referent};
+\node[cls,below right=14mm and  -2mm of root]  (anir)
+   {\textbf{4. anirvacan\=\i ya}\\ Indeterminate /\\ truth-value unknown};
+\node[cls,below right=14mm and  44mm of root]  (yath)
+   {\textbf{5. yath\=artha}\\ Veridical /\\ no error};
+
+% --- Examples row ---
+\node[ex,below=2mm of asat] {``cites paper that does\\not exist''};
+\node[ex,below=2mm of atma] {``insists it ran a test\\it did not run''};
+\node[ex,below=2mm of akhy] {``omits the deprecation\\notice''};
+\node[ex,below=2mm of anya] {``calls Redis cluster\\a sentinel''};
+\node[ex,below=2mm of anir] {``unverifiable; needs\\external lookup''};
+\node[ex,below=2mm of yath] {``correct, sourced,\\non-stale''};
+
+% --- Arrows ---
+\foreach \n in {asat,atma,akhy,anya,anir,yath}
+  \draw[arr] (root) -- (\n);
+
+\end{tikzpicture}}
+\caption{\textbf{The six-class khy\=ativ\=ada taxonomy used by the Buddhi judge.}
+We adopt classical Indian \emph{theories of erroneous cognition} as a
+diagnostic vocabulary for LLM hallucination, mapping them to mutually
+exclusive runtime classes:
+\textbf{0.\;asat-khy\=ati} (the referent does not exist),
+\textbf{1.\;\=atma-khy\=ati} (the model projects its own state onto the
+world), \textbf{2.\;akhy\=ati} (a relevant fact is omitted),
+\textbf{3.\;anyath\=a-khy\=ati} (a real referent is mis-identified),
+\textbf{4.\;anirvacan\=\i ya} (truth-value is genuinely indeterminate
+without further lookup), and \textbf{5.\;yath\=artha} (veridical).
+The Buddhi agent emits exactly one of these labels per turn, which
+both routes the answer (e.g.\ class 0/1/3 trigger sublation) and
+populates the calibration metrics reported in Section~10.}
+\label{fig:khyati}
+\end{figure}

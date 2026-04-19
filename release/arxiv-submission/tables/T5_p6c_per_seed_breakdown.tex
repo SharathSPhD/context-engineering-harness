@@ -1,0 +1,58 @@
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1250}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+seed
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+arm
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+n\_examples
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+mean\_score
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+accuracy
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+n\_target\_path\_hit
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+n\_research\_sublations
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+claude-haiku-4-5 & 0 & with\_harness & 120 & 0.5000 & 1.0000 & 120 &
+250 \\
+claude-haiku-4-5 & 0 & without\_harness & 120 & 0.2375 & 0.4750 & 57 &
+0 \\
+claude-haiku-4-5 & 1 & with\_harness & 120 & 0.5000 & 1.0000 & 120 &
+218 \\
+claude-haiku-4-5 & 1 & without\_harness & 120 & 0.2750 & 0.5500 & 66 &
+0 \\
+claude-haiku-4-5 & 2 & with\_harness & 120 & 0.5000 & 1.0000 & 120 &
+252 \\
+claude-haiku-4-5 & 2 & without\_harness & 120 & 0.2417 & 0.4833 & 58 &
+0 \\
+claude-sonnet-4-6 & 0 & with\_harness & 120 & 0.5000 & 1.0000 & 120 &
+250 \\
+claude-sonnet-4-6 & 0 & without\_harness & 120 & 0.2375 & 0.4750 & 57 &
+0 \\
+claude-sonnet-4-6 & 1 & with\_harness & 120 & 0.5000 & 1.0000 & 120 &
+218 \\
+claude-sonnet-4-6 & 1 & without\_harness & 120 & 0.2750 & 0.5500 & 66 &
+0 \\
+claude-sonnet-4-6 & 2 & with\_harness & 120 & 0.5000 & 1.0000 & 120 &
+252 \\
+claude-sonnet-4-6 & 2 & without\_harness & 120 & 0.2417 & 0.4833 & 58 &
+0 \\
+\end{longtable}
+}

@@ -84,7 +84,19 @@ Their roles are:
 - **`pretooluse-budget.sh`** consults `budget_status` before any harness tool runs and **logs** over-threshold use by default (advisory hook). If `PRATYAKSHA_BUDGET_STRICT=1`, the same script can be configured to **deny** tool execution when the gauge exceeds a hard threshold (default 95% of `context_budget`).
 - **`stop-compact.sh`** invokes `compact(strategy="adaptive")` at the end of every turn so memory pressure does not accumulate across turns.
 
-## 6.7 What the plugin does *not* contain
+## 6.7 Worked example: a Redis-caching turn, end-to-end
+
+To make the runtime contract concrete we trace a single user turn end-to-end through the deployed plugin. The user prompt is *"how do I cache a user session in Redis?"*; the agent's tool returns a mix of pre-Redis-7 blog snippets and the official Redis 7 documentation. Figure~\ref{fig:swimlane} visualises the swimlane across **User → Manas → Buddhi → Sublation → Sākṣī**, with the per-stage immutable JSON line written into `~/.cache/pratyaksha/audit.jsonl`.
+
+```{=latex}
+\input{figures_tikz/fig6_swimlane.tex}
+```
+
+The five host-visible artefacts are: (i) one `mcp__pratyaksha_mcp__manas_step` JSON-RPC call (Manas attends, $K=3$ items under a 1.2 K-token budget); (ii) one `detect_conflict` round-trip flagging a TYPE\_CLASH on the `(Redis-session, expiry-policy)` qualificand-qualifier slot; (iii) one `sublate_with_evidence` call that retires the blog post in favour of the Redis 7 docs (limitor precedence: official docs `prec=8` > blog post `prec=2`); (iv) one `mcp__pratyaksha_mcp__buddhi_step` call returning the answer with `khyati_class = "yathārtha"` (veridical) and `confidence = 0.91`; and (v) one append to the Sākṣī log per stage. The complete `/context-status` snapshot, the raw JSON-RPC payloads, and the four matching audit-log lines are reproduced verbatim in **Appendix C.8** so that the turn can be replayed byte-for-byte from the shipped plugin against the cached evidence trail.
+
+This single turn exercises every load-bearing primitive of Sections 4–5 in a non-coding agentic context, and is the runtime template the L1 (§8) and L3 (§10) experiments instantiate at scale.
+
+## 6.8 What the plugin does *not* contain
 
 We assert and audit two negative claims:
 
@@ -93,11 +105,11 @@ We assert and audit two negative claims:
 
 This matters because the harness is a *discipline*, not an infrastructure. Anything heavier than that would defeat the purpose of a plugin you can install in 30 seconds.
 
-## 6.8 Smoke test and CI
+## 6.9 Smoke test and CI
 
 `mcp/smoke_test.py` exercises every tool against the local MCP server: 15 round-trips, each verifying the input schema, the output schema, and one non-trivial behavioural assertion (e.g. `sublate_with_evidence` actually flips the target item's status). The smoke test runs in roughly 4 seconds wall-clock and is wired into the repo's CI as `pytest -m smoke`. We additionally exercise every command and hook via `claude --debug` in the developer's local Claude Code installation; the transcript of one such smoke run is preserved in `docs/plugin_smoke_transcript.md`.
 
-## 6.9 Hot-swappability across hosts
+## 6.10 Hot-swappability across hosts
 
 The same `marketplace.json` resolves in:
 

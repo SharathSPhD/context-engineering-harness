@@ -1,6 +1,6 @@
-# 4 · Theoretical Foundations: Vedic Epistemology Mapped to LLM Context Engineering
+# 4 · Theoretical Foundations: Classical Indian Epistemology Mapped to LLM Context Engineering
 
-This section constructs a precise translation table from seven classical Indian epistemic constructs to seven runtime operations on an LLM agent's context. Each row is a falsifiable design commitment, and each is operationalized in Section 5 and tested in Sections 8–10.
+This section constructs a precise translation table from seven classical Indian epistemic constructs — drawn from four philosophical schools, **Nyāya–Vaiśeṣika**, **Advaita Vedānta**, **Pūrva Mīmāṃsā**, and **Sāṃkhya** — to seven runtime operations on an LLM agent's context. Each row is a falsifiable design commitment, and each is operationalised in Section 5 and tested in Sections 8–10. To preempt the most common misreading: we use "classical Indian epistemology" rather than "Vedic epistemology" because the constructs we draw on (the Nyāya *avacchedaka*, the Advaita *bādha*, the Sāṃkhya *manas*/*buddhi* split, the cross-school *khyātivāda* debate) are products of the *darśana* literature, *not* of the Vedic *saṃhitā* corpus per se. Section 4.9 returns to what is and is not being claimed.
 
 ## 4.1 Pratyakṣa — direct perception as the harness's grounding pramāṇa
 
@@ -24,7 +24,11 @@ $$
 \texttt{Item} = \big\langle \texttt{qualificand},\; \texttt{qualifier},\; \texttt{condition},\; \texttt{precision}\in[0,1] \big\rangle.
 $$
 
-`condition` is a free-text string like `"as of 2024-09-Django-5.0"` or `"on POSIX, Python ≥ 3.11"`. The MCP tool `context_insert(qualificand, qualifier, condition, precision, source)` is the only way evidence enters the store. Two items that share `qualificand` but differ in `condition` *do not conflict*; two items that share `qualificand` *and* `condition` but disagree on `qualifier` *do*. This is the operational definition of a contradiction the harness can act on (Section 4.3).
+`condition` is a free-text string like `"as of 2024-09-Django-5.0"` or `"on POSIX, Python ≥ 3.11"`. The MCP tool `context_insert(qualificand, qualifier, condition, precision, source)` is the only way evidence enters the store. Two items that share `qualificand` but differ in `condition` *do not conflict*; two items that share `qualificand` *and* `condition` but disagree on `qualifier` *do*. This is the operational definition of a contradiction the harness can act on (Section 4.3). Figure \ref{fig:avacchedaka} makes this concrete with two version-typed Django claims that share a qualificand and a qualifier-slot but coexist truthfully because their conditions differ.
+
+```{=latex}
+\input{figures_tikz/fig2_avacchedaka.tex}
+```
 
 ## 4.3 Bādha — sublation as supersede-with-provenance
 
@@ -35,7 +39,11 @@ In Advaita Vedānta \citep{deutsch1969advaita, shaw1990bada, dharmaraja17vedanta
 1. **Explicit pointer**: the newly-arriving item names a prior item via `superseded_by_id`.
 2. **Dominance rule**: the newly-arriving item shares `qualificand` and `condition` with an existing item, has *strictly higher* precision, and the older item is `stale=True` while the newer is not.
 
-The dominance rule is the operational form of the Advaita commitment that *higher pramāṇa supersedes lower pramāṇa* under shared limitor; the explicit pointer is the form used when an LLM-side classifier or external evidence has detected a stale-fresh pair.
+The dominance rule is the operational form of the Advaita commitment that *higher pramāṇa supersedes lower pramāṇa* under shared limitor; the explicit pointer is the form used when an LLM-side classifier or external evidence has detected a stale-fresh pair. Figure \ref{fig:sublation} traces the three-step `detect_conflict → gather sources → sublate_with_evidence` procedure end-to-end, including the immutable line written by the Sākṣī Keeper.
+
+```{=latex}
+\input{figures_tikz/fig3_sublation.tex}
+```
 
 ## 4.4 Buddhi and Manas — the two-stage attend-then-judge gate
 
@@ -46,7 +54,11 @@ The Antaḥkaraṇa quartet of *manas, buddhi, citta, ahaṃkāra* \citep{deutsc
 - **`ManasAgent`** receives the user query and the `ContextStore` snapshot, and returns a structured JSON object matching the shipped contract in `agents/manas.md`: `{ "draft": "...", "grounding": ["<element_id>", ...], "uncertain_claims": ["..."], "needs_buddhi": true | false }`. Manas is operationalised as a **sub-agent** (Section 6.3), not a skill. Manas is *forbidden* from emitting a final user-visible answer (draft text is for the orchestrator only).
 - **`BuddhiAgent`** receives the user query, the Manas output, and re-reads the attended items from the `ContextStore`, and returns the final answer plus its own `khyāti_class` (Section 4.6) for the answer. Buddhi is the only agent that may emit a user-visible answer.
 
-This two-stage gate is identical in shape to dual-process accounts of human cognition \citep{evans2003duality, kahneman2011thinking, sloman1996two} and to classic AI cognitive architectures \citep{laird1987soar, anderson1996actr, newell1990unified}, but the names — and the surrounding philosophical apparatus — are Vedic. Critically, *Manas can be wrong without Buddhi being wrong*: if Manas mis-selects, Buddhi's job is to detect and call for re-selection rather than to answer.
+This two-stage gate is identical in shape to dual-process accounts of human cognition \citep{evans2003duality, kahneman2011thinking, sloman1996two} and to classic AI cognitive architectures \citep{laird1987soar, anderson1996actr, newell1990unified}, but the names — and the surrounding philosophical apparatus — are imported from **Sāṃkhya** (the original *manas*/*buddhi* enumeration in the *tattva* scheme), as cross-mapped in **Advaita Vedānta** \citep{deutsch1969advaita, datta1932advaita, ramprasad2013advaita}. Critically, *Manas can be wrong without Buddhi being wrong*: if Manas mis-selects, Buddhi's job is to detect and call for re-selection rather than to answer. Figure \ref{fig:manas_buddhi} shows the resulting two-stage loop and how the Sākṣī Keeper observes both stages without entering the response path.
+
+```{=latex}
+\input{figures_tikz/fig4_manas_buddhi.tex}
+```
 
 ## 4.5 Sākṣī — the witness as model-invariant audit frame
 
@@ -77,7 +89,11 @@ Six classical schools of Indian philosophy proposed six theories of erroneous co
 
 This is not a post-hoc relabelling of an existing modern taxonomy. It is the *original* taxonomy from the Indian philosophical tradition, jointly developed by debating schools over roughly a thousand years. We adopt it directly because (a) it carves the space cleanly along *epistemic* (not merely surface-textual) lines, (b) the six classes are mutually exclusive in the tradition's own usage, and (c) it gives us a *typed signal* the harness can act on (different remediation strategies for different classes).
 
-**LLM operationalization.** The shipped plugin's `classify_khyativada` tool applies a **heuristic classifier with the rule-based guardrails** described in Section 5.5. Separately, the experiments harness includes a few-shot Anthropic JSON classifier (`src/evaluation/khyativada_fewshot.py`) that is **not** wired into the plugin tool; both paths are evaluated independently in §8 (H6). Inter-annotator agreement is reported on the 3,000-example corpus using prompts in Appendix D and results in §8.6 at Cohen's κ = 0.736 ("substantial").
+**LLM operationalization.** The shipped plugin's `classify_khyativada` tool applies a **heuristic classifier with the rule-based guardrails** described in Section 5.5. Separately, the experiments harness includes a few-shot Anthropic JSON classifier (`src/evaluation/khyativada_fewshot.py`) that is **not** wired into the plugin tool; both paths are evaluated independently in §8 (H6). Inter-annotator agreement is reported on the 3,000-example corpus using prompts in Appendix D and results in §8.6 at Cohen's κ = 0.736 ("substantial"). Figure \ref{fig:khyati} summarises the six-class taxonomy and gives one canonical agentic-AI failure example per class.
+
+```{=latex}
+\input{figures_tikz/fig5_khyati.tex}
+```
 
 ## 4.7 Saṃskāras and vāsanās — adaptive forgetting
 
@@ -93,16 +109,16 @@ This avoids both the catastrophic-forgetting failure mode of naive context pruni
 
 ## 4.8 The translation table, summarised
 
-| Vedic construct | LLM operationalization | MCP tool / module | Tested by |
+| Construct (school) | LLM operationalisation | MCP tool / module | Tested by |
 |---|---|---|---|
-| Pratyakṣa | Visible-context-only grounding discipline | `context_retrieve`, `context_window`, related read paths | All hypotheses (architectural commitment) |
-| Avacchedaka | Typed limitor `(qualificand, qualifier, condition, precision)` | `context_insert`, `context_retrieve` | H2, H5 |
-| Bādha | Supersede-with-provenance under shared limitor | `sublate_with_evidence` | H4, H5, P6-B, P6-C |
-| Manas | Pre-judgment attention-selection **sub-agent** | `ManasAgent` (Section 6.3) | H3 |
-| Buddhi | Determinative judgment + khyāti tagging sub-agent | `BuddhiAgent` | H3, H6 |
-| Sākṣī | Write-once cross-turn witness log | `SakshiKeeperAgent`, `SakshiPrefix` | All (audit invariant) |
-| Khyātivāda | 6-class hallucination classifier | `classify_khyativada` | H6 |
-| Saṃskāra/vāsanā | Adaptive forgetting with witness-protected items | `AdaptiveForgetting` | H7 |
+| *Pratyakṣa* (Nyāya, Advaita) | Visible-context-only grounding discipline | `context_retrieve`, `context_window`, related read paths | All hypotheses (architectural commitment) |
+| *Avacchedaka* (Navya-Nyāya) | Typed limitor `(qualificand, qualifier, condition, precision)` | `context_insert`, `context_retrieve` | H2, H5 |
+| *Bādha* (Advaita Vedānta + Pūrva Mīmāṃsā) | Supersede-with-provenance under shared limitor | `sublate_with_evidence` | H4, H5, P6-B, P6-C |
+| *Manas* (Sāṃkhya, Advaita) | Pre-judgment attention-selection **sub-agent** | `ManasAgent` (Section 6.3) | H3 |
+| *Buddhi* (Sāṃkhya, Advaita) | Determinative judgment + *khyāti* tagging sub-agent | `BuddhiAgent` | H3, H6 |
+| *Sākṣī* (Advaita Vedānta) | Write-once cross-turn witness log | `SakshiKeeperAgent`, `SakshiPrefix` | All (audit invariant) |
+| *Khyātivāda* (cross-school: Nyāya, Yogācāra, Advaita, Madhyamaka, Mīmāṃsā, Prabhākara, Viśiṣṭādvaita) | 6-class hallucination classifier | `classify_khyativada` | H6 |
+| *Saṃskāra* / *vāsanā* (Advaita / Yoga) | Adaptive forgetting with witness-protected items | `AdaptiveForgetting` | H7 |
 
 ## 4.9 What is *not* being claimed
 

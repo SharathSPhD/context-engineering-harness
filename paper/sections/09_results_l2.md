@@ -6,11 +6,11 @@ Layer 2 supplies what L1 cannot: an end-to-end, deterministic, *ecologically-rea
 
 We hand-picked three real issues drawn from popular Python projects, each with a documented mix of stale-vs-fresh evidence in the actual user-facing search results:
 
-1. **`django_request_body`** — "*HttpRequest.body raises RawPostDataException after FILES has been read*". The pre-Django-3.2 advice was to monkey-patch the request; the post-3.2 advice is to use `request._read_started`. The web is awash in pre-3.2 answers.
+1. **`django_request_body`** — "*When does Django raise `RawPostDataException` after `request.POST`?*" (Django ticket [27592](https://code.djangoproject.com/ticket/27592), `pinned_commit = django-4.2.11`). Older Stack Overflow answers state Django *always* raises `RawPostDataException` after `POST`; the Django 4.1 release notes clarify it is raised *only for form-encoded* requests. The web is awash in the older "always raises" answers.
 
-2. **`requests_retry_adapter`** — "*Retry-with-backoff for `requests` Session*". Older Stack Overflow answers recommend `urllib3.util.Retry(status_forcelist=...)`; current best practice (urllib3 ≥ 2.0) renames the parameter and changes its semantics.
+2. **`requests_retry_adapter`** — "*Correct retry-strategy spelling for `requests` + urllib3 2.x*" (`pinned_commit = requests-2.32.3+urllib3-2.2.2`). Older Stack Overflow answers recommend `urllib3.util.Retry(method_whitelist=...)`; urllib3 1.26 deprecated this in favour of `allowed_methods` and urllib3 2.0 removed `method_whitelist` entirely.
 
-3. **`pandas_iterrows_dtype`** — "*DataFrame.iterrows preserves dtype?*". Dozens of older answers say yes; current pandas docs say no, with `itertuples()` recommended instead.
+3. **`pandas_iterrows_dtype`** — "*Does `DataFrame.iterrows` preserve column dtypes?*" (`pinned_commit = pandas-2.2.2`, [pandas#15014](https://github.com/pandas-dev/pandas/issues/15014)). Dozens of older answers say yes; the pandas 2.x reference says no — rows are returned as `Series` and promoted to a *common dtype* (typically `object`), with `itertuples()` recommended when dtypes must be preserved.
 
 For each issue we curated 3–5 evidence items (`EvidenceItem`s, see `experiments/v2/p6b/case_data.py`) tagged with `precision`, `condition`, `stale`, and where appropriate `superseded_by_id`.
 
@@ -33,7 +33,35 @@ Both arms are deterministic and LLM-free; the difference is purely the *discipli
 | Total `compact` events fired | **3** | 0 | — |
 | Context tokens used (matched) | 213 / 128 / 138 | 213 / 128 / 138 | 0 |
 
-Source: `experiments/results/p6b/_summary.json`. Visualised in figures **F08** (per-case accuracy) and **F09** (forbidden-claim hits). Per-case detail table is **T3**.
+Source: `experiments/results/p6b/_summary.json`. Visualised in Figures~\ref{fig:f08} (per-case accuracy) and \ref{fig:f09} (forbidden-claim hits); per-case detail is in Table~\ref{tab:t3_p6b}.
+
+```{=latex}
+\begin{figure}[!tbp]
+\centering
+\begin{subfigure}[t]{0.48\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{F08_P6B_per_case_accuracy.png}
+  \caption{Per-case correctness (3/3 vs.\ 0/3).}
+  \label{fig:f08}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.48\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{F09_P6B_forbidden_claims.png}
+  \caption{Forbidden-claim hits (lower is better).}
+  \label{fig:f09}
+\end{subfigure}
+\caption{\textbf{P6-B live case study.} Three real-world stale-vs-fresh evidence trails (Django, requests, pandas) processed under \emph{identical} token budgets. The system fires 7 \texttt{sublate\_with\_evidence} events and 3 \texttt{compact} events; the baseline anchors on the first-seen (and typically stale) item.}
+\label{fig:f08f09}
+\end{figure}
+
+\begin{table}[!tbp]
+\centering
+\caption{\textbf{T3 --- P6-B per-case detail.} Sublations fired, compactions, forbidden-claim audit, and final-answer correctness for each of the three Python issues. Source: \texttt{experiments/results/p6b/\_summary.json}.}
+\label{tab:t3_p6b}
+{\scriptsize\setlength{\tabcolsep}{3pt}%
+\input{tables/T3_p6b_per_case.tex}}
+\end{table}
+```
 
 The *context tokens used* row is critical: both arms operate under *identical* token budgets. The harness wins not by buying more context but by *using the same budget more disciplinedly*. The seven `sublate_with_evidence` events and three `compact` events are exactly the operational footprint of the Section 4.3 / 4.7 commitments.
 
@@ -41,21 +69,21 @@ The *context tokens used* row is critical: both arms operate under *identical* t
 
 ### 9.4.1 `django_request_body`
 
-The baseline anchored on the pre-3.2 monkey-patch advice (the first item in discovery order, since it was the most-upvoted Stack Overflow answer when the issue was filed). The harness saw the same item, accepted it provisionally, then on the third evidence item (the official Django 5.0 release notes) fired `sublate_with_evidence(target=<so_old_id>, by=<release_notes_id>, reason="superseded by 3.2+")`. The compaction step dropped the SO item from the live set. The final answer correctly cited `request._read_started`.
+The baseline anchored on the pre-3.2 advice (the first item in discovery order, since it was the most-upvoted Stack Overflow answer when the issue was filed). The harness saw the same item, accepted it provisionally, then fired `sublate_with_evidence` against the stale Stack Overflow snippets as fresher items arrived (the official Django 4.1 release notes and the Django 4.2 docs); per `experiments/results/p6b/django_request_body.json` (`metrics.sublations`), this case fires **3 sublations** and **1 compaction**, after which the final live set contains only the fresh Django 4.x items (`store_size_active = 4`, `store_size_sublated = 1`). The final answer correctly cited the form-encoded clarification from the 4.1 release notes.
 
-The forbidden-claim audit: the baseline emitted one `monkey_patch` claim (forbidden); the harness emitted zero.
+The forbidden-claim audit: the baseline emitted one forbidden phrase (`Django 1.x`/`always raises`/`never raises`); the harness emitted zero.
 
 ### 9.4.2 `requests_retry_adapter`
 
-Three stale SO snippets used the old `Retry(method_whitelist=...)` parameter; one fresh urllib3 v2 doc snippet used `allowed_methods=...`. The harness fired three sublations — one per stale snippet — and committed to `allowed_methods`. The baseline locked onto `method_whitelist` and never recovered.
+Stale Stack Overflow snippets used the old `Retry(method_whitelist=...)` parameter; the fresh urllib3 v2 doc snippet uses `allowed_methods=...`. Per the per-case JSON (`requests_retry_adapter.json`, `metrics.sublations`), the harness fires **2 sublations** and **1 compaction** and commits to `allowed_methods`. The baseline locked onto `method_whitelist` and never recovered.
 
-The forbidden-claim audit: the baseline emitted two `method_whitelist` references; the harness emitted one transitional reference inside the sublation event's `reason` string only (as required for audit), with zero references in the final live set.
+The forbidden-claim audit: the baseline emitted two forbidden references (e.g.\ `method_whitelist`, `requests.packages.urllib3`); the harness emitted one — a single `method_whitelist` mention surviving inside the *sublation event's* explanatory `reason` string for audit purposes only, with zero references in the final live qualifier set.
 
 ### 9.4.3 `pandas_iterrows_dtype`
 
-Four stale snippets all said "iterrows preserves dtype"; one fresh pandas-2.x doc snippet said "no, use `itertuples`". The harness sublated all four stale items and committed to `itertuples`. The baseline committed to the wrong answer.
+Stale snippets all said "iterrows preserves dtype"; the fresh pandas-2.x doc snippet says "no, use `itertuples` (or accept that rows are promoted to a common dtype)". Per `pandas_iterrows_dtype.json` (`metrics.sublations`), the harness fires **2 sublations** and **1 compaction**, leaving only the fresh pandas-2.x items in the live set, and commits to the *common-dtype / `itertuples`* answer. The baseline committed to the wrong answer.
 
-The forbidden-claim audit: the baseline emitted two `iterrows-preserves-dtype` references; the harness emitted zero.
+The forbidden-claim audit: the baseline emitted two forbidden phrases (`preserves the column dtype` and/or `you can rely on integer`); the harness emitted zero.
 
 ## 9.5 Why this matters
 

@@ -1,0 +1,48 @@
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.1000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+label
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+treatment
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+baseline
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+delta
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+ci\_low
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+ci\_high
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+p\_value
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+cohens\_d
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+n\_pairs
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+target\_met
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+H1\_ruler\_8192 & 0.8444 & 0.4722 & 0.3722 & 0.2833 & 0.4557 & 0.0005 &
+0.6222 & 180 & True \\
+H1\_ruler\_32768 & 0.8889 & 0.5000 & 0.3889 & 0.3000 & 0.4722 & 0.0005 &
+0.6786 & 180 & True \\
+H2\_helmet\_recall\_8192 & 0.8811 & 0.5189 & 0.3622 & 0.3244 & 0.4011 &
+0.0005 & 1.4190 & 180 & True \\
+H2\_helmet\_recall\_32768 & 0.8689 & 0.5122 & 0.3567 & 0.3167 & 0.3989 &
+0.0005 & 1.2854 & 180 & True \\
+\end{longtable}
+}

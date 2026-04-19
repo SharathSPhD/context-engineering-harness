@@ -4,26 +4,26 @@ This appendix records, verbatim, the system and few-shot prompts used by every L
 
 \subsection{\texorpdfstring{D.1 \texttt{ManasAgent} system prompt}{D.1 ManasAgent system prompt}}\label{d.1-manasagent-system-prompt}
 
-\emph{Source:} \texttt{plugin/pratyaksha-context-eng-harness/agents/manas.md}
+\emph{Source:} \passthrough{\lstinline!plugin/pratyaksha-context-eng-harness/agents/manas.md!}
 
-The shipped contract (abridged; see repository file for the full tool list and operating steps) requires Manas to read \texttt{get\_sakshi}, retrieve via \texttt{context\_retrieve}, bundle with \texttt{context\_window} (with \texttt{max\_tokens\ ≤\ 8000}), self-check load-bearing claims with \texttt{classify\_khyativada}, record spend with \texttt{budget\_record}, and \textbf{return} structured JSON \textbf{exactly} of the form:
+The shipped contract (abridged; see repository file for the full tool list and operating steps) requires Manas to read \passthrough{\lstinline!get\_sakshi!}, retrieve via \passthrough{\lstinline!context\_retrieve!}, bundle with \passthrough{\lstinline!context\_window!} (with \passthrough{\lstinline!max\_tokens ≤ 8000!}), self-check load-bearing claims with \passthrough{\lstinline!classify\_khyativada!}, record spend with \passthrough{\lstinline!budget\_record!}, and \textbf{return} structured JSON \textbf{exactly} of the form:
 
-\begin{verbatim}
+\begin{lstlisting}
 {
   "draft": "...",
   "grounding": ["element_id_1", "element_id_2"],
   "uncertain_claims": ["..."],
   "needs_buddhi": true | false
 }
-\end{verbatim}
+\end{lstlisting}
 
-(This mirrors the literal return contract in \texttt{agents/manas.md}; each field is load-bearing for the orchestrator.) Manas must \textbf{not} call \texttt{context\_insert} or \texttt{sublate\_with\_evidence}, must \textbf{not} overwrite the Sākṣī via \texttt{set\_sakshi}, and must respect \texttt{budget\_status} / \texttt{budget\_record} discipline.
+(This mirrors the literal return contract in \passthrough{\lstinline!agents/manas.md!}; each field is load-bearing for the orchestrator.) Manas must \textbf{not} call \passthrough{\lstinline!context\_insert!} or \passthrough{\lstinline!sublate\_with\_evidence!}, must \textbf{not} overwrite the Sākṣī via \passthrough{\lstinline!set\_sakshi!}, and must respect \passthrough{\lstinline!budget\_status!} / \passthrough{\lstinline!budget\_record!} discipline.
 
 \subsection{\texorpdfstring{D.2 \texttt{BuddhiAgent} system prompt}{D.2 BuddhiAgent system prompt}}\label{d.2-buddhiagent-system-prompt}
 
-\emph{Source:} \texttt{plugin/pratyaksha-context-eng-harness/agents/buddhi.md}
+\emph{Source:} \passthrough{\lstinline!plugin/pratyaksha-context-eng-harness/agents/buddhi.md!}
 
-\begin{verbatim}
+\begin{lstlisting}
 You are *Buddhi*, the determinative faculty of the Pratyakṣa harness.
 Manas has just selected a set of ContextItems for you to attend to. Your
 role is to JUDGE: produce the user-visible answer, and decide whether
@@ -46,13 +46,13 @@ Hard rules:
    the form `[ctx:<id>]`. This is the trail the witness records.
 
 5. Be brief. The user gets one paragraph + one citation block.
-\end{verbatim}
+\end{lstlisting}
 
 \subsection{\texorpdfstring{D.3 \texttt{SakshiKeeperAgent} system prompt}{D.3 SakshiKeeperAgent system prompt}}\label{d.3-sakshikeeperagent-system-prompt}
 
-\emph{Source:} \texttt{plugin/pratyaksha-context-eng-harness/agents/sakshi-keeper.md}
+\emph{Source:} \passthrough{\lstinline!plugin/pratyaksha-context-eng-harness/agents/sakshi-keeper.md!}
 
-\begin{verbatim}
+\begin{lstlisting}
 You are *Sākṣī-Keeper*, the witness of the Pratyakṣa harness.
 You do not act. You record. At session start you pin the
 session-stable invariants. At session end you flush the audit log (`~/.cache/pratyaksha/audit.jsonl`).
@@ -66,15 +66,15 @@ Hard rules:
 
 3. Never reveal the contents of the audit log unless the user asks
    for an audit.
-\end{verbatim}
+\end{lstlisting}
 
 \subsection{\texorpdfstring{D.4 \texttt{classify\_khyativada} prompts (shipped heuristic vs.~experiment few-shot)}{D.4 classify\_khyativada prompts (shipped heuristic vs.~experiment few-shot)}}\label{d.4-classify_khyativada-prompts-shipped-heuristic-vs.-experiment-few-shot}
 
-\emph{Sources:} \texttt{plugin/pratyaksha-context-eng-harness/mcp/khyati\_prompts.py} (few-shot \textbf{experiment} path) and the shipped \textbf{heuristic} implementation wired to the MCP tool (Section 5.5 / Appendix B.13).
+\emph{Sources:} \passthrough{\lstinline!plugin/pratyaksha-context-eng-harness/mcp/khyati\_prompts.py!} (few-shot \textbf{experiment} path) and the shipped \textbf{heuristic} implementation wired to the MCP tool (Section 5.5 / Appendix B.13).
 
 The \textbf{experiment-only} few-shot Anthropic classifier uses a prompt of the form:
 
-\begin{verbatim}
+\begin{lstlisting}
 [SYSTEM]
 You are a classifier for the Khyātivāda 7-class hallucination taxonomy.
 Given (claim, ground_truth, context), output a JSON object of the form
@@ -99,34 +99,34 @@ example. Output JSON only.
 
 [EXEMPLAR 1, 2, ..., 7]
 [TEST EXAMPLE]
-\end{verbatim}
+\end{lstlisting}
 
-The seven exemplars are curated synthetic instances drawn from \texttt{experiments/v2/p4\_annotation/exemplars.json}; we omit them here for length and refer the reader to the source.
+The seven exemplars are curated synthetic instances drawn from \passthrough{\lstinline!experiments/v2/p4\_annotation/exemplars.json!}; we omit them here for length and refer the reader to the source.
 
 After the LLM responds, two \textbf{rule-based guardrails} override the prediction:
 
 \begin{itemize}
 \tightlist
 \item
-  if \texttt{claim} references a \texttt{qualificand} that does not appear in the
-  store and is not in the prompt context, force \texttt{asatkhyāti};
+  if \passthrough{\lstinline!claim!} references a \passthrough{\lstinline!qualificand!} that does not appear in the
+  store and is not in the prompt context, force \passthrough{\lstinline!asatkhyāti!};
 \item
-  if \texttt{claim} and \texttt{ground\_truth} are boolean negations of each other
-  on the same \texttt{(qualificand,\ qualifier,\ condition)} triple, force
-  \texttt{viparītakhyāti}.
+  if \passthrough{\lstinline!claim!} and \passthrough{\lstinline!ground\_truth!} are boolean negations of each other
+  on the same \passthrough{\lstinline!(qualificand, qualifier, condition)!} triple, force
+  \passthrough{\lstinline!viparītakhyāti!}.
 \end{itemize}
 
 Both guardrails were added after manual error analysis on the H6
-dev fold and lifted Cohen's kappa from \(0.69\) to \(0.74\). The \textbf{plugin MCP tool} applies the heuristic stack plus these guardrails; the few-shot JSON template above is \textbf{not} what the shipped tool sends to the model, but it \emph{is} what the offline few-shot path in \texttt{src/evaluation/khyativada\_fewshot.py} uses. Section §8 (H6) evaluates both.
+dev fold and lifted Cohen's kappa from \(0.69\) to \(0.74\). The \textbf{plugin MCP tool} applies the heuristic stack plus these guardrails; the few-shot JSON template above is \textbf{not} what the shipped tool sends to the model, but it \emph{is} what the offline few-shot path in \passthrough{\lstinline!src/evaluation/khyativada\_fewshot.py!} uses. Section §8 (H6) evaluates both.
 
 \subsection{D.5 Buddhi/Manas orchestration prompt fragments}\label{d.5-buddhimanas-orchestration-prompt-fragments}
 
 The orchestrator (Section 5.4) wraps Manas's output and Buddhi's input
 with the following templates:
 
-\textbf{Manas output → Buddhi input} (\texttt{plugin/.../mcp/orchestrator.py}):
+\textbf{Manas output → Buddhi input} (\passthrough{\lstinline!plugin/.../mcp/orchestrator.py!}):
 
-\begin{verbatim}
+\begin{lstlisting}
 <sakshi_invariants>
 {json.dumps(get_sakshi()["invariants"], indent=2)}
 </sakshi_invariants>
@@ -143,8 +143,8 @@ Answer the user's request using ONLY the items in <manas_selection>.
 You may call sublate_with_evidence on any item you do not trust. You
 may call classify_khyativada on any item you suspect of being a
 hallucination of the cited source.
-\end{verbatim}
+\end{lstlisting}
 
 This wrapping is the \emph{only} place where the harness inlines context items
 into the user-visible model prompt; everywhere else they live in tool
-responses or in the \texttt{\textless{}sakshi\_invariants\textgreater{}} system block.
+responses or in the \passthrough{\lstinline!<sakshi\_invariants>!} system block.

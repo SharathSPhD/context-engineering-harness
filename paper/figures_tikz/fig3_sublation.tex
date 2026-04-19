@@ -1,0 +1,72 @@
+% =====================================================================
+% Fig 3 -- Sublation (badha) sequence: detect -> evidence -> verdict
+% =====================================================================
+\begin{figure}[!tbp]
+\centering
+\resizebox{0.95\linewidth}{!}{%
+\begin{tikzpicture}[
+  font=\small,
+  every node/.style={rounded corners=2pt},
+  stepbox/.style ={draw=black!60,fill=blue!4,inner sep=4pt,minimum width=34mm,
+                minimum height=11mm,align=center},
+  cond/.style ={draw=black!60,fill=orange!8,inner sep=2pt,minimum width=20mm,
+                minimum height=6mm,align=center,font=\footnotesize\ttfamily},
+  ev/.style   ={draw=black!60,fill=green!6,inner sep=3pt,minimum width=34mm,
+                minimum height=8mm,align=center,font=\footnotesize},
+  badge/.style={draw=black!50,fill=gray!8,rounded corners=8pt,inner sep=3pt,
+                minimum width=22mm,minimum height=6mm,align=center,
+                font=\footnotesize\ttfamily},
+  arr/.style  ={-{Latex[length=2mm]},gray!70,thick},
+  >=Latex
+]
+
+% --- Step 1: detect_conflict ---
+\node[stepbox] (s1) at (0,0)
+  {\textbf{1.\;detect\_conflict}\\
+   \footnotesize same $a$, same $Q$-slot, different $Q$};
+\node[badge,below=2mm of s1] (b1) {kind = TYPE\_CLASH};
+
+% --- Step 2: gather sources ---
+\node[stepbox,right=14mm of s1] (s2)
+  {\textbf{2.\;gather sources}\\
+   \footnotesize highest-precedence $R$ wins};
+\node[ev,below=2mm of s2] (e1) {Source A: blog post (prec=2, p=0.55)};
+\node[ev,below=1.2mm of e1] (e2) {Source B: official docs v5 (prec=8, p=0.95)};
+
+% --- Step 3: sublate_with_evidence ---
+\node[stepbox,right=14mm of s2] (s3)
+  {\textbf{3.\;sublate\_with\_evidence}\\
+   \footnotesize emit verdict + reason};
+\node[badge,below=2mm of s3,fill=red!12] (b3) {sublated = A};
+\node[badge,below=1mm of b3,fill=green!12] (b4) {survivor = B};
+
+% --- Witness log line ---
+\node[draw=black!60,fill=violet!4,inner sep=4pt,rounded corners=3pt,
+      below=14mm of s2,minimum width=120mm,align=left,
+      font=\footnotesize\ttfamily] (log)
+  {sakshi.log:\,\,turn=42 \;evt=BADHA \;sublated=item\_71 \;survivor=item\_88
+   \;reason=docs\textgreater blog \;hash=sha256:af3\dots};
+
+% --- Arrows ---
+\draw[arr] (s1) -- (s2);
+\draw[arr] (s2) -- (s3);
+\draw[arr,dashed,gray!60] (s3.south) -- ++(0,-3mm) -| (log.east);
+\draw[arr,dashed,gray!60] (s2.south) -- ++(0,-3mm) -| (log.north);
+\draw[arr,dashed,gray!60] (s1.south) -- ++(0,-3mm) -| (log.west);
+
+\end{tikzpicture}}
+\caption{\textbf{Sublation (b\=adha) as a three-step procedure.}
+Once \texttt{detect\_conflict} confirms a TYPE\_CLASH between two
+context items sharing $\langle a, Q\text{-slot}\rangle$, the system
+gathers sources and ranks them by their declared limitor precedence
+($R$): in this example, the official Django 5 documentation
+($\text{prec}=8$) overrides a blog post ($\text{prec}=2$).
+\texttt{sublate\_with\_evidence} then writes a verdict --- both the
+sublated and surviving items, plus the human-readable reason ---
+which the Sak\d{s}\=\i Keeper appends as a single immutable line to
+the per-turn audit log.
+This procedure is the runtime realisation of the Advaita-derived
+notion that an erroneous cognition is not erased but \emph{retroactively
+re-typed} as falsified.}
+\label{fig:sublation}
+\end{figure}

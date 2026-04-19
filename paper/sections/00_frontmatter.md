@@ -1,22 +1,76 @@
-# The Pratyakṣa Context-Engineering Harness: A Vedic-Epistemology-Grounded Plugin for Long-Context, Hallucination-Resistant LLM Coding Agents
+```{=latex}
+\begin{center}
+\small
+\href{https://github.com/SharathSPhD/pratyaksha-context-eng-harness}{\texttt{github.com/SharathSPhD/pratyaksha-context-eng-harness}} \quad\textbar\quad
+Plugin marketplace: \href{https://github.com/SharathSPhD/pratyaksha-context-eng-harness/blob/main/.claude-plugin/marketplace.json}{\texttt{.claude-plugin/marketplace.json}} \\
+Reproducibility manifest: \texttt{experiments/results/p7/\_index.json}, \texttt{experiments/results/p7/\_summary.md}
+\end{center}
 
-**Sharath Phulari**
-Independent Researcher
-`SharathSPhD@github`
+\vspace{-0.4em}
+\begin{tcolorbox}[colback=gray!4,colframe=gray!50,boxrule=0.4pt,arc=2pt,
+left=8pt,right=8pt,top=4pt,bottom=4pt]
+\textbf{Abstract.}
+We present \textbf{Pratyak\d{s}a}, a context-engineering system for
+long-context, hallucination-resistant agentic AI, packaged as a
+Claude-Code- and Cursor-compatible plugin
+(15 Model Context Protocol [MCP] tools, 3 skills, 3 agents,
+4 commands, 3 lifecycle hooks). The system operationalises seven
+constructs drawn from classical Indian epistemology --- specifically from
+Ny\=aya--Vai\'se\d{s}ika, Advaita Ved\=anta, P\=urva M\=im\=a\d{m}s\=a,
+and S\=a\d{m}khya --- into runtime mechanisms for an LLM agent's working
+context: \textit{pratyak\d{s}a} (direct perception),
+\textit{avacchedaka} (typed limitor conditions),
+\textit{b\=adha} (sublation), \textit{buddhi}/\textit{manas}
+(judging vs.\ attending faculties), \textit{s\=ak\d{s}\=\i} (witness
+invariants), \textit{khy\=ativ\=ada} (a six-class taxonomy of cognitive
+error), and adaptive forgetting. We validate across three orthogonal
+evidence layers: \textbf{(L1)} seven preregistered hypotheses
+(H1--H7) on six public long-context and hallucination benchmarks
+(RULER, HELMET, NoCha, HaluEval, TruthfulQA, FACTS-Grounding) with
+multi-seed multi-model paired permutation tests; \textbf{(L2)} a
+deterministic, reproducible live case study (P6-B) on three real
+GitHub issues spanning Django, Requests, and pandas; and \textbf{(L3)}
+a head-to-head A/B test on 120 SWE-bench Verified instances (P6-C,
+720 paired runs across 2 models $\times$ 3 seeds $\times$ 120 issues)
+under a fixed 512-token research-block budget. SWE-bench Verified
+instantiates the harness on one challenging coding domain; the
+\emph{mechanisms themselves are agent- and domain-agnostic} and the
+L1 evidence is the general claim. Across \textbf{10 quantitative
+studies}, the system produces a Stouffer-combined $Z = \mathbf{9.114}$
+(two-sided $p = \mathbf{7.94 \times 10^{-20}}$), with mean per-study
+delta $\mathbf{+0.476}$ in the harness's favour and a $100\%$
+target-path-hit rate on SWE-bench Verified versus $50.3\%$ for the
+budgeted baseline. The \textit{khy\=ativ\=ada} 6-class hallucination
+annotator achieves Cohen's $\kappa = \mathbf{0.736}$ (``substantial'')
+on $n = 3{,}000$ jointly annotated examples. The contribution is not a
+new model architecture but a \textbf{typed, witness-tracked,
+sublation-aware context discipline} that any LLM-based agent ---
+research assistants, document QA, multi-tool orchestrators, code-review
+agents --- can adopt today via a drop-in plugin. The system, the
+plugin, and the full reproducibility manifest are open-sourced.
+\end{tcolorbox}
 
-**Preprint version:** 1.0 — 2026-04-18
-**Code:** `https://github.com/SharathSPhD/pratyaksha-context-eng-harness`
-**Plugin marketplace:** `https://github.com/SharathSPhD/pratyaksha-context-eng-harness/blob/main/.claude-plugin/marketplace.json`
-**Reproducibility manifest:** `experiments/results/p7/_index.json`, `experiments/results/p7/_summary.md`
+\noindent\textbf{Keywords:} context engineering; long-context language
+models; retrieval-augmented generation; hallucination; agentic AI; LLM
+agents; agent context management; sublation; classical Indian
+epistemology; Ny\=aya--Vai\'se\d{s}ika; Advaita Ved\=anta; SWE-bench
+Verified; MCP plugin; Claude Code.
+```
 
-## Abstract
+## Plain-language summary
 
-We present **Pratyakṣa**, a context-engineering harness for long-context, hallucination-resistant Large Language Model (LLM) coding agents, packaged as a Cursor- and Claude-Code-compatible plugin (15 Model Context Protocol [MCP] tools, 3 skills, 3 agents, 4 commands, 3 lifecycle hooks). The harness operationalizes seven constructs drawn from classical Indian (Vedic) epistemology — *pratyakṣa* (direct perception), *avacchedaka* (typed limitor conditions), *bādha* (sublation), *buddhi/manas* (judging vs. attending faculties), *sākṣī* (witness), *khyātivāda* (a six-class taxonomy of cognitive error), and *adaptive forgetting* (saṃskāra/vāsanā pruning) — into runtime mechanisms for an LLM agent's working context. We validate the harness across three orthogonal evidence layers: **(L1)** seven preregistered hypotheses (H1–H7) on six public benchmarks for L1 (RULER, HELMET, NoCha, HaluEval, TruthfulQA, FACTS-Grounding) plus SWE-bench Verified for L3, with multi-seed multi-model paired permutation tests; **(L2)** a deterministic, reproducible live case study (P6-B) on three real GitHub issues spanning Django, Requests, and pandas; and **(L3)** a head-to-head A/B test on 120 SWE-bench Verified instances (P6-C, 720 paired runs across 2 models × 3 seeds × 120 issues), under a fixed 8 K-token research-block budget produced with `--research-block-budget 8192` (smoke tests use `--research-block-budget-fast 512`). The headline L3 comparison is **on synthetic research trails over the SWE-bench Verified instance set**, with patch generation deterministically anchored on the first plausible file path of the research block; the optional Docker scorer agreement is reported on a 30-instance sub-sample (κ = 0.97). Across **10 quantitative studies**, the harness produces a Stouffer-combined Z = **9.114** (two-sided p = **7.94 × 10⁻²⁰**), with mean per-study delta **+0.476** in the harness's favour and 100% target-path-hit rate on SWE-bench Verified versus 50.3% for the budgeted baseline. The Khyātivāda 6-class hallucination annotator achieves Cohen's κ = **0.736** ("substantial") on n = 3,000 jointly annotated examples. We argue that the harness's distinctive contribution is *not* a new model architecture but a **typed, witness-tracked, sublation-aware context discipline** that any LLM-based agent can adopt today via a drop-in plugin, and that classical Indian epistemology supplies a vocabulary that operationally fits what modern agent frameworks have been groping toward. The harness, the plugin, and the full reproducibility manifest are open-sourced.
-
-**Keywords:** context engineering, long-context LLMs, retrieval-augmented generation, hallucination, Vedic epistemology, Nyāya, Advaita Vedānta, sublation, agentic coding, SWE-bench Verified, MCP plugin, Claude Code, Cursor.
-
----
-
-## Plain-language summary (1 paragraph)
-
-LLM coding agents fail in predictable ways when their context window grows: they latch onto stale information, ignore newer evidence in the middle of the prompt, and confidently emit hallucinations whose error type they cannot name. We propose a **plugin** — `pratyaksha-context-eng-harness` — that gives the agent a small, principled set of operations on its own context: every claim is stamped with *who said it, under what conditions, and with what precision*; newer authoritative claims **sublate** older ones (in the technical Vedānta sense, not "delete" but "supersede with provenance"); a **two-stage** Buddhi/Manas reasoning gate forces the model to *justify* what it attended to before answering; and a **six-class** error taxonomy (drawn from classical Indian *khyātivāda*) lets us *diagnose*, not merely count, hallucinations. Across 10 large studies the plugin beats the unaided baseline at p < 10⁻¹⁹.
+LLM agents — research assistants, document Q\&A engines, multi-tool
+orchestrators, code-review bots — fail in predictable ways once their
+context window grows beyond a few thousand tokens. They latch onto stale
+information, ignore newer evidence buried in the middle of the prompt,
+and emit confident hallucinations whose error type they cannot even name.
+We give the agent a small, principled set of operations on its own
+context: every claim is stamped with *who said it, under what conditions,
+and with what precision*; newer authoritative claims **sublate** older
+ones (in the technical Advaita-Vedāntic sense — not "delete" but
+"supersede with provenance"); a **two-stage** *Buddhi*/*Manas* reasoning
+gate forces the model to justify what it attended to before answering;
+and a **six-class** error taxonomy (drawn from the cross-school
+*khyātivāda* debate in classical Indian epistemology) lets us *diagnose*,
+not merely count, hallucinations. Across 10 large studies the plugin
+beats the unaided baseline at $p < 10^{-19}$.

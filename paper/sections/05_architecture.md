@@ -1,6 +1,10 @@
-# 5 · The Pratyakṣa Harness: System Architecture
+# 5 · The Pratyakṣa System: Architecture
 
-We describe the harness as a layered architecture: a Core ContextStore, three runtime modules (Avacchedaka query, Sublation, Bayesian aggregation), three reasoning modules (Buddhi/Manas, Sākṣī, Khyātivāda classifier), and three resource-management modules (EventBoundaryCompactor, AdaptiveForgetting, TokenBudgetWatchdog). Each module is implemented as one or more MCP tools (Section 6.2 / Appendix B) and is exercised by at least one of the seven preregistered hypotheses (H1–H7).
+We describe the system as a layered architecture: a Core ContextStore, three runtime modules (Avacchedaka query, Sublation, Bayesian aggregation), three reasoning modules (Buddhi/Manas, Sākṣī, Khyātivāda classifier), and three resource-management modules (EventBoundaryCompactor, AdaptiveForgetting, TokenBudgetWatchdog). Each module is implemented as one or more MCP tools (Section 6.2 / Appendix B) and is exercised by at least one of the seven preregistered hypotheses (H1–H7). Figure \ref{fig:architecture} shows the deployed surface end-to-end: 15 MCP tools (grouped into four families) consumed by 3 sub-agents, exposed through 4 slash-commands and 3 lifecycle hooks, and mounted by all four host surfaces (Claude Code CLI, Claude Code VS Code, Cursor, Claude Desktop) without modification of the underlying LLM.
+
+```{=latex}
+\input{figures_tikz/fig1_architecture.tex}
+```
 
 ## 5.1 The ContextStore (core)
 
@@ -51,7 +55,7 @@ $$
 \alpha_n = \alpha_0 + \sum_{i: v_i=1} p_i,\qquad \beta_n = \beta_0 + \sum_{i: v_i=0} p_i.
 $$
 
-The posterior mean $\bar{H} = \alpha_n / (\alpha_n + \beta_n)$ is returned, alongside the posterior margin $|\bar{H} - 0.5|$. A claim is reported as *conflicted* when this margin falls below a threshold $\tau$ (default $0.10$). Calibration is evaluated by **Brier score** \citep{brier1950score} and **expected calibration error** (ECE) with equal-width binning \citep{naeini2015ece, guo2017calibration}; on H2 the Bayesian aggregator achieves Brier 0.094 vs. PrecisionWeightedRAG 0.176 and ECE 0.041 vs. 0.118 on a held-out 1,800-example validation slice (Section 8.2, T2 in Appendix C), corroborating the broader literature on Bayesian fusion under conflicting evidence \citep{singh2025bayesianfusion, ovadia2019can, gal2016dropout}.
+The posterior mean $\bar{H} = \alpha_n / (\alpha_n + \beta_n)$ is returned, alongside the posterior margin $|\bar{H} - 0.5|$. A claim is reported as *conflicted* when this margin falls below a threshold $\tau$ (default $0.10$). Calibration is evaluated by **Brier score** \citep{brier1950score} and **expected calibration error** (ECE) with equal-width binning \citep{naeini2015ece, guo2017calibration}; on H2 the Bayesian aggregator achieves Brier 0.094 vs. PrecisionWeightedRAG 0.176 and ECE 0.041 vs. 0.118 on a held-out 1,800-example validation slice (Section 8.2, T2 in Appendix C), corroborating the broader literature on Bayesian fusion under conflicting evidence \citep{ovadia2019can, gal2016dropout}.
 
 ## 5.4 Buddhi and Manas as plug-in sub-agents
 

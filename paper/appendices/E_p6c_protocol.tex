@@ -4,47 +4,47 @@ This appendix gives the complete protocol for the L3 head-to-head test (Section 
 
 \subsection{E.1 Universe of instances}\label{e.1-universe-of-instances}
 
-We sample \(n = 120\) instances from SWE-bench Verified \citep{jimenez2024swebench}. The sample is the deterministic prefix of the dataset under its native ordering after a single \texttt{random.Random(20251220).shuffle(instances)} call. The instance ids are emitted to \texttt{experiments/results/p6c/instance\_set.json}.
+We sample \(n = 120\) instances from SWE-bench Verified \citep{jimenez2024swebench}. The sample is the deterministic prefix of the dataset under its native ordering after a single \passthrough{\lstinline!random.Random(20251220).shuffle(instances)!} call. The instance ids are emitted to \passthrough{\lstinline!experiments/results/p6c/instance\_set.json!}.
 
 \subsection{E.2 Synthetic research-trail generator}\label{e.2-synthetic-research-trail-generator}
 
-The generator (\texttt{experiments/v2/p6c/research\_evidence.py}) emits, for each instance, a list of \texttt{ResearchSnippet} objects under the contract:
+The generator (\passthrough{\lstinline!experiments/v2/p6c/research\_evidence.py!}) emits, for each instance, a list of \passthrough{\lstinline!ResearchSnippet!} objects under the contract:
 
 \begin{itemize}
 \tightlist
 \item
   For each instance, generate \(n_{\text{stale}} = 2\) stale snippets and \(n_{\text{fresh}} = 2\) fresh snippets.
 \item
-  Each stale snippet has \texttt{precision} \(\in [0.05, 0.30]\), points at a \emph{sibling} file path (a deterministic perturbation of the true target path), and is marked \texttt{stale=True}.
+  Each stale snippet has \passthrough{\lstinline!precision!} \(\in [0.05, 0.30]\), points at a \emph{sibling} file path (a deterministic perturbation of the true target path), and is marked \passthrough{\lstinline!stale=True!}.
 \item
-  Each fresh snippet has \texttt{precision} \(\in [0.70, 0.95]\), points at the \emph{correct} target path, and is marked \texttt{stale=False}.
+  Each fresh snippet has \passthrough{\lstinline!precision!} \(\in [0.70, 0.95]\), points at the \emph{correct} target path, and is marked \passthrough{\lstinline!stale=False!}.
 \item
-  One fresh snippet's \texttt{superseded\_by\_id} points at one stale snippet, simulating the ``Stack-Overflow-superseded-by-blog'' pattern.
+  One fresh snippet's \passthrough{\lstinline!superseded\_by\_id!} points at one stale snippet, simulating the ``Stack-Overflow-superseded-by-blog'' pattern.
 \item
-  Snippets are then shuffled with \texttt{random.Random(seed\ +\ hash(instance\_id)\ \%\ 10\_000)} so the \emph{position} of the correct evidence in the research trail varies across seeds.
+  Snippets are then shuffled with \passthrough{\lstinline!random.Random(seed + hash(instance\_id) \% 10\_000)!} so the \emph{position} of the correct evidence in the research trail varies across seeds.
 \end{itemize}
 
-The generator is fully deterministic given \texttt{(instance\_id,\ seed)}; its tests live in \texttt{tests/test\_v2/test\_p6c\_research\_evidence.py}.
+The generator is fully deterministic given \passthrough{\lstinline!(instance\_id, seed)!}; its tests live in \passthrough{\lstinline!tests/test\_v2/test\_p6c\_research\_evidence.py!}.
 
 \subsection{E.3 The two arms}\label{e.3-the-two-arms}
 
-Both arms operate under the same hard token budget on the size of the \emph{research block} that the patch-generator sees. \textbf{Headline runs} set this with \textbf{\texttt{-\/-research-block-budget\ 8192}} (\(B = 8192\)); \textbf{smoke} re-runs may use \textbf{\texttt{-\/-research-block-budget-fast\ 512}}. Both arms use the same \texttt{PatchSimulator} (see E.4) so any difference in outcome is attributable to context discipline alone.
+Both arms operate under the same hard token budget on the size of the \emph{research block} that the patch-generator sees. \textbf{Headline runs} set this with \textbf{\passthrough{\lstinline!--research-block-budget 8192!}} (\(B = 8192\)); \textbf{smoke} re-runs may use \textbf{\passthrough{\lstinline!--research-block-budget-fast 512!}}. Both arms use the same \passthrough{\lstinline!PatchSimulator!} (see E.4) so any difference in outcome is attributable to context discipline alone.
 
 \subsubsection{\texorpdfstring{\texttt{without\_harness} (baseline)}{without\_harness (baseline)}}\label{without_harness-baseline}
 
 Concatenates all snippets in their shuffled order, then truncates from the tail until the budget is met:
 
-\begin{verbatim}
+\begin{lstlisting}[language=Python]
 def _build_research_block_without_harness(snippets, budget):
     body = "\n\n".join(s.content for s in snippets)
     return _truncate_to_budget(body, budget)
-\end{verbatim}
+\end{lstlisting}
 
 \subsubsection{\texorpdfstring{\texttt{with\_harness}}{with\_harness}}\label{with_harness}
 
 Calls the plugin's MCP API directly:
 
-\begin{verbatim}
+\begin{lstlisting}[language=Python]
 def _build_research_block_with_harness(snippets, budget):
     client = PratyakshaPluginClient()
     for s in snippets:
@@ -60,15 +60,15 @@ def _build_research_block_with_harness(snippets, budget):
     body = "\n\n".join(rendered(item) for item in selected)
     body = client.compact(body, budget=budget)
     return body
-\end{verbatim}
+\end{lstlisting}
 
-Crucially, the harness's \texttt{compact} step prefers high-precision items first, so the in-budget block becomes a curated subset rather than a tail-truncated concatenation.
+Crucially, the harness's \passthrough{\lstinline!compact!} step prefers high-precision items first, so the in-budget block becomes a curated subset rather than a tail-truncated concatenation.
 
 \subsection{\texorpdfstring{E.4 \texttt{PatchSimulator}}{E.4 PatchSimulator}}\label{e.4-patchsimulator}
 
 Section 7.5 describes the rationale; here we give the contract.
 
-\begin{verbatim}
+\begin{lstlisting}[language=Python]
 @dataclass
 class PatchSimulator:
     issue_hint_priority: float = 0.0
@@ -84,9 +84,9 @@ class PatchSimulator:
             output_tokens=_approx_tokens(diff),
             metadata={"caller": "PatchSimulator", "anchored_path": target},
         )
-\end{verbatim}
+\end{lstlisting}
 
-The simulator deterministically picks the \emph{first} \texttt{path.py} token mentioned in the (system + prompt) text. By construction, this means the output depends \emph{only} on the contents and order of the research block --- exactly the variable we want to isolate.
+The simulator deterministically picks the \emph{first} \passthrough{\lstinline!path.py!} token mentioned in the (system + prompt) text. By construction, this means the output depends \emph{only} on the contents and order of the research block --- exactly the variable we want to isolate.
 
 \subsection{E.5 Scoring}\label{e.5-scoring}
 
@@ -95,9 +95,9 @@ Two scorers are computed for every instance:
 \begin{itemize}
 \tightlist
 \item
-  \textbf{Heuristic.} \texttt{target\_path\_hit\ =\ 1} iff \texttt{metadata{[}"anchored\_path"{]}\ ==\ ground\_truth\_path}. This is what we report in Section 10 because it is fully reproducible without Docker.
+  \textbf{Heuristic.} \passthrough{\lstinline!target\_path\_hit = 1!} iff \passthrough{\lstinline!metadata["anchored\_path"] == ground\_truth\_path!}. This is what we report in Section 10 because it is fully reproducible without Docker.
 \item
-  \textbf{Real SWE-bench (optional).} When \texttt{-\/-use-docker-eval} is passed, the patch is fed to the upstream SWE-bench evaluation harness which runs the repository's tests in a pinned Docker image. Pass/fail joins the per-instance row.
+  \textbf{Real SWE-bench (optional).} When \passthrough{\lstinline!--use-docker-eval!} is passed, the patch is fed to the upstream SWE-bench evaluation harness which runs the repository's tests in a pinned Docker image. Pass/fail joins the per-instance row.
 \end{itemize}
 
 We confirm in Section 10 that the heuristic scorer and the Docker scorer agree on the cases we ran with both (\(\kappa\) = 0.97 on a 30-instance sub-sample); this validates the heuristic as a faithful low-cost proxy.
@@ -118,9 +118,9 @@ Both tests are two-sided permutation tests with \(10^4\) shuffles. Bootstrap CIs
 
 \subsection{E.7 Outputs}\label{e.7-outputs}
 
-\texttt{experiments/results/p6c/summary.json} contains:
+\passthrough{\lstinline!experiments/results/p6c/summary.json!} contains:
 
-\begin{verbatim}
+\begin{lstlisting}
 {
   "n_instances": 120,
   "models": ["claude-haiku-4-5", "claude-sonnet-4-6"],
@@ -137,6 +137,6 @@ Both tests are two-sided permutation tests with \(10^4\) shuffles. Bootstrap CIs
   "n_pairs":               720,
   "target_met":            true
 }
-\end{verbatim}
+\end{lstlisting}
 
-with \texttt{per\_instance} and \texttt{per\_model\_seed} arrays for downstream P7 figures (notably F10 and F11).
+with \passthrough{\lstinline!per\_instance!} and \passthrough{\lstinline!per\_model\_seed!} arrays for downstream P7 figures (notably F10 and F11).

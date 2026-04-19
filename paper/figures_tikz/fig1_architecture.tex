@@ -1,0 +1,93 @@
+% =====================================================================
+% Fig 1 -- Harness architecture overview
+% =====================================================================
+\begin{figure}[!tbp]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[
+  font=\small,
+  every node/.style={rounded corners=2pt},
+  fam/.style ={draw=black!60,fill=blue!6,inner sep=4pt,minimum height=10mm,
+               text width=27mm,align=center},
+  agent/.style={draw=black!60,fill=orange!8,inner sep=3pt,minimum height=8mm,
+               text width=24mm,align=center},
+  cmd/.style ={draw=black!60,fill=green!7,inner sep=3pt,minimum height=8mm,
+               text width=22mm,align=center},
+  hook/.style={draw=black!60,fill=violet!8,inner sep=3pt,minimum height=8mm,
+               text width=22mm,align=center},
+  host/.style={draw=black!60,fill=gray!10,inner sep=4pt,minimum height=12mm,
+               text width=30mm,align=center},
+  arr/.style ={-{Latex[length=2mm]},gray!70,thick},
+  >=Latex
+]
+% --- MCP tool families (left column) ---
+\node[fam] (insert)   {\textbf{Context store (5)}\\
+  context\_insert,\\ context\_retrieve,\\ context\_window,\\ list\_items, get\_item};
+\node[fam,below=4mm of insert] (sublate) {\textbf{Sublation (3)}\\
+  detect\_conflict,\\ sublate\_with\_evidence,\\ list\_sublations};
+\node[fam,below=4mm of sublate] (witness){\textbf{Witness/audit (3)}\\
+  set\_sakshi,\\ get\_sakshi\_log,\\ status\_snapshot};
+\node[fam,below=4mm of witness] (judge)  {\textbf{Judgment (4)}\\
+  classify\_khyativada,\\ token\_budget,\\ adaptive\_forget,\\ event\_boundary};
+
+% --- Agents (middle column) ---
+\node[agent,right=18mm of insert] (manas)  {\textbf{ManasAgent}\\ select \& attend};
+\node[agent,below=3mm of manas]   (buddhi) {\textbf{BuddhiAgent}\\ judge \& tag};
+\node[agent,below=3mm of buddhi]  (sakshi) {\textbf{SakshiKeeper}\\ write-once log};
+
+% --- Commands & hooks ---
+\node[cmd,right=12mm of manas]  (cmd1) {/context-status};
+\node[cmd,below=2mm of cmd1]    (cmd2) {/context-doctor};
+\node[cmd,below=2mm of cmd2]    (cmd3) {/sublate};
+\node[cmd,below=2mm of cmd3]    (cmd4) {/witness};
+
+\node[hook,below=8mm of cmd4]  (h1) {pre-tool hook};
+\node[hook,below=2mm of h1]    (h2) {post-tool hook};
+\node[hook,below=2mm of h2]    (h3) {session hook};
+
+% --- Hosts (right column) ---
+\node[host,right=14mm of cmd2] (cli)   {Claude Code\\ \textit{CLI}};
+\node[host,below=3mm of cli]   (vsc)   {Claude Code\\ \textit{VS Code}};
+\node[host,below=3mm of vsc]   (cur)   {\textit{Cursor}};
+\node[host,below=3mm of cur]   (desk)  {Claude\\ \textit{Desktop}};
+
+% --- Arrows: tools -> agents ---
+\draw[arr] (insert.east)  -- (manas.west);
+\draw[arr] (sublate.east) -- (buddhi.west);
+\draw[arr] (witness.east) -- (sakshi.west);
+\draw[arr] (judge.east)   -- (buddhi.west);
+
+% --- Arrows: agents <-> commands ---
+\draw[arr] (manas.east)  -- (cmd1.west);
+\draw[arr] (buddhi.east) -- (cmd2.west);
+\draw[arr] (sakshi.east) -- (cmd4.west);
+
+% --- Arrows: hooks observe agents ---
+\draw[arr,dashed] (h1.west) -- ++(-3mm,0) |- (manas.east);
+\draw[arr,dashed] (h2.west) -- ++(-3mm,0) |- (buddhi.east);
+\draw[arr,dashed] (h3.west) -- ++(-3mm,0) |- (sakshi.east);
+
+% --- Arrows: hosts mount everything ---
+\draw[arr] (cmd1.east) -- (cli.west);
+\draw[arr] (cmd2.east) -- (vsc.west);
+\draw[arr] (cmd3.east) -- (cur.west);
+\draw[arr] (cmd4.east) -- (desk.west);
+
+% --- Frames ---
+\begin{pgfonlayer}{background}
+  \node[draw=black!30,dashed,inner sep=4mm,fit=(insert)(judge),
+        label={[font=\footnotesize\itshape]above:15 MCP tools (server)}]{};
+  \node[draw=black!30,dashed,inner sep=4mm,fit=(manas)(sakshi),
+        label={[font=\footnotesize\itshape]above:3 sub-agents}]{};
+  \node[draw=black!30,dashed,inner sep=4mm,fit=(cmd1)(h3),
+        label={[font=\footnotesize\itshape]above:4 slash cmds + 3 hooks}]{};
+  \node[draw=black!30,dashed,inner sep=4mm,fit=(cli)(desk),
+        label={[font=\footnotesize\itshape]above:Host surfaces}]{};
+\end{pgfonlayer}
+\end{tikzpicture}}
+\caption{\textbf{Pratyak\d{s}a system architecture.}
+\textit{Fifteen MCP tools} (grouped into four families: context store, sublation, witness/audit, and judgment) are consumed by \textit{three sub-agents} (\textbf{Manas} attends and selects; \textbf{Buddhi} judges and emits; \textbf{Sak\d{s}\=\i Keeper} writes the immutable per-turn audit log).
+\textit{Four slash-commands} and \textit{three lifecycle hooks} expose this machinery to four host surfaces (Claude Code CLI, Claude Code VS Code, Cursor, and Claude Desktop) without modification of the underlying LLM.
+Solid arrows are runtime calls; dashed arrows are observation/audit.}
+\label{fig:architecture}
+\end{figure}

@@ -1,6 +1,6 @@
-# 3 · Origin: From a TRIZ Contradiction Analysis to Vedic Epistemology
+# 3 · Origin: From a TRIZ Contradiction Analysis to Classical Indian Epistemology
 
-This section narrates how the project came to be, because the methodology itself is part of the contribution. We did *not* begin by reading Sanskrit. We began by running TRIZ \citep{altshuller1984creativity, altshuller2002innovation, terninko1998triz, savransky2000triz} on a single engineering contradiction in modern LLM agents, and observed — to our own surprise — that the resolution drove us out of the LLM literature entirely and into eleventh-century Mithilā.
+This section narrates how the project came to be, because the methodology itself is part of the contribution. We did *not* begin by reading Sanskrit. We began by running TRIZ \citep{altshuller1984creativity, altshuller2002innovation, terninko1998triz, savransky2000triz} on a single engineering contradiction in modern LLM agents, and observed — to our own surprise — that the resolution drove us out of the LLM literature entirely and into the long-running cross-school epistemological debate between Nyāya, Mīmāṃsā, Advaita Vedānta and adjacent traditions, which had reached technical maturity in eleventh-century Mithilā.
 
 ## 3.1 The TRIZ session
 

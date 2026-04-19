@@ -1,0 +1,77 @@
+% =====================================================================
+% Fig 6 -- End-to-end worked example swimlane (Redis caching case)
+% =====================================================================
+\begin{figure}[!tbp]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[
+  font=\small,
+  every node/.style={rounded corners=2pt},
+  lane/.style ={draw=black!40,fill=gray!4,inner sep=3mm,minimum height=18mm},
+  ev/.style   ={draw=black!60,fill=blue!6,inner sep=3pt,minimum width=30mm,
+                minimum height=10mm,align=center,font=\footnotesize},
+  badha/.style={draw=black!60,fill=red!10,inner sep=3pt,minimum width=30mm,
+                minimum height=10mm,align=center,font=\footnotesize},
+  ok/.style   ={draw=black!60,fill=green!10,inner sep=3pt,minimum width=30mm,
+                minimum height=10mm,align=center,font=\footnotesize},
+  arr/.style  ={-{Latex[length=2mm]},gray!70,thick},
+  obs/.style  ={-{Latex[length=2mm]},dashed,violet!70,thick},
+  >=Latex
+]
+
+% --- Lane labels (left, vertical) ---
+\node[font=\footnotesize\bfseries,anchor=east] at (-2,  0)   {User};
+\node[font=\footnotesize\bfseries,anchor=east] at (-2, -2.0) {Manas};
+\node[font=\footnotesize\bfseries,anchor=east] at (-2, -4.0) {Buddhi};
+\node[font=\footnotesize\bfseries,anchor=east] at (-2, -6.0) {Sublation};
+\node[font=\footnotesize\bfseries,anchor=east] at (-2, -8.0) {Sak\d{s}\=\i};
+
+% --- Lane backgrounds ---
+\foreach \y/\h in {0/1.4, -2.0/1.4, -4.0/1.4, -6.0/1.4, -8.0/1.4}{
+  \draw[draw=black!20,fill=gray!3] (-1.7,\y-\h/2) rectangle (16.5,\y+\h/2);
+}
+
+% --- Events (left to right) ---
+\node[ev]    (e1) at ( 0.5,  0)    {$t_1$: ``cache user\\session in Redis''};
+\node[ev]    (e2) at ( 4.5, -2.0)  {$t_2$: retrieve\\3 stale items};
+\node[badha] (e3) at ( 8.5, -4.0)  {$t_3$: TYPE\_CLASH\\(blog vs.\ docs)};
+\node[ok]    (e4) at (12.5, -6.0)  {$t_4$: docs win,\\blog sublated};
+\node[ok]    (e5) at (15.0, -4.0)  {$t_5$: tagged answer\\(yath\=artha)};
+
+% --- Sakshi log entries (bottom lane) ---
+\node[ev,fill=violet!4,font=\scriptsize\ttfamily,minimum width=24mm]
+   (l1) at ( 0.5, -8.0) {evt=USER\_TURN};
+\node[ev,fill=violet!4,font=\scriptsize\ttfamily,minimum width=24mm]
+   (l2) at ( 4.5, -8.0) {evt=ATTEND\\K=3 budget=1.2k};
+\node[ev,fill=violet!4,font=\scriptsize\ttfamily,minimum width=24mm]
+   (l3) at ( 8.5, -8.0) {evt=BADHA\_DETECT\\kind=TYPE\_CLASH};
+\node[ev,fill=violet!4,font=\scriptsize\ttfamily,minimum width=24mm]
+   (l4) at (12.5, -8.0) {evt=BADHA\_RESOLVE\\sublated=item\_71};
+\node[ev,fill=violet!4,font=\scriptsize\ttfamily,minimum width=24mm]
+   (l5) at (15.0, -8.0) {evt=ANSWER\\class=yath\=artha};
+
+% --- Pipeline arrows ---
+\draw[arr] (e1) -- (e2);
+\draw[arr] (e2) -- (e3);
+\draw[arr] (e3) -- (e4);
+\draw[arr] (e4) -- (e5);
+
+% --- Sakshi observation arrows (passive, dashed) ---
+\foreach \src/\dst in {e1/l1, e2/l2, e3/l3, e4/l4, e5/l5}
+  \draw[obs] (\src) -- (\dst);
+
+\end{tikzpicture}}
+\caption{\textbf{End-to-end worked example: a Redis-caching turn.}
+At $t_1$ the user asks how to cache a session in Redis. \textbf{Manas}
+($t_2$) retrieves three stale items from the context store under a
+1.2k-token budget. \textbf{Buddhi} ($t_3$) detects a TYPE\_CLASH between
+a blog post and the official Redis 7 documentation sharing the same
+$\langle$Redis-session, expiry-policy$\rangle$ qualificand--qualifier
+slot. The \textbf{sublation} step ($t_4$) ranks sources by limitor
+precedence: the official docs win, the blog item is marked sublated.
+At $t_5$ Buddhi emits the tagged answer with class $5$ (yath\=artha,
+veridical). The \textbf{Sak\d{s}\=\i Keeper} (bottom lane) writes
+exactly one immutable JSON line per stage; nothing on the response path
+is touched, but the entire turn is independently replayable.}
+\label{fig:swimlane}
+\end{figure}

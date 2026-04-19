@@ -1,16 +1,16 @@
-\section{3 · Origin: From a TRIZ Contradiction Analysis to Vedic Epistemology}\label{origin-from-a-triz-contradiction-analysis-to-vedic-epistemology}
+\section{3 · Origin: From a TRIZ Contradiction Analysis to Classical Indian Epistemology}\label{origin-from-a-triz-contradiction-analysis-to-classical-indian-epistemology}
 
-This section narrates how the project came to be, because the methodology itself is part of the contribution. We did \emph{not} begin by reading Sanskrit. We began by running TRIZ \citep{altshuller1984creativity, altshuller2002innovation, terninko1998triz, savransky2000triz} on a single engineering contradiction in modern LLM agents, and observed --- to our own surprise --- that the resolution drove us out of the LLM literature entirely and into eleventh-century Mithilā.
+This section narrates how the project came to be, because the methodology itself is part of the contribution. We did \emph{not} begin by reading Sanskrit. We began by running TRIZ \citep{altshuller1984creativity, altshuller2002innovation, terninko1998triz, savransky2000triz} on a single engineering contradiction in modern LLM agents, and observed --- to our own surprise --- that the resolution drove us out of the LLM literature entirely and into the long-running cross-school epistemological debate between Nyāya, Mīmāṃsā, Advaita Vedānta and adjacent traditions, which had reached technical maturity in eleventh-century Mithilā.
 
 \subsection{3.1 The TRIZ session}\label{the-triz-session}
 
-Using the \texttt{triz-engine} Cursor plugin \citep{trizengineplugin} (developed by the same author and used here in production from 2025-12), we logged the following primary contradiction:
+Using the \passthrough{\lstinline!triz-engine!} Cursor plugin \citep{trizengineplugin} (developed by the same author and used here in production from 2025-12), we logged the following primary contradiction:
 
 \begin{quote}
 \textbf{C1.} \emph{We must keep more information in the agent's context window to improve recall, \textbf{but} keeping more information degrades the agent's accuracy on the recall task itself.}
 \end{quote}
 
-In TRIZ terms this is the canonical \emph{technical contradiction} between \textbf{\#26 Quantity of Substance} (context tokens available to attend to) and \textbf{\#27 Reliability} (correct retrieval given the available tokens). The system-improving parameter pushes the system-degrading parameter. The TRIZ contradiction matrix \citep{altshuller2002innovation} for this pair returns the inventive principles \textbf{\#10 (Preliminary Action), \#11 (Cushion in Advance), \#28 (Mechanics Substitution), \#35 (Parameter Change)}. The \texttt{triz-engine} MCP tool \texttt{log\_session\_entry} recorded the matrix lookup, the four candidate principles, and the resulting solution sketches as separate audit entries.
+In TRIZ terms this is the canonical \emph{technical contradiction} between \textbf{\#26 Quantity of Substance} (context tokens available to attend to) and \textbf{\#27 Reliability} (correct retrieval given the available tokens). The system-improving parameter pushes the system-degrading parameter. The TRIZ contradiction matrix \citep{altshuller2002innovation} for this pair returns the inventive principles \textbf{\#10 (Preliminary Action), \#11 (Cushion in Advance), \#28 (Mechanics Substitution), \#35 (Parameter Change)}. The \passthrough{\lstinline!triz-engine!} MCP tool \passthrough{\lstinline!log\_session\_entry!} recorded the matrix lookup, the four candidate principles, and the resulting solution sketches as separate audit entries.
 
 Of the four principles, \textbf{\#10 (Preliminary Action)} dominated: rather than fight the model at retrieval time, \emph{do something to each retrieved item before it enters the visible context}. Specifically, \emph{stamp it with conditions under which it is true and credentials of the source.}
 
@@ -43,7 +43,7 @@ It was not a metaphor. Each of these constructs admits a \emph{precise runtime o
 
 The deeper claim is methodological. Several recent context-engineering threads resemble \emph{fragments} of an integrated philosophical tradition under different names: scratchpads ≈ \emph{manas}; tool-use selectors ≈ \emph{buddhi}; retrieval rerankers ≈ approximate \emph{avacchedaka}; sleep-time-compute / consolidation ≈ \emph{bādha}-driven memory pruning; provenance tracking ≈ \emph{sākṣī}; hallucination taxonomies in flux ≈ \emph{khyātivāda}. By naming the constructs from a tradition that already integrated them, we (a) get a \emph{coherent} design rather than a bag of mechanisms, and (b) inherit two thousand years of internal critique of the tradition (Mīmāṃsā vs.~Nyāya vs.~Advaita debates) as our \emph{adversarial review}.
 
-The TRIZ session that produced this trajectory took 87 minutes of wall-clock time and consumed 38,512 input tokens / 4,206 output tokens of Claude usage; the full audit trail is preserved in the repository under \texttt{docs/triz-origin-session.md}. We retain this provenance not for vanity but because \textbf{it is the kind of audit trail the harness itself is designed to enforce}.
+The TRIZ session that produced this trajectory took 87 minutes of wall-clock time and consumed 38,512 input tokens / 4,206 output tokens of Claude usage; the full audit trail is preserved in the repository under \passthrough{\lstinline!docs/triz-origin-session.md!}. We retain this provenance not for vanity but because \textbf{it is the kind of audit trail the harness itself is designed to enforce}.
 
 \subsection{3.4 The two dev-time orchestration tools we used (and excluded from the shipped plugin)}\label{the-two-dev-time-orchestration-tools-we-used-and-excluded-from-the-shipped-plugin}
 
@@ -51,9 +51,9 @@ Two further plugins were used during development and \emph{deliberately excluded
 
 \begin{itemize}
 \item
-  \textbf{\texttt{attractor-flow}} \citep{attractorflowplugin} --- a dynamical-systems-inspired orchestration loop that drove the long-running validation pipeline through stable basins (e.g.~``P6-A done'', ``P6-B done'', ``Stouffer-Z computed''). It supplied the HALT, RESUME, and basin-detection primitives for the CLI scheduler.
+  \textbf{\passthrough{\lstinline!attractor-flow!}} \citep{attractorflowplugin} --- a dynamical-systems-inspired orchestration loop that drove the long-running validation pipeline through stable basins (e.g.~``P6-A done'', ``P6-B done'', ``Stouffer-Z computed''). It supplied the HALT, RESUME, and basin-detection primitives for the CLI scheduler.
 \item
-  \textbf{\texttt{ralph-loop}} --- a self-referential iterative-development loop used during early prototyping of the harness components.
+  \textbf{\passthrough{\lstinline!ralph-loop!}} --- a self-referential iterative-development loop used during early prototyping of the harness components.
 \end{itemize}
 
-We treat these as \emph{development-time} tools, analogous to \texttt{make} or \texttt{pytest}, not as runtime dependencies of the harness. The shipped plugin contains zero references to either, and we audit this in Section 6.5 and Appendix B.
+We treat these as \emph{development-time} tools, analogous to \passthrough{\lstinline!make!} or \passthrough{\lstinline!pytest!}, not as runtime dependencies of the harness. The shipped plugin contains zero references to either, and we audit this in Section 6.5 and Appendix B.

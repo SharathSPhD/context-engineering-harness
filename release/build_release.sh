@@ -22,7 +22,11 @@ VERSION="v2.0.0"
 echo "=== Building arxiv-submission.tar.gz ==="
 ARXIV="$REL/arxiv-submission"
 rm -rf "$ARXIV"
-mkdir -p "$ARXIV/sections" "$ARXIV/appendices" "$ARXIV/figures" "$ARXIV/generated"
+mkdir -p "$ARXIV/sections" "$ARXIV/appendices" "$ARXIV/figures" \
+         "$ARXIV/figures_tikz" "$ARXIV/tables"
+
+# Ensure paper has been freshly built (so .tex are in sync with .md).
+(cd paper && bash build.sh >/dev/null 2>&1)
 
 # Top-level
 cp paper/main.tex          "$ARXIV/"
@@ -32,9 +36,10 @@ cp paper/references.bib    "$ARXIV/"
 cp paper/sections/*.tex      "$ARXIV/sections/"
 cp paper/appendices/*.tex    "$ARXIV/appendices/"
 
-# Figures + generated tables/figures wrapper
-cp paper/figures/*.png       "$ARXIV/figures/"
-cp paper/generated/*.tex     "$ARXIV/generated/"
+# Figures (PNG raster), TikZ concept figures, and per-table .tex wrappers.
+cp paper/figures/*.png         "$ARXIV/figures/"
+cp paper/figures_tikz/*.tex    "$ARXIV/figures_tikz/"
+cp paper/tables/*.tex          "$ARXIV/tables/"
 
 # arXiv-style readme so reviewers know how to compile.
 cat > "$ARXIV/00README.txt" <<'TXT'
@@ -55,12 +60,12 @@ Or with a vanilla TeX Live install:
 Files
 -----
   main.tex                         — driver
-  references.bib                   — 246 BibTeX entries (plainnat)
+  references.bib                   — BibTeX entries (plainnat)
   sections/00..12_*.tex            — frontmatter + 12 main sections
   appendices/A..F_*.tex            — 6 appendices
   figures/F01..F13_*.png           — 13 PNG figures (raster, 300 dpi)
-  generated/figures.tex            — \includegraphics wrappers for all PNGs
-  generated/tables.tex             — Markdown tables converted to LaTeX
+  figures_tikz/fig{1..6}_*.tex     — 6 TikZ concept/flow diagrams (vector)
+  tables/T1..T7_*.tex              — 7 result tables (longtable)
 
 The .tex under sections/ and appendices/ are deterministic Pandoc output
 from the corresponding .md files in the public source repository

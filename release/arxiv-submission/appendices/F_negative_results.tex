@@ -1,10 +1,10 @@
 \section{Appendix F · Negative and Null Results}\label{appendix-f-negative-and-null-results}
 
-A faithful empirical paper must publish what \emph{did not work} with the same rigour as what did. This appendix records four substantive negative results and one null result encountered during the v2 iteration of the harness. These are documented in raw form in \texttt{docs/v0\_retrospective.md} (the v0 baseline retrospective) and in the per-iteration journals under \texttt{attractor-flow-state/journals/}; this appendix is the consolidated reviewer-facing summary.
+A faithful empirical paper must publish what \emph{did not work} with the same rigour as what did. This appendix records four substantive negative results and one null result encountered during the v2 iteration of the harness. These are documented in raw form in \passthrough{\lstinline!docs/v0\_retrospective.md!} (the v0 baseline retrospective) and in the per-iteration journals under \passthrough{\lstinline!attractor-flow-state/journals/!}; this appendix is the consolidated reviewer-facing summary.
 
 \subsection{\texorpdfstring{F.1 Negative --- \texttt{PrecisionWeightedRAG} (v0)}{F.1 Negative --- PrecisionWeightedRAG (v0)}}\label{f.1-negative-precisionweightedrag-v0}
 
-\textbf{What we tried.} The v0 harness had a single \texttt{PrecisionWeightedRAG} aggregator that combined multiple sources by precision-weighted majority vote.
+\textbf{What we tried.} The v0 harness had a single \passthrough{\lstinline!PrecisionWeightedRAG!} aggregator that combined multiple sources by precision-weighted majority vote.
 
 \textbf{Why it failed.} Three reasons surfaced empirically:
 
@@ -25,17 +25,17 @@ A faithful empirical paper must publish what \emph{did not work} with the same r
 
 \textbf{What we tried.} A single-stage agent (one Claude call) that both attended to the store \emph{and} emitted the user-visible answer.
 
-\textbf{Why it failed.} It conflated the attentional and judging steps. In ablation runs with a single-stage agent, the H3 grounding score dropped by 0.18 vs.~the two-stage Manas/Buddhi pipeline. The single-stage agent kept ``remembering'' items that the rule engine had marked as \texttt{bādhita} because they were syntactically near-by in its prompt.
+\textbf{Why it failed.} It conflated the attentional and judging steps. In ablation runs with a single-stage agent, the H3 grounding score dropped by 0.18 vs.~the two-stage Manas/Buddhi pipeline. The single-stage agent kept ``remembering'' items that the rule engine had marked as \passthrough{\lstinline!bādhita!} because they were syntactically near-by in its prompt.
 
-\textbf{Replacement.} The two-stage Manas-then-Buddhi orchestration (Section 5.4), where Manas's only output is a list of \texttt{selected\_ids} and Buddhi sees only those.
+\textbf{Replacement.} The two-stage Manas-then-Buddhi orchestration (Section 5.4), where Manas's only output is a list of \passthrough{\lstinline!selected\_ids!} and Buddhi sees only those.
 
 \subsection{F.3 Negative --- naive LRU compaction}\label{f.3-negative-naive-lru-compaction}
 
-\textbf{What we tried.} A simple LRU eviction policy in \texttt{compact}.
+\textbf{What we tried.} A simple LRU eviction policy in \passthrough{\lstinline!compact!}.
 
 \textbf{Why it failed.} It evicted high-precision items that had not been \emph{recently} touched but were still load-bearing for later turns (e.g.~the user's stated goal). H5 plummeted by \(-0.22\).
 
-\textbf{Replacement.} The \texttt{AdaptiveForgetting} rule set (Section 5.7), which is precision-weighted, witness-aware, and bias-aware against eviction of \texttt{source=user} items.
+\textbf{Replacement.} The \passthrough{\lstinline!AdaptiveForgetting!} rule set (Section 5.7), which is precision-weighted, witness-aware, and bias-aware against eviction of \passthrough{\lstinline!source=user!} items.
 
 \subsection{F.4 Negative --- single-source-of-truth Khyātivāda annotator}\label{f.4-negative-single-source-of-truth-khyux101tivux101da-annotator}
 
@@ -55,7 +55,7 @@ A faithful empirical paper must publish what \emph{did not work} with the same r
 
 \subsection{F.6 Negative --- early plugin tried to inline ContextStore into prompt}\label{f.6-negative-early-plugin-tried-to-inline-contextstore-into-prompt}
 
-\textbf{What we tried.} In an early plugin draft, every Buddhi prompt was prefixed with a JSON dump of the \emph{entire} live \texttt{ContextStore} (capped at 4K tokens). This was meant to make the model ``see everything''.
+\textbf{What we tried.} In an early plugin draft, every Buddhi prompt was prefixed with a JSON dump of the \emph{entire} live \passthrough{\lstinline!ContextStore!} (capped at 4K tokens). This was meant to make the model ``see everything''.
 
 \textbf{Why it failed.} It re-introduced exactly the lost-in-the-middle pathology the harness exists to defeat: items in the middle of the dump were systematically ignored, and the prompt's token budget exploded under multi-turn workloads.
 
