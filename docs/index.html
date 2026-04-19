@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>When the Context Window Is Big and the Agent Is Still Confused — Pratyakṣa</title>
+<meta name="description" content="A millennia-old darśana-śāstra vocabulary turned out to be the missing operating manual for modern AI agents. Here is the system that proves it — and the plugin you can install in thirty seconds.">
+
+<meta property="og:type" content="article">
+<meta property="og:title" content="When the Context Window Is Big and the Agent Is Still Confused">
+<meta property="og:description" content="A millennia-old darśana-śāstra vocabulary turned out to be the missing operating manual for modern AI agents. Here is the system that proves it.">
+<meta property="og:image" content="https://sharathsphd.github.io/context-engineering-harness/pratyaksha_images/lostmiddle.png">
+<meta property="og:url" content="https://sharathsphd.github.io/context-engineering-harness/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="When the Context Window Is Big and the Agent Is Still Confused">
+<meta name="twitter:description" content="The eight-hundred-year-old vocabulary your AI agent has been missing.">
+<meta name="twitter:image" content="https://sharathsphd.github.io/context-engineering-harness/pratyaksha_images/lostmiddle.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg-soft: #11161e;
+    --surface: #161b22;
+    --surface2: #21262d;
+    --border: #30363d;
+    --border-soft: #21262d;
+    --accent: #58a6ff;
+    --accent2: #bc8cff;
+    --accent3: #3fb950;
+    --accent4: #f85149;
+    --accent5: #d29922;
+    --accent-warm: #ffa657;
+    --text: #e6edf3;
+    --text-strong: #ffffff;
+    --muted: #8b949e;
+    --muted-strong: #b1bac4;
+    --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --mono: "JetBrains Mono", "SF Mono", "Cascadia Code", Consolas, monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 18px;
+    line-height: 1.7;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Sticky nav */
+  nav.topbar {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(13,17,23,0.86);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 0;
+    padding: 0 28px;
+    height: 56px;
+    overflow-x: auto;
+  }
+  nav.topbar .brand {
+    color: var(--text-strong); font-weight: 700; font-size: 14.5px;
+    letter-spacing: .01em; margin-right: 22px; white-space: nowrap;
+    font-family: var(--sans);
+  }
+  nav.topbar .brand .glyph { color: var(--accent); margin-right: 6px; }
+  nav.topbar a {
+    color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 500;
+    padding: 0 14px; height: 56px; display: flex; align-items: center;
+    white-space: nowrap; border-bottom: 2px solid transparent;
+    transition: color .15s, border-color .15s;
+  }
+  nav.topbar a:hover { color: var(--text); border-bottom-color: var(--border); }
+  nav.topbar a.cta {
+    color: var(--accent); font-weight: 600;
+  }
+  nav.topbar .spacer { flex: 1; }
+
+  /* Hero */
+  .hero {
+    position: relative;
+    min-height: 70vh;
+    display: flex; align-items: flex-end;
+    background-color: #06090e;
+    background-image:
+      linear-gradient(180deg, rgba(6,9,14,0.55) 0%, rgba(6,9,14,0.85) 70%, rgba(13,17,23,1) 100%),
+      url('pratyaksha_images/lostmiddle.png');
+    background-size: cover;
+    background-position: center 35%;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .hero-inner {
+    max-width: 980px; margin: 0 auto; padding: 80px 28px 64px;
+    width: 100%;
+  }
+  .hero .kicker {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(63,185,80,.12);
+    border: 1px solid rgba(63,185,80,.35);
+    color: var(--accent3);
+    padding: 5px 14px; border-radius: 999px;
+    font-family: var(--sans); font-size: 12px; font-weight: 600;
+    letter-spacing: .08em; text-transform: uppercase;
+    margin-bottom: 22px;
+  }
+  .hero h1 {
+    font-family: var(--serif);
+    font-weight: 700; font-size: clamp(34px, 5.6vw, 64px);
+    line-height: 1.1; letter-spacing: -0.015em;
+    color: var(--text-strong);
+    margin-bottom: 20px;
+    text-wrap: balance;
+  }
+  .hero .dek {
+    font-family: var(--serif); font-style: italic;
+    font-size: clamp(17px, 2vw, 22px); line-height: 1.55;
+    color: var(--muted-strong);
+    max-width: 760px;
+    margin-bottom: 32px;
+  }
+  .hero .meta {
+    display: flex; flex-wrap: wrap; gap: 18px; align-items: center;
+    color: var(--muted); font-size: 13.5px;
+  }
+  .hero .meta strong { color: var(--text); font-weight: 600; }
+  .hero .meta a { color: var(--accent); text-decoration: none; font-weight: 500; }
+  .hero .meta a:hover { text-decoration: underline; }
+  .hero .meta .dot { color: var(--border); }
+
+  /* Article column */
+  article {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 64px 28px 32px;
+    font-size: 19px;
+    line-height: 1.75;
+  }
+  article p {
+    color: var(--text);
+    margin-bottom: 1.3em;
+  }
+  article p strong { color: var(--text-strong); font-weight: 600; }
+  article p em { font-style: italic; color: var(--muted-strong); }
+  article a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(88,166,255,0.3);
+    transition: border-color .15s;
+  }
+  article a:hover { border-bottom-color: var(--accent); }
+
+  article h2 {
+    font-family: var(--serif);
+    font-weight: 700; font-size: clamp(26px, 3.4vw, 34px);
+    line-height: 1.2; letter-spacing: -0.012em;
+    color: var(--text-strong);
+    margin: 64px 0 22px;
+    scroll-margin-top: 80px;
+  }
+  article h2 .num {
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 0.55em; font-weight: 600;
+    margin-right: 14px; vertical-align: 0.35em;
+    letter-spacing: 0.02em;
+  }
+
+  article h3 {
+    font-family: var(--serif);
+    font-weight: 600; font-size: 22px;
+    color: var(--text-strong);
+    margin: 36px 0 14px;
+  }
+
+  article hr.section-break {
+    border: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 56px auto;
+    max-width: 280px;
+  }
+
+  /* Inline glossary terms */
+  .term {
+    color: var(--accent-warm);
+    font-style: italic;
+    font-weight: 500;
+    letter-spacing: 0.005em;
+  }
+
+  /* Figures */
+  figure {
+    margin: 40px 0;
+  }
+  figure.full-bleed {
+    margin-left: calc(50% - 50vw + 14px);
+    margin-right: calc(50% - 50vw + 14px);
+    max-width: 100vw;
+  }
+  figure.wide {
+    margin-left: -64px;
+    margin-right: -64px;
+  }
+  @media (max-width: 920px) {
+    figure.wide { margin-left: 0; margin-right: 0; }
+  }
+  figure img {
+    display: block; width: 100%; height: auto;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+  figure.plain img { border: none; border-radius: 8px; }
+  figure figcaption {
+    font-family: var(--sans);
+    font-size: 14px; line-height: 1.55;
+    color: var(--muted); margin-top: 12px;
+    padding: 0 6px;
+    text-align: left;
+  }
+  figure figcaption strong { color: var(--text); font-weight: 600; }
+  figure.diptych {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  }
+  figure.diptych figcaption {
+    grid-column: 1 / -1;
+  }
+  @media (max-width: 720px) {
+    figure.diptych { grid-template-columns: 1fr; }
+  }
+
+  /* Pull quote */
+  .pullquote {
+    font-family: var(--serif);
+    font-size: 26px; line-height: 1.35;
+    color: var(--text-strong);
+    border-left: 3px solid var(--accent);
+    padding: 8px 0 8px 28px;
+    margin: 40px 0;
+    font-style: italic;
+    text-wrap: balance;
+  }
+
+  /* Tables */
+  .table-wrap {
+    margin: 32px 0;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+  }
+  table {
+    width: 100%; border-collapse: collapse;
+    font-family: var(--sans);
+    font-size: 14.5px;
+  }
+  th {
+    background: var(--surface2); color: var(--muted-strong);
+    font-weight: 600; font-size: 13px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    padding: 12px 16px; text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-soft);
+    color: var(--text); vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(88,166,255,0.04); }
+  td code, td .mono { font-family: var(--mono); font-size: 13px; color: var(--accent-warm); }
+  td.num { font-variant-numeric: tabular-nums; font-family: var(--mono); }
+  td strong { color: var(--text-strong); font-weight: 600; }
+  table caption {
+    caption-side: top; text-align: left;
+    font-family: var(--sans); font-size: 13.5px; color: var(--muted);
+    padding: 0 4px 12px; font-weight: 500;
+  }
+
+  /* Code */
+  code, .mono {
+    font-family: var(--mono);
+    font-size: 0.92em;
+    background: var(--surface2);
+    color: var(--accent-warm);
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border-soft);
+  }
+  pre {
+    background: #010409;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin: 28px 0;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    line-height: 1.65;
+  }
+  pre code {
+    background: none; border: none; padding: 0;
+    color: inherit; font-size: inherit;
+  }
+  pre .cmt { color: var(--muted); }
+  pre .prompt { color: var(--accent3); }
+  pre .cmd { color: var(--text-strong); }
+  pre .str { color: #a5d6ff; }
+
+  /* Headline numbers panel */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin: 32px 0;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    border-left: 3px solid var(--accent);
+  }
+  .stat.green { border-left-color: var(--accent3); }
+  .stat.gold  { border-left-color: var(--accent5); }
+  .stat.purple { border-left-color: var(--accent2); }
+  .stat.warm { border-left-color: var(--accent-warm); }
+  .stat .num {
+    font-family: var(--mono);
+    font-size: 26px; font-weight: 700;
+    color: var(--text-strong);
+    letter-spacing: -0.01em;
+  }
+  .stat.green .num { color: var(--accent3); }
+  .stat.gold .num  { color: var(--accent5); }
+  .stat.purple .num { color: var(--accent2); }
+  .stat .label {
+    font-size: 12.5px; color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* CTA buttons */
+  .cta-row {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin: 28px 0;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 18px;
+    border-radius: 8px;
+    font-family: var(--sans);
+    font-size: 14px; font-weight: 600;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: transform .12s, background .15s;
+  }
+  .btn:hover { transform: translateY(-1px); border-bottom-color: transparent; }
+  .btn.primary { background: var(--accent); color: #0d1117; border-color: var(--accent); }
+  .btn.primary:hover { background: #79b8ff; }
+  .btn.outline { background: transparent; color: var(--text); border-color: var(--border); }
+  .btn.outline:hover { background: var(--surface2); }
+
+  /* Bottom CTA card */
+  .bottom-cta {
+    margin: 48px 0;
+    padding: 28px 32px;
+    background: linear-gradient(135deg, var(--surface) 0%, var(--bg-soft) 100%);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+  }
+  .bottom-cta h3 {
+    font-family: var(--serif);
+    font-size: 22px; color: var(--text-strong);
+    margin-bottom: 12px;
+  }
+  .bottom-cta ul {
+    list-style: none; padding: 0; margin: 14px 0 0;
+  }
+  .bottom-cta ul li {
+    color: var(--text); font-size: 15px;
+    padding: 7px 0; border-bottom: 1px solid var(--border-soft);
+    display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline;
+  }
+  .bottom-cta ul li:last-child { border-bottom: none; }
+  .bottom-cta ul li strong { color: var(--text-strong); margin-right: 4px; }
+  .bottom-cta ul li a { color: var(--accent); }
+
+  /* Byline / footer */
+  .byline {
+    margin: 40px 0 8px;
+    padding: 22px 26px;
+    border-left: 3px solid var(--accent2);
+    background: rgba(188,140,255,0.05);
+    border-radius: 0 10px 10px 0;
+    color: var(--muted-strong);
+    font-size: 14.5px;
+    font-style: italic;
+    line-height: 1.6;
+  }
+  .byline strong { color: var(--text-strong); font-style: normal; font-weight: 600; }
+
+  footer.page-foot {
+    border-top: 1px solid var(--border);
+    margin-top: 64px;
+    padding: 32px 28px;
+    text-align: center;
+    color: var(--muted); font-size: 13px;
+  }
+  footer.page-foot a { color: var(--accent); text-decoration: none; }
+  footer.page-foot a:hover { text-decoration: underline; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+    html { scroll-behavior: auto; }
+  }
+
+  /* Mobile */
+  @media (max-width: 640px) {
+    body { font-size: 17px; }
+    article { font-size: 18px; padding: 48px 22px 24px; }
+    .hero { min-height: 60vh; }
+    .hero-inner { padding: 56px 22px 40px; }
+    nav.topbar { padding: 0 16px; }
+    nav.topbar a { padding: 0 10px; }
+    .pullquote { font-size: 22px; padding-left: 18px; margin: 28px 0; }
+    figure.wide { margin-left: 0; margin-right: 0; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="topbar">
+  <span class="brand"><span class="glyph">⬡</span> Pratyakṣa</span>
+  <a href="#problem">The problem</a>
+  <a href="#vocabulary">The vocabulary</a>
+  <a href="#plugin">The plugin</a>
+  <a href="#evidence">The evidence</a>
+  <a href="#try">Try it</a>
+  <span class="spacer"></span>
+  <a href="canvas.html">Project canvas</a>
+  <a class="cta" href="https://github.com/SharathSPhD/pratyaksha-context-eng-harness" target="_blank" rel="noopener">GitHub ↗</a>
+</nav>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="kicker">Long-context AI · Open-source plugin · v2.0.0</div>
+    <h1>When the Context Window Is Big and the Agent Is Still Confused</h1>
+    <p class="dek">A millennia-old <em>darśana-śāstra</em> vocabulary &mdash; the systematic Indian treatises on what counts as valid knowledge &mdash; turned out to be the missing operating manual for modern AI agents. Here is the system that proves it, and the plugin you can install in thirty seconds.</p>
+    <div class="meta">
+      <span><strong>Sharath Sathish</strong></span>
+      <span class="dot">·</span>
+      <span>University of York</span>
+      <span class="dot">·</span>
+      <span>April 2026 · ~12 min read</span>
+      <span class="dot">·</span>
+      <a href="https://zenodo.org/records/19653013" target="_blank" rel="noopener">Cite the preprint</a>
+    </div>
+  </div>
+</header>
+
+<article>
+
+<p>An AI coding agent reads a 200-page Django codebase, edits the wrong file with confidence, and tells the user it is done. A research-assistance agent surfaces a withdrawn paper, then surfaces a retraction, then forgets the retraction one turn later and answers from the withdrawn one. A customer-service agent quotes a policy that expired in 2023 because that is the version the model was trained on. None of these failures is about a model that is not smart enough. All three are about <em>context that is not engineered</em>.</p>
+
+<p>This is the problem a new open-source plugin called <strong>Pratyakṣa</strong> sets out to fix &mdash; and the surprising part is <em>where the design vocabulary came from</em>.</p>
+
+<hr class="section-break">
+
+<h2 id="problem"><span class="num">1</span>Bigger windows, dumber agents</h2>
+
+<p>The headline numbers from frontier-model launches keep growing. 200&nbsp;K-token context windows. One-million-token windows. Soon, ten million. The implicit promise is that bigger windows mean smarter agents.</p>
+
+<p>The benchmarks tell a different story. On RULER, the standard long-context recall benchmark, frontier models still drop accuracy as the window grows &mdash; the <em>Lost-in-the-Middle</em> effect, named in 2023 and unfixed in 2026. On HELMET, where multiple retrieved passages quietly contradict each other, the same models will happily return whichever passage they saw first. On HaluEval and TruthfulQA, hallucinations rise the longer the conversation runs.</p>
+
+<p>Retrieval-augmented generation (RAG) is the field's standard answer, and it helps. But RAG fixes <em>what the model can see</em>. It does not fix <em>how the model decides which of the things it sees are still true</em>. A retrieved passage from 2019 sits in the context window next to an authoritative document from 2025, and the model has no principled way to retire the older one. Compaction strategies &mdash; the schemes that summarise older turns to make room for newer ones &mdash; make this worse, because they routinely throw away the very provenance an agent would need to know which version to trust.</p>
+
+<figure class="wide">
+  <img src="https://github.com/SharathSPhD/pratyaksha-context-eng-harness/releases/download/v2.0.0/F02_H2_helmet_by_context_length.png" alt="Line chart: HELMET-recall accuracy on the y-axis, context length (8K and 32K tokens) on the x-axis. Treatment line stays flat near the top; baseline line drops sharply." loading="lazy">
+  <figcaption><strong>What "Lost-in-the-Middle" actually looks like.</strong> HELMET-recall accuracy degrades as the window grows from 8&nbsp;K to 32&nbsp;K tokens, even on the strongest current models. The Pratyakṣa-treatment line (top) holds; the unaided baseline (bottom) does not. Reproduced from the <a href="https://zenodo.org/records/19653013" target="_blank" rel="noopener">Pratyakṣa preprint</a>.</figcaption>
+</figure>
+
+<p>There is a name for the discipline that fixes this. It is <em>context engineering</em>: the explicit, auditable management of what an agent knows, why it knows it, and when each piece of evidence should be retired. The field has begun to converge on the phrase. What it has been missing is the <em>vocabulary</em>.</p>
+
+<hr class="section-break">
+
+<h2 id="vocabulary"><span class="num">2</span>The surprising vocabulary</h2>
+
+<p>That vocabulary turned out to be millennia old &mdash; preserved in the <em>darśana-śāstras</em>, the systematic philosophical treatises that classical Indian thinkers refined for over two thousand years &mdash; and it was waiting in a corner of the world's intellectual history that the modern AI literature had not been reading.</p>
+
+<p>Classical Indian epistemology &mdash; the systematic study of <em>what counts as a justified belief</em>, developed across schools called Nyāya–Vaiśeṣika, Advaita Vedānta, Pūrva Mīmāṃsā, and Sāṃkhya &mdash; spent centuries refining a small set of concepts that map almost exactly onto the operations a modern context-engineered agent needs to perform.</p>
+
+<figure>
+  <img src="pratyaksha_images/mandala.png" alt="Knowledge mandala diagram: a circular layout connecting five Sanskrit terms (avacchedaka, bādha, manas/buddhi, sākṣī, khyātivāda) by gold filaments to their modern operational counterparts at the centre." loading="lazy">
+  <figcaption><strong>The vocabulary, mapped to operations.</strong> Five concepts from the <em>darśana-śāstras</em>, each connected to the operational primitive it becomes inside a context-engineered agent.</figcaption>
+</figure>
+
+<p>Five concepts do most of the work, and each can be glossed in one sentence.</p>
+
+<p><strong><span class="term">Avacchedaka</span></strong> (Nyāya–Vaiśeṣika) is the ancient Indian logician's insistence that <em>every cognition carries its conditions</em>. To say "the cup is on the table" is, in this tradition, never quite enough; the proper form is "the cup is on the table <em>under the conditions</em> C₁ … Cₙ". In the harness, this becomes typed insertion: every retrieved fact lands in the agent's working store <em>with</em> the conditions that make it true.</p>
+
+<p><strong><span class="term">Bādha</span></strong> (Advaita Vedānta and Pūrva Mīmāṃsā) is the technical Sanskrit term for <em>sublation</em>: the operation by which a newer, more authoritative cognition supersedes an older one <em>without deleting it</em>. The older claim survives in the audit trail; it just no longer drives behaviour. This is the precise primitive a modern agent needs and does not have. There is no comparably tight English term.</p>
+
+<p><strong><span class="term">Manas</span></strong> and <strong><span class="term">buddhi</span></strong> (Sāṃkhya, cross-mapped in Advaita Vedānta) draw a line between <em>attention</em> and <em>judgement</em>. Manas is the sense-organ that selects which evidence to look at. Buddhi is the determinative faculty that judges on the basis of what Manas surfaces. Selecting and judging are <em>different cognitive acts</em>, and treating them as one is the source of a particular class of hallucination &mdash; the kind where an agent confidently invents a function name that fits the surrounding code.</p>
+
+<p><strong><span class="term">Sākṣī</span></strong> (Advaita Vedānta) is the <em>witness consciousness</em> &mdash; the unchanging substrate that observes every cognitive event. In the harness, it becomes a session-stable invariant (working directory, git SHA, model identity, plugin version, hard-coded user policies) that survives every compaction event. The witness is what the agent can never lose.</p>
+
+<p><strong><span class="term">Khyātivāda</span></strong> is a cross-school debate about <em>the kinds of error a cognition can fall into</em>. The schools disagreed productively about whether a misperception is a non-apprehension (<em>akhyāti</em>), a mis-apprehension (<em>anyathākhyāti</em>), a projection of the perceiver's own state (<em>ātmakhyāti</em>), and so on. Modern hallucination research has reproduced these categories one by one &mdash; without ever talking to the Indian tradition. The harness uses a 6-class typed taxonomy derived from this debate, and the classifier achieves Cohen's κ = <strong>0.736</strong> ("substantial" inter-annotator agreement) on a 3,000-example corpus.</p>
+
+<p class="pullquote">The framing here is convergence, not exoticism. Two unrelated traditions converging on the same type signatures is a reason to take the type signatures seriously.</p>
+
+<p>Cognitive neuroscience independently arrived at structurally similar constructs &mdash; working-memory schemas, predictive-coding precision, complementary-learning-systems consolidation, prefrontal attention control, event-segmentation. The vocabulary is convergent because the problem is convergent: any cognitive system that wants to keep its beliefs honest under streaming evidence has to solve roughly these five sub-problems.</p>
+
+<hr class="section-break">
+
+<h2 id="plugin"><span class="num">3</span>What the plugin actually does</h2>
+
+<p>The harness ships as a single open-source plugin: <strong><code>pratyaksha-context-eng-harness</code></strong> (v1.0.0, MIT-licensed). It installs into Cursor, Claude Code (CLI and the VS Code extension), and Claude Desktop in roughly thirty seconds. It contains no model fine-tune, no architecture change, no runtime dependency heavier than <code>tiktoken</code> and <code>pydantic</code>. The full system specification &mdash; every tool signature, every prompt, every reproducibility manifest &mdash; lives in the formal preprint on Zenodo (record <a href="https://zenodo.org/records/19653013" target="_blank" rel="noopener">19653013</a>).</p>
+
+<p>What it ships is fifteen MCP tools, three sub-agents, three skills, four slash commands, and three lifecycle hooks, organised across six functional families:</p>
+
+<div class="table-wrap">
+  <table>
+    <caption>The 15 MCP tools, grouped by the operation they implement.</caption>
+    <thead>
+      <tr>
+        <th style="width: 22%;">Family</th>
+        <th style="width: 40%;">MCP tools</th>
+        <th>What it does</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Avacchedaka</strong><br><span style="color:var(--muted); font-size: 12.5px;">typed store</span></td>
+        <td><code>context_insert</code>, <code>context_retrieve</code>, <code>context_get</code>, <code>list_qualificands</code></td>
+        <td>Every fact enters the store with its conditions; every retrieval is typed.</td>
+      </tr>
+      <tr>
+        <td><strong>Bādha</strong><br><span style="color:var(--muted); font-size: 12.5px;">sublation</span></td>
+        <td><code>context_sublate</code>, <code>sublate_with_evidence</code>, <code>detect_conflict</code></td>
+        <td>Newer authoritative evidence supersedes older &mdash; without deletion.</td>
+      </tr>
+      <tr>
+        <td><strong>Compaction</strong></td>
+        <td><code>compact</code>, <code>boundary_compact</code>, <code>context_window</code></td>
+        <td>Forget what is safe to forget at event boundaries; preserve what is witnessed.</td>
+      </tr>
+      <tr>
+        <td><strong>Sākṣī</strong><br><span style="color:var(--muted); font-size: 12.5px;">witness</span></td>
+        <td><code>set_sakshi</code>, <code>get_sakshi</code></td>
+        <td>Session-stable invariants survive every compaction.</td>
+      </tr>
+      <tr>
+        <td><strong>Khyātivāda</strong></td>
+        <td><code>classify_khyativada</code></td>
+        <td>Six-class typed hallucination taxonomy.</td>
+      </tr>
+      <tr>
+        <td><strong>Budget</strong></td>
+        <td><code>budget_status</code>, <code>budget_record</code></td>
+        <td>Token-budget visibility for the host agent.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>The two interesting sub-agents are <em>Manas</em> and <em>Buddhi</em>. Manas is the system-prompt-driven attention agent: it selects evidence, reports what it attended to, and &mdash; critically &mdash; must never emit a user-visible answer. Buddhi is the determinative judgement agent: it can call sublation, runs the hallucination classifier on its own draft, and is the only sub-agent that emits the user-facing reply. The third sub-agent, <em>Sākṣī-keeper</em>, is a read-only witness that maintains the session invariants and writes every mutation to a JSONL audit log at <code>~/.cache/pratyaksha/audit.jsonl</code>. A user can <code>tail -f</code> that file during a session and watch exactly what the agent did and why.</p>
+
+<h3>A worked example, end-to-end</h3>
+
+<p>To make this concrete, consider one user turn. The user asks an agent: <em>"How do I cache a user session in Redis?"</em> The agent's web tool returns four snippets &mdash; two from pre-Redis-7 blog posts (which still circulate at the top of search results), two from the official Redis 7 documentation. Without the harness, an unaided agent will often anchor on the first snippet it sees, write code against the older API, and confidently ship the wrong answer. With the harness:</p>
+
+<ol style="padding-left: 24px; margin-bottom: 1.3em;">
+  <li style="margin-bottom: 8px;">Manas inserts all four snippets into the typed store, each tagged with its source-precision (<code>prec=2</code> for the blog posts, <code>prec=8</code> for the official docs).</li>
+  <li style="margin-bottom: 8px;"><code>detect_conflict</code> flags a <code>TYPE_CLASH</code> on the <code>(Redis-session, expiry-policy)</code> qualificand.</li>
+  <li style="margin-bottom: 8px;"><code>sublate_with_evidence</code> retires the blog posts in favour of the docs &mdash; the blog posts remain in the audit log; they no longer drive the answer.</li>
+  <li style="margin-bottom: 8px;">Buddhi composes the final answer using only the surviving live items, classifies the answer as <em>yathārtha</em> (veridical) with <code>confidence = 0.91</code>, and ships it.</li>
+  <li>Sākṣī appends one immutable JSON line per stage to the audit log.</li>
+</ol>
+
+<figure class="wide">
+  <img src="pratyaksha_images/before-after.png" alt="Two-panel illustration. Left: a chaotic desk overflowing with mixed papers labelled 'Redis 4 blog post' and 'Redis 7 docs', a confused agent silhouette in front. Right: the same desk neatly organised, blog posts stamped 'sublated' in red, official docs at the front, an audit log glowing on the side." loading="lazy">
+  <figcaption><strong>Before and after the discipline.</strong> The same context window, with and without typed insertion + sublation. The unaided agent (left) anchors on whatever snippet appears first. The harness (right) keeps the older sources in the audit trail but routes the answer through the newer authoritative documentation.</figcaption>
+</figure>
+
+<p>This is the same operational pattern that drives every result in the next section.</p>
+
+<hr class="section-break">
+
+<h2 id="evidence"><span class="num">4</span>Did it actually work?</h2>
+
+<p>The harness was validated across three orthogonal evidence layers. Every figure and table in this section is reproduced from the <a href="https://zenodo.org/records/19653013" target="_blank" rel="noopener">Zenodo preprint</a> (record 19653013).</p>
+
+<h3>Layer 1 &mdash; public benchmarks</h3>
+
+<p>Seven preregistered hypotheses tested on six widely-used long-context and hallucination benchmarks (RULER, HELMET, NoCha, HaluEval, TruthfulQA, FACTS-Grounding) plus SWE-bench Verified. Each study sweeps two model families (<code>claude-haiku-4-5</code> and <code>claude-sonnet-4-6</code>) across multiple seeds. Across all seven hypotheses, the harness beats the unaided baseline at <em>p</em> ≤ 0.0020. The H2 result on HELMET-Recall is particularly clean: a <strong>47%</strong> reduction in Brier score and a <strong>65%</strong> reduction in expected calibration error, on top of the headline accuracy gain.</p>
+
+<h3>Layer 2 &mdash; live case study</h3>
+
+<p>Three real GitHub issues drawn from popular Python projects: a Django request-body subtlety, a <code>requests</code> retry-strategy spelling change, and a pandas <code>iterrows</code> dtype gotcha. Each is exactly the kind of question a daily-driver coding agent gets wrong by pulling stale Stack Overflow answers ahead of fresh official documentation. Under <em>identical</em> token budgets, the harness scores <strong>3-of-3 correct</strong>; the unaided baseline scores 0-of-3. The harness fires seven sublations and three compactions across the three cases &mdash; exactly the operational footprint the design predicts.</p>
+
+<h3>Layer 3 &mdash; head-to-head A/B</h3>
+
+<p>A 720-pair head-to-head on 120 SWE-bench Verified-style coding instances under a fixed 512-token research-block budget. Each instance gets a research trail of four snippets &mdash; two stale (pointing at the wrong file paths via synthetic typos, referencing superseded APIs), two fresh (correct file paths, current APIs). The harness anchors on the correct file in <strong>720 / 720 paired runs</strong> &mdash; 100% in every (model × seed) cell. The unaided baseline anchors correctly in 362 / 720 runs (<strong>50.3%</strong>), exactly the coin-flip predicted by <em>Lost-in-the-Middle</em>-style anchoring on a randomly-shuffled trail.</p>
+
+<figure class="diptych">
+  <div>
+    <img src="https://github.com/SharathSPhD/pratyaksha-context-eng-harness/releases/download/v2.0.0/F12_effect_sizes.png" alt="Bar chart: Cohen's d effect sizes by hypothesis. Most bars are large; H5 and H7 are off the top of the chart (structural)." loading="lazy" style="border-radius: 8px;">
+  </div>
+  <div>
+    <img src="https://github.com/SharathSPhD/pratyaksha-context-eng-harness/releases/download/v2.0.0/F13_forest_plot.png" alt="Forest plot: per-hypothesis paired deltas with 95% confidence intervals. All intervals lie strictly above zero." loading="lazy" style="border-radius: 8px;">
+  </div>
+  <figcaption><strong>Aggregate effect across all ten quantitative studies.</strong> Left: Cohen's d magnitudes by hypothesis. Right: forest plot of per-hypothesis paired deltas with 95% confidence intervals. The two structural-100% rows (H5, H7) are excluded from the mean. Reproduced from the <a href="https://zenodo.org/records/19653013" target="_blank" rel="noopener">Pratyakṣa preprint</a>.</figcaption>
+</figure>
+
+<p>When all ten quantitative studies are combined via weighted Stouffer-Z, the headline omnibus statistic is:</p>
+
+<div class="table-wrap">
+  <table>
+    <caption>Headline omnibus &mdash; Stouffer-Z combination across all ten quantitative studies.</caption>
+    <thead>
+      <tr><th>Metric</th><th style="text-align: right;">Value</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Number of studies</td><td class="num" style="text-align: right;">10</td></tr>
+      <tr><td>Combined Z</td><td class="num" style="text-align: right;">9.114</td></tr>
+      <tr><td><strong>Combined two-sided <em>p</em></strong></td><td class="num" style="text-align: right;"><strong>7.94 × 10⁻²⁰</strong></td></tr>
+      <tr><td>Mean per-study delta</td><td class="num" style="text-align: right;">+0.476</td></tr>
+      <tr><td>Mean Cohen's d (excl. two structural rows)</td><td class="num" style="text-align: right;">9.62</td></tr>
+      <tr><td>Cohen's d on most ecologically valid coding study (P6-C)</td><td class="num" style="text-align: right;">≈ 1.0</td></tr>
+      <tr><td>Khyātivāda classifier inter-annotator κ (n = 3,000)</td><td class="num" style="text-align: right;">0.736</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="stats">
+  <div class="stat green">
+    <div class="num">7.94 × 10⁻²⁰</div>
+    <div class="label">Combined p-value across 10 studies</div>
+  </div>
+  <div class="stat purple">
+    <div class="num">≈ 1.0</div>
+    <div class="label">Cohen's d on the SWE-bench A/B</div>
+  </div>
+  <div class="stat gold">
+    <div class="num">0.736</div>
+    <div class="label">Inter-annotator κ (n = 3,000)</div>
+  </div>
+  <div class="stat warm">
+    <div class="num">720 / 720</div>
+    <div class="label">Correct-file hits in the head-to-head</div>
+  </div>
+</div>
+
+<p>A combined <em>p</em>-value of 7.94 × 10⁻²⁰ is sixteen orders of magnitude past the conservative threshold for a well-powered study. The same result survives a deliberately hostile re-analysis that drops the two structural-100% studies (H5 and H7) from the omnibus. Even at that conservative cut, the combined <em>p</em> stays below 10⁻¹⁵.</p>
+
+<hr class="section-break">
+
+<h2 id="caveats"><span class="num">5</span>The honest caveats</h2>
+
+<p>A serious result deserves serious caveats, and the preprint names them. The Layer-1 adapters use synthetic-fallback evidence trails by default (the real Hugging Face data path runs only when an HF token is configured) &mdash; the paired delta is faithful, but the absolute numbers should not be compared to published RULER and HELMET runs. The Layer-3 patch-generation step uses a deterministic patch simulator rather than a real LLM coder, which deliberately isolates the contribution of the <em>context discipline</em> from generation quality; a follow-up that swaps the simulator for a real coder is the cleanest near-term gap. The model sweep covers only two Anthropic families; cross-family validation (GPT-4o-class, Qwen-3, Llama-3.x) is queued. The hallucination-classifier inter-annotator agreement is automated-vs-automated; a human-vs-human study at scale is the obvious next step. None of these caveats touches the central operational claim: <em>under a fixed token budget, the harness measurably and replicably outperforms the unaided baseline on every long-context and hallucination surface tested</em>.</p>
+
+<hr class="section-break">
+
+<h2 id="try"><span class="num">6</span>Try it yourself</h2>
+
+<p>The plugin is open-source (MIT). It installs in two commands and works inside Cursor, Claude Code (CLI and VS Code), and Claude Desktop, because the only inter-process surface is the Model Context Protocol.</p>
+
+<pre><code><span class="cmt"># One-time prerequisite: install uv (the Python package runner the plugin uses).</span>
+<span class="cmd">curl -LsSf https://astral.sh/uv/install.sh | sh</span></code></pre>
+
+<p>Then, inside Cursor or Claude Code:</p>
+
+<pre><code><span class="prompt">/plugin marketplace add</span> SharathSPhD/pratyaksha-context-eng-harness
+<span class="prompt">/plugin install</span> pratyaksha-context-eng-harness</code></pre>
+
+<p>Restart the host. The first MCP tool call takes about thirty seconds while <code>uv</code> downloads <code>mcp</code>, <code>pydantic</code>, and <code>tiktoken</code>. Every call after that is instant. There is no <code>pip</code>, no virtualenv, no <code>claude mcp add</code>.</p>
+
+<p>Four slash commands cover almost everything a user will want to do interactively:</p>
+
+<div class="table-wrap">
+  <table>
+    <caption>The four interactive slash commands.</caption>
+    <thead>
+      <tr><th style="width: 38%;">Command</th><th>What it shows</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>/context-status</code></td><td>Pretty-prints the current visible context window by category, with a token-budget gauge.</td></tr>
+      <tr><td><code>/sublate &lt;target_id&gt; &lt;by_id&gt; &lt;reason&gt;</code></td><td>Manual sublation override for audit and debug.</td></tr>
+      <tr><td><code>/budget</code></td><td>One-line gauge of token consumption against the configured budget.</td></tr>
+      <tr><td><code>/compact-now [strategy]</code></td><td>Manually trigger compaction (<code>adaptive</code>, <code>lru</code>, or <code>none</code>; default <code>adaptive</code>).</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<figure>
+  <img src="pratyaksha_images/links.png" alt="A polished visualisation of the plugin's install flow and link surface." loading="lazy">
+  <figcaption><strong>Installable in two commands, hot-swappable across hosts.</strong> The same MCP-based plugin resolves identically inside Cursor, Claude Code (CLI and VS Code extension), and Claude Desktop.</figcaption>
+</figure>
+
+<p>A 90-second first-turn recipe: open a long-running task in the host (a multi-file refactor, a multi-source research synthesis, a long policy-QA conversation); type <code>/context-status</code> once before the agent starts and once again after five turns; <code>tail -f ~/.cache/pratyaksha/audit.jsonl</code> in a side terminal and watch the sublation events fire.</p>
+
+<hr class="section-break">
+
+<h2 id="closing"><span class="num">7</span>Context engineering is the new prompt engineering</h2>
+
+<p>Three years ago, prompt engineering was a discipline waiting for its name. Practitioners traded recipes; researchers showed that the recipes mattered; and within eighteen months the field had a vocabulary, a literature, and a practice.</p>
+
+<p>Context engineering is in the same place now. The failure modes are real, the costs are paid daily by everyone shipping agents into production, and the field is converging on the recognition that a bigger window is not a substitute for a discipline. What has been missing is the <em>type signatures</em>. <em>Avacchedaka</em> is not "metadata". <em>Bādha</em> is not "delete". <em>Manas/buddhi</em> is not "two model calls". Each of these is a precise relational operator with a centuries-long history of mutually critical philosophical refinement, and each of them turns out to have a clean implementation against an LLM context window.</p>
+
+<p>The Pratyakṣa harness is one delivery vehicle for those operators. The plugin will get refined; the model families will turn over; the token-budget gauges will become smarter. The lasting contribution is the recognition that the vocabulary already exists, the schools that built it were thinking carefully about <em>what counts as a justified belief</em>, and a modern context-engineered agent does not have to invent the discipline from scratch.</p>
+
+<p class="pullquote">Install the plugin. Watch the audit log. The vocabulary was waiting.</p>
+
+<figure>
+  <img src="pratyaksha_images/final.png" alt="A single oil lamp (diya) glowing softly, illuminating a vertical stack of paper that fades from old palm-leaf manuscripts at the bottom to a modern laptop screen at the top." loading="lazy">
+  <figcaption><em>Pratyakṣa</em> &mdash; direct perception. The lasting contribution is the type signatures; the plugin is one delivery vehicle.</figcaption>
+</figure>
+
+<div class="bottom-cta">
+  <h3>Try it, read it, cite it</h3>
+  <ul>
+    <li><strong>Plugin (install + use):</strong> <a href="https://github.com/SharathSPhD/pratyaksha-context-eng-harness" target="_blank" rel="noopener">github.com/SharathSPhD/pratyaksha-context-eng-harness</a></li>
+    <li><strong>Full harness, paper sources, experiments, validation:</strong> <a href="https://github.com/SharathSPhD/context-engineering-harness" target="_blank" rel="noopener">github.com/SharathSPhD/context-engineering-harness</a></li>
+    <li><strong>Citable preprint (Zenodo, DOI-backed canonical record):</strong> <a href="https://zenodo.org/records/19653013" target="_blank" rel="noopener">zenodo.org/records/19653013</a> &mdash; <em>cite this version</em></li>
+    <li><strong>Preprint PDF (mirror):</strong> <a href="https://github.com/SharathSPhD/pratyaksha-context-eng-harness/releases/download/v2.0.0/pratyaksha-v2-preprint.pdf" target="_blank" rel="noopener">pratyaksha-v2-preprint.pdf</a></li>
+    <li><strong>v2.0.0 release page</strong> (plugin zip, arXiv source tarball, embedded figures, checksums): <a href="https://github.com/SharathSPhD/pratyaksha-context-eng-harness/releases/tag/v2.0.0" target="_blank" rel="noopener">v2.0.0 on GitHub</a></li>
+    <li><strong>Project status canvas:</strong> <a href="canvas.html">canvas.html</a></li>
+    <li><strong>Licence:</strong> MIT (code), CC-BY-4.0 (paper text + figures)</li>
+  </ul>
+
+  <div class="cta-row" style="margin-top: 22px;">
+    <a class="btn primary" href="https://github.com/SharathSPhD/pratyaksha-context-eng-harness" target="_blank" rel="noopener">Install the plugin →</a>
+    <a class="btn outline" href="https://zenodo.org/records/19653013" target="_blank" rel="noopener">Read the preprint</a>
+    <a class="btn outline" href="canvas.html">Project canvas</a>
+  </div>
+</div>
+
+<p>If you ship an agent into production, install the plugin and watch one long session through the audit log. The numbers will speak; the millennia-old vocabulary will start to sound like exactly what you needed.</p>
+
+<div class="byline">
+  <strong>Sharath Sathish</strong> is the author of the Pratyakṣa context-engineering harness. Comments, philological corrections, and replication runs welcome on the <a href="https://github.com/SharathSPhD/pratyaksha-context-eng-harness/issues" target="_blank" rel="noopener">GitHub repository</a>.
+</div>
+
+</article>
+
+<footer class="page-foot">
+  <p>
+    Pratyakṣa Context Engineering Harness · v2.0.0 · April 2026 ·
+    Code <a href="https://github.com/SharathSPhD/pratyaksha-context-eng-harness/blob/main/LICENSE" target="_blank" rel="noopener">MIT</a> ·
+    Paper <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC-BY-4.0</a> ·
+    <a href="canvas.html">Project canvas</a> ·
+    <a href="https://github.com/SharathSPhD/context-engineering-harness" target="_blank" rel="noopener">Source</a>
+  </p>
+</footer>
+
+</body>
+</html>
