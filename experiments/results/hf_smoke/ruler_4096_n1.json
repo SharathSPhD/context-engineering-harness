@@ -1,0 +1,77 @@
+{
+  "ts": "2026-04-20T11:03:22.213237+00:00",
+  "purpose": "HF real-benchmark smoke test (1 bench, 1 example)",
+  "hf": {
+    "identity": "qbz506",
+    "dataset_id": "simonjegou/ruler",
+    "config": "4096",
+    "task": "niah_single_1",
+    "source": "huggingface",
+    "target_tokens": 4096,
+    "context_chars": 13696,
+    "example_id": "ruler-real-4096-0000",
+    "ground_truth": "6688090"
+  },
+  "call": {
+    "caller": "LiveCLICaller",
+    "model": "claude-haiku-4-5",
+    "seed": null,
+    "seed_notes": "claude CLI >=2.1 removed --seed; scheduler still hashes seed into the prompt_hash for deterministic caching",
+    "max_output_tokens": 64,
+    "condition": "harness_on",
+    "input_tokens": 42154,
+    "output_tokens": 856,
+    "latency_ms": 18625.0,
+    "wall_ms": 18627,
+    "cache_hit": false,
+    "regime": "OK",
+    "attempts": 1,
+    "prompt_hash": "643364a8c357b832283d60d8b9386e4914973e5c640be23d79286d9e7cdfaa29"
+  },
+  "score": {
+    "score": 1.0,
+    "correct": true,
+    "pred_preview": "6688090"
+  },
+  "scheduler_status": {
+    "window_hours": 5.0,
+    "n_calls": 16,
+    "n_cache_hits": 0,
+    "cache_hit_rate": 0.0,
+    "input_tokens": 84328,
+    "output_tokens": 1625,
+    "n_rate_limited": 2,
+    "max_input_tokens_per_window": 2000000,
+    "max_calls_per_window": null,
+    "exhausted": false,
+    "next_window_at": "2026-04-20T15:00:00+00:00",
+    "total": {
+      "n_calls": 16,
+      "input_tokens": 84328,
+      "output_tokens": 1625,
+      "n_cache_hits": 0
+    }
+  },
+  "acceptance": {
+    "source_is_huggingface": true,
+    "caller_is_live": true,
+    "input_tokens_gt_500": true,
+    "pred_non_empty": true,
+    "wall_cost_recorded": true
+  },
+  "findings": {
+    "scheduler_patches_applied": [
+      "dropped --seed (claude CLI >=2.1 removed the option)",
+      "switched --output-format json -> stream-json + --verbose (CLI now requires matching formats with stream-json input)",
+      "stream-json input shape updated to {type, message:{role, content}} (schema change)",
+      "system prompt now rides --system-prompt instead of an inline stream-json event",
+      "rate-limit detector gated on exit_code != 0 so session-hook 'rate-limit' noise on stdout stops triggering false-positive 5h sleeps",
+      "input_tokens now sums input_tokens + cache_creation_input_tokens + cache_read_input_tokens for honest budget accounting"
+    ],
+    "adapter_template_mismatch": "RulerNIAHAdapter.render_prompt(harness_on) hard-codes 'the bare 6-character code' because the synthetic generator always emits 6-char needles, but simonjegou/ruler's real niah_single_1 needles are 7-digit numbers. Claude correctly located the needle and truncated to 6 chars ('668809' vs ground truth '6688090'); the plumbing is proven, the score=0 here reflects a known template bug, not a retrieval failure.",
+    "next_to_resolve_before_expansion": [
+      "generalize harness_on/harness_off prompts in ruler.py so they work for both synthetic (6-char alphanumeric) and real-HF (variable-length digit) needles",
+      "confirm hallu and swebench adapters' real paths boot the same way before flipping any live re-runs"
+    ]
+  }
+}

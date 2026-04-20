@@ -355,34 +355,43 @@ class CLIBudgetScheduler:
         ):
             return 127, "", f"claude CLI not found at '{cli}' on PATH"
 
-        # Build a stream-json stdin blob: one JSON message per line so the CLI
-        # sees role-preserved turns (fixes G10). The CLI accepts `text` or
-        # `stream-json` for --input-format; `stream-json` preserves roles.
+        # stream-json stdin: one event per line. The CLI schema expects
+        # {"type": "<role>", "message": {"role": "<role>", "content": "..."}}.
+        # `system` is NOT an inline event — it rides on --system-prompt.
         lines: list[str] = []
-        if system:
-            lines.append(json.dumps({"type": "system", "text": system}))
         for msg in messages:
+            role = msg["role"]
+            if role not in ("user", "assistant"):
+                continue
             lines.append(
                 json.dumps(
                     {
-                        "type": "user" if msg["role"] == "user" else "assistant",
-                        "text": msg["content"],
+                        "type": role,
+                        "message": {"role": role, "content": msg["content"]},
                     },
                     ensure_ascii=False,
                 )
             )
         stdin_blob = "\n".join(lines) + "\n"
 
+        # The current claude CLI (>=2.1) requires stream-json pairing AND
+        # --verbose when output is stream-json. It also dropped --seed.
         cmd = [
             cli,
             "-p",
             "--input-format", "stream-json",
-            "--output-format", "json",
+            "--output-format", "stream-json",
+            "--verbose",
             "--model", model,
             "--max-turns", str(max(1, len(messages))),
         ]
-        if seed is not None:
-            cmd += ["--seed", str(int(seed))]
+        if system:
+            cmd += ["--system-prompt", system]
+        # Note: --seed was removed in claude CLI 2.1. Keep `seed` as a prompt-
+        # hash component (already threaded via prompt_hash_of) so we still get
+        # reproducible cache keys; deterministic inference is no longer
+        # CLI-controllable. If a future CLI re-adds --seed we can restore it.
+        _ = seed  # explicitly consumed — see comment above
 
         try:
             return self.cli_runner(cmd, stdin_blob, self.config.timeout_s)
@@ -390,28 +399,88 @@ class CLIBudgetScheduler:
             return 124, "", f"timeout after {self.config.timeout_s}s: {exc}"
 
     def _parse_cli_output(self, stdout: str) -> tuple[str, int, int, dict[str, Any]]:
-        """Parse a `--output-format json` blob; tolerate plain text fallback."""
-        text = stdout.strip()
+        """Parse claude CLI output; supports both single-JSON and NDJSON stream.
+
+        Modern (>=2.1) CLI emits NDJSON when --output-format=stream-json. We
+        walk the lines, collect assistant text, and prefer the final
+        ``{"type": "result", "result": "...", "usage": {...}}`` line for the
+        canonical answer + token accounting. Legacy single-object JSON is
+        still accepted for back-compat with injected test runners.
+        """
+        s = stdout.strip()
+        if not s:
+            return "", 0, 0, {}
+
+        if "\n" in s and s.lstrip().startswith("{"):
+            text = ""
+            in_tok = 0
+            out_tok = 0
+            raw: dict[str, Any] = {}
+            assistant_chunks: list[str] = []
+            for raw_line in s.splitlines():
+                line = raw_line.strip()
+                if not line or not line.startswith("{"):
+                    continue
+                try:
+                    obj = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if obj.get("type") == "result" and "result" in obj:
+                    text = str(obj["result"])
+                    raw = obj
+                    in_tok, out_tok = self._usage_tokens(obj.get("usage") or {}, in_tok, out_tok)
+                elif obj.get("type") == "assistant":
+                    msg = obj.get("message") or {}
+                    for block in msg.get("content") or []:
+                        if isinstance(block, dict) and block.get("type") == "text":
+                            assistant_chunks.append(block.get("text", ""))
+            if text:
+                return text, in_tok, out_tok, raw
+            if assistant_chunks:
+                return "".join(assistant_chunks), in_tok, out_tok, raw
+            return "", in_tok, out_tok, raw
+
+        text = s
         in_tok = 0
         out_tok = 0
-        raw: dict[str, Any] = {}
+        raw_obj: dict[str, Any] = {}
         if text.startswith("{"):
             try:
                 data = json.loads(text)
-                raw = data
-                # Common shapes: {"result": "...", "usage": {...}}
+                raw_obj = data
                 if "result" in data:
                     text = str(data["result"])
                 elif "content" in data and isinstance(data["content"], list):
                     text = "".join(
                         b.get("text", "") for b in data["content"] if isinstance(b, dict)
                     )
-                usage = data.get("usage") or {}
-                in_tok = int(usage.get("input_tokens", 0))
-                out_tok = int(usage.get("output_tokens", 0))
+                in_tok, out_tok = self._usage_tokens(data.get("usage") or {}, 0, 0)
             except (json.JSONDecodeError, TypeError, ValueError):
                 pass
-        return text, in_tok, out_tok, raw
+        return text, in_tok, out_tok, raw_obj
+
+    @staticmethod
+    def _usage_tokens(usage: dict[str, Any], fallback_in: int, fallback_out: int) -> tuple[int, int]:
+        """Sum all input-token buckets the CLI reports.
+
+        Claude CLI's usage object splits input tokens across up to three
+        buckets: ``input_tokens`` (newly transmitted non-cached),
+        ``cache_creation_input_tokens`` (first-seen tokens now stored in the
+        prompt cache, billed at a premium), and ``cache_read_input_tokens``
+        (tokens served from the prompt cache, billed at a discount). For
+        honest budget tracking and acceptance tests we need the sum.
+        """
+        def _as_int(v: Any) -> int:
+            try:
+                return int(v or 0)
+            except (TypeError, ValueError):
+                return 0
+
+        in_plain = _as_int(usage.get("input_tokens", fallback_in))
+        in_cache_create = _as_int(usage.get("cache_creation_input_tokens"))
+        in_cache_read = _as_int(usage.get("cache_read_input_tokens"))
+        out_plain = _as_int(usage.get("output_tokens", fallback_out))
+        return in_plain + in_cache_create + in_cache_read, out_plain
 
     def _emit_journal(self, *, regime: str, note: str) -> None:
         if not self.config.write_journal:

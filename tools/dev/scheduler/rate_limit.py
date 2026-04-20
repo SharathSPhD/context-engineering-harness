@@ -57,43 +57,88 @@ class RateLimitDetector:
     def detect(
         self, *, stderr: str, stdout: str, exit_code: int
     ) -> RateLimitState:
-        # 1. JSON-structured error (most reliable when present)
-        if stdout.strip().startswith("{"):
-            try:
-                data = json.loads(stdout)
-            except json.JSONDecodeError:
-                data = None
-            if isinstance(data, dict):
-                subtype = str(
-                    data.get("subtype")
-                    or data.get("error", {}).get("type", "")
-                    if isinstance(data.get("error"), dict)
-                    else data.get("subtype", "")
-                ).lower()
-                if any(s in subtype for s in ("rate_limit", "usage_limit", "quota_exceeded")):
-                    return RateLimitState.hit(
-                        pattern=subtype, source="json", excerpt=stdout[:280]
+        # 1. JSON-structured error, against the FINAL result event.
+        #    Supports both legacy single-JSON and modern NDJSON stream output
+        #    (--output-format=stream-json). The final ``{"type":"result", ...}``
+        #    line carries ``is_error`` and any API error subtype.
+        result_obj = self._final_result_obj(stdout)
+        if isinstance(result_obj, dict):
+            subtype = str(
+                (
+                    result_obj.get("subtype")
+                    or (
+                        result_obj.get("error", {}).get("type", "")
+                        if isinstance(result_obj.get("error"), dict)
+                        else ""
                     )
-                if data.get("is_error") and any(
-                    p.search(json.dumps(data)) for p in _PATTERNS
-                ):
-                    return RateLimitState.hit(
-                        pattern="is_error+pattern",
-                        source="json",
-                        excerpt=stdout[:280],
-                    )
+                )
+            ).lower()
+            if any(s in subtype for s in ("rate_limit", "usage_limit", "quota_exceeded")):
+                return RateLimitState.hit(
+                    pattern=subtype, source="json", excerpt=json.dumps(result_obj)[:280]
+                )
+            if result_obj.get("is_error"):
+                blob = json.dumps(result_obj)
+                for pat in _PATTERNS:
+                    m = pat.search(blob)
+                    if m:
+                        return RateLimitState.hit(
+                            pattern=m.re.pattern,
+                            source="json",
+                            excerpt=blob[:280],
+                        )
+            if result_obj.get("is_error") is False and exit_code == 0:
+                # Canonical "success" - do not false-positive on incidental
+                # mentions of "rate-limit" / "limit" that appear in session
+                # hook additionalContext echoed on stdout by stream-json.
+                return RateLimitState.ok()
 
-        # 2. Pattern-match stderr (exit_code != 0 path)
-        for pat in _PATTERNS:
-            m = pat.search(stderr)
-            if m:
-                return RateLimitState.hit(
-                    pattern=m.re.pattern, source="stderr", excerpt=stderr[:280]
-                )
-            m = pat.search(stdout)
-            if m:
-                return RateLimitState.hit(
-                    pattern=m.re.pattern, source="stdout", excerpt=stdout[:280]
-                )
+        # 2. Pattern-match stderr/stdout, but ONLY when exit_code != 0.
+        #    A zero-exit call with a clean result event cannot be rate limited;
+        #    any incidental "rate-limit" tokens in stream-json hook output are
+        #    documentation noise, not a rate-limit signal.
+        if exit_code != 0:
+            for pat in _PATTERNS:
+                m = pat.search(stderr)
+                if m:
+                    return RateLimitState.hit(
+                        pattern=m.re.pattern, source="stderr", excerpt=stderr[:280]
+                    )
+                m = pat.search(stdout)
+                if m:
+                    return RateLimitState.hit(
+                        pattern=m.re.pattern, source="stdout", excerpt=stdout[:280]
+                    )
 
         return RateLimitState.ok()
+
+    @staticmethod
+    def _final_result_obj(stdout: str) -> dict | None:
+        """Return the terminating ``{"type":"result", ...}`` object if present.
+
+        Handles single-JSON and NDJSON stream transparently. Returns None for
+        plain-text output or malformed JSON.
+        """
+        s = stdout.strip()
+        if not s or not s.lstrip().startswith("{"):
+            return None
+        # Single-JSON (legacy --output-format=json)
+        if "\n" not in s:
+            try:
+                obj = json.loads(s)
+            except json.JSONDecodeError:
+                return None
+            return obj if isinstance(obj, dict) else None
+        # NDJSON stream: walk forward, keep the last `result` object seen.
+        last_result: dict | None = None
+        for line in s.splitlines():
+            line = line.strip()
+            if not line or not line.startswith("{"):
+                continue
+            try:
+                obj = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(obj, dict) and obj.get("type") == "result":
+                last_result = obj
+        return last_result
