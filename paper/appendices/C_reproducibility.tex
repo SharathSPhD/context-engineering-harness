@@ -106,6 +106,63 @@ uv run python -m tools.dev.sweb_outcomes
 
 Outputs: per-bundle JSON under \passthrough{\lstinline!experiments/results/p6a/H*\_live*.json!}, consolidated \passthrough{\lstinline!\_summary\_live.json!} with \passthrough{\lstinline!hf\_revision!} stamped per bundle, and \passthrough{\lstinline!swe\_bench\_outcomes.json!} for the haiku-only SWE-bench paired slice. Per-record checkpoints live under \passthrough{\lstinline!.cache/live\_hf\_checkpoints/!} and let the run resume across Anthropic 5-hour rolling windows.
 
+\subsubsection{L1 --- Live Hugging Face power-extension (v2.1.1
+\texttt{power\_ext})}\label{l1-live-hf-rerun-power-ext}
+
+The v2.1.1 power-extension amendment (Appendix~\ref{live-hf-v2.1.1})
+is reproduced by seeding the three \passthrough{\lstinline!\_ext!}
+checkpoints from the v2.1 outputs, invoking the runner under the
+\passthrough{\lstinline!power\_ext!} scope (which enforces its own
+pre-registration lock --- N, seeds, models, tiers, and the 900\,s
+subprocess timeout), and then re-scoring offline without further
+CLI traffic:
+
+\begin{lstlisting}[language=bash]
+# Seed the _ext checkpoints from v2.1 (idempotent):
+cp .cache/live_hf_checkpoints/H1_ruler_16384_live.jsonl \
+   .cache/live_hf_checkpoints/H1_ruler_16384_live_ext.jsonl
+cp .cache/live_hf_checkpoints/H_TQA_live_v2.jsonl \
+   .cache/live_hf_checkpoints/H_TQA_live_v2_ext.jsonl
+# SWE seed file: drop error rows only:
+python3 -c "
+import json, pathlib
+src = pathlib.Path('.cache/live_hf_checkpoints/H_SWEB_live_n15.jsonl')
+dst = pathlib.Path('.cache/live_hf_checkpoints/H_SWEB_live_ext.jsonl')
+keep = [l for l in src.read_text().splitlines()
+        if l.strip() and not json.loads(l).get('error')]
+dst.write_text('\n'.join(keep) + '\n')
+"
+
+uv run python -m experiments.v2.p6a.run_live_hf \
+    --scope power_ext --live --continue-on-partial \
+    --ruler-n 30 --hallu-n 30 --tiers 16384 \
+    --scheduler-timeout-s 900 \
+    --bootstrap-n 10000 --permutation-n 10000
+
+uv run python -m tools.dev.score_ext_checkpoints
+uv run python -m tools.dev.live_hf_consolidate
+uv run python -m tools.dev.sweb_outcomes
+\end{lstlisting}
+
+Outputs: \passthrough{\lstinline!H\{1\_ruler\_16384,\_TQA\_live\_v2,\_SWEB\}\_live\_ext.jsonl!}
+checkpoints and sibling \passthrough{\lstinline!*\_ext\_score.json!}
+offline-score side-cars under \passthrough{\lstinline!.cache/live\_hf\_checkpoints/!};
+consolidator splices the score overlays into
+\passthrough{\lstinline!\_summary\_live.json!} so the file grows
+from 4 bundles (v2.1) to 7 bundles (v2.1 + three v2.1.1
+\passthrough{\lstinline!\_ext!} companions), each carrying pooled
++ per-model outcomes and machine-readable caveats; the SWE
+side-car emits both \passthrough{\lstinline!swe\_bench\_outcomes.json!}
+(v2.1 haiku-only slice) and
+\passthrough{\lstinline!swe\_bench\_outcomes\_ext.json!}
+(v2.1.1 haiku-only slice, essentially uninformative at
+$n_\text{pair}=1$ due to the halted rollout). The
+\passthrough{\lstinline!power\_ext!} scope never overrides the
+v2.1 rows --- the v2.1.1 bundles carry their own hypothesis ids
+(\passthrough{\lstinline!H1\_ext!}, \passthrough{\lstinline!H\_TQA\_v2\_ext!},
+\passthrough{\lstinline!H\_SWEB\_ext!}) and are treated as
+\emph{companion reads}.
+
 \subsubsection{Aggregator --- figures and tables (P7)}\label{aggregator-figures-and-tables-p7}
 
 \begin{lstlisting}[language=bash]

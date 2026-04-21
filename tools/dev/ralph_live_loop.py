@@ -86,6 +86,10 @@ def _expected_labels(scope: str) -> list[str]:
 
     Defers the import so the probe sub-command doesn't need to load
     HuggingFace-related packages.
+
+    The ``power_ext`` scope (v2.1.1) passes its own N values / tiers
+    instead of the v2.1 ``LIVE_DEFAULT_*`` constants so the label list
+    resolves cleanly against the pre-registered amendment.
     """
     from experiments.v2.p6a.run_live_hf import _select_bundles  # type: ignore
     from experiments.v2.p6a.specs import DEFAULT_MODELS  # type: ignore
@@ -95,17 +99,31 @@ def _expected_labels(scope: str) -> list[str]:
         LIVE_DEFAULT_SEEDS,
         LIVE_DEFAULT_SWEB_N,
         LIVE_DEFAULT_TIERS,
+        LIVE_EXT_HALLU_N,
+        LIVE_EXT_RULER_N,
+        LIVE_EXT_RULER_TIERS,
     )
 
-    bundles = _select_bundles(
-        scope,
-        models=tuple(DEFAULT_MODELS),
-        seeds=tuple(LIVE_DEFAULT_SEEDS),
-        ruler_n=LIVE_DEFAULT_RULER_N,
-        hallu_n=LIVE_DEFAULT_HALLU_N,
-        sweb_n=LIVE_DEFAULT_SWEB_N,
-        tiers=tuple(LIVE_DEFAULT_TIERS),
-    )
+    if scope == "power_ext":
+        bundles = _select_bundles(
+            scope,
+            models=tuple(DEFAULT_MODELS),
+            seeds=tuple(LIVE_DEFAULT_SEEDS),
+            ruler_n=LIVE_EXT_RULER_N,
+            hallu_n=LIVE_EXT_HALLU_N,
+            sweb_n=LIVE_DEFAULT_SWEB_N,
+            tiers=tuple(LIVE_EXT_RULER_TIERS),
+        )
+    else:
+        bundles = _select_bundles(
+            scope,
+            models=tuple(DEFAULT_MODELS),
+            seeds=tuple(LIVE_DEFAULT_SEEDS),
+            ruler_n=LIVE_DEFAULT_RULER_N,
+            hallu_n=LIVE_DEFAULT_HALLU_N,
+            sweb_n=LIVE_DEFAULT_SWEB_N,
+            tiers=tuple(LIVE_DEFAULT_TIERS),
+        )
     return [b.label for b in bundles]
 
 

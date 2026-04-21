@@ -1,11 +1,11 @@
 {
-  "ts": "2026-04-21T08:27:09+00:00",
-  "git_sha": "32a3f51ee3c8337a6692afd1485a3101f249246b",
+  "ts": "2026-04-21T10:43:22+00:00",
+  "git_sha": "6eb6c6c26c06bdb11aaedf8c0f96c53eda9516d7",
   "source": "live_hf_consolidate",
   "bundle_counts": {
     "complete": 3,
-    "partial_quota": 1,
-    "total_tracked": 4
+    "partial_quota": 4,
+    "total_tracked": 7
   },
   "bundles": [
     {
@@ -60,42 +60,96 @@
       "partial_reason": null
     },
     {
+      "label": "H1_ruler_16384_live_ext",
+      "status": "partial_quota",
+      "out_path": "/Users/sharath/Library/CloudStorage/OneDrive-Personal/wsl_projects/context/.cache/live_hf_checkpoints/H1_ruler_16384_live_ext_partial.json",
+      "outcome_snapshot": {
+        "treatment_metric": 0.9903,
+        "baseline_metric": 0.9417,
+        "delta_observed": 0.0485,
+        "ci_low": 0.0097,
+        "ci_high": 0.0874,
+        "p_value": 0.063894,
+        "cohens_d": 0.2248,
+        "target_met": false,
+        "n_paired": 103
+      },
+      "checkpointed_records": 208,
+      "partial_reason": "rate-limit detected (attempt 1): \\b429\\b"
+    },
+    {
+      "label": "H_SWEB_live_ext",
+      "status": "partial_quota",
+      "out_path": "/Users/sharath/Library/CloudStorage/OneDrive-Personal/wsl_projects/context/.cache/live_hf_checkpoints/H_SWEB_live_ext_partial.json",
+      "outcome_snapshot": {
+        "treatment_metric": 0.5,
+        "baseline_metric": 0.5,
+        "delta_observed": 0.0,
+        "ci_low": 0.0,
+        "ci_high": 0.0,
+        "p_value": 1.0,
+        "cohens_d": 0.0,
+        "target_met": false,
+        "n_paired": 1
+      },
+      "checkpointed_records": 14,
+      "partial_reason": "rate-limit detected (attempt 1): \\b429\\b"
+    },
+    {
       "label": "H_SWEB_live_n15",
       "status": "partial_quota",
       "out_path": "/Users/sharath/Library/CloudStorage/OneDrive-Personal/wsl_projects/context/.cache/live_hf_checkpoints/H_SWEB_live_n15_partial.json",
       "outcome_snapshot": null,
       "checkpointed_records": 70,
       "partial_reason": "rate-limit detected (attempt 3): \\b429\\b"
+    },
+    {
+      "label": "H_TQA_live_v2_ext",
+      "status": "partial_quota",
+      "out_path": "/Users/sharath/Library/CloudStorage/OneDrive-Personal/wsl_projects/context/.cache/live_hf_checkpoints/H_TQA_live_v2_ext_partial.json",
+      "outcome_snapshot": {
+        "treatment_metric": 0.05,
+        "baseline_metric": 0.0833,
+        "delta_observed": -0.0333,
+        "ci_low": -0.1333,
+        "ci_high": 0.05,
+        "p_value": 0.735826,
+        "cohens_d": -0.0909,
+        "target_met": false,
+        "n_paired": 60
+      },
+      "checkpointed_records": 120,
+      "partial_reason": "rate-limit detected (attempt 1): \\b429\\b"
     }
   ],
   "scheduler_status_current_window": {
     "window_hours": 5.0,
-    "n_calls": 104,
+    "n_calls": 202,
     "n_cache_hits": 0,
     "cache_hit_rate": 0.0,
-    "input_tokens": 302068,
-    "billed_input_tokens": 302068,
-    "output_tokens": 14914,
-    "n_rate_limited": 1,
+    "input_tokens": 4885634,
+    "billed_input_tokens": 4885634,
+    "output_tokens": 39621,
+    "n_rate_limited": 7,
     "max_input_tokens_per_window": 2000000,
     "max_calls_per_window": null,
-    "exhausted": false,
-    "next_window_at": "2026-04-21T10:00:00+00:00",
+    "exhausted": true,
+    "next_window_at": "2026-04-21T15:00:00+00:00",
     "total": {
-      "n_calls": 374,
-      "input_tokens": 11677896,
-      "output_tokens": 80550,
+      "n_calls": 472,
+      "input_tokens": 16261462,
+      "output_tokens": 105257,
       "n_cache_hits": 60
     }
   },
   "cumulative_totals": {
-    "n_calls": 374,
-    "input_tokens": 11677896,
-    "output_tokens": 80550,
+    "n_calls": 472,
+    "input_tokens": 16261462,
+    "output_tokens": 105257,
     "n_cache_hits": 60
   },
   "quota_events_journal": {
     "quota_exhausted": 0,
-    "halt_rate_limit": 30
+    "halt_rate_limit": 36
   }
 }

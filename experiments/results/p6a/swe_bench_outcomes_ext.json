@@ -1,0 +1,29 @@
+{
+  "source_jsonl": ".cache/live_hf_checkpoints/H_SWEB_live_ext.jsonl",
+  "caveat": "v2.1.1 infra-rescue rerun: same pre-registered N=15, seeds=(0,1), models, and scorer, but the CLI subprocess timeout is raised from 300s to 900s so the Claude CLI SessionStart hook completes before being killed. Clean (non-error) rows from the v2.1 run (``H_SWEB_live_n15.jsonl``) were seeded into this checkpoint to re-use previously-billed observations; the runner only re-billed the (seed, instance, model, condition) tuples that errored in v2.1. full_errors_as_zero retains the pre-registered conservative imputation (score=0 on both sides for any remaining error); clean_pairs_only reports the delta on the rows where both sides returned a scored patch.",
+  "per_model": {
+    "claude-haiku-4-5": {
+      "n_paired_attempts": 1,
+      "n_total_records": 14,
+      "per_condition_error_rate_on": 0.0,
+      "per_condition_error_rate_off": 0.0,
+      "full_errors_as_zero": {
+        "harness_on_mean": 0.5,
+        "harness_off_mean": 0.5,
+        "delta_observed": 0.0,
+        "cohens_dz": 0.0,
+        "paired_permutation_p": 1.0,
+        "n_nonzero_on": 1,
+        "n_nonzero_off": 1
+      },
+      "clean_pairs_only": {
+        "n_clean_pairs": 1,
+        "harness_on_mean": 0.5,
+        "harness_off_mean": 0.5,
+        "delta_observed": 0.0,
+        "cohens_dz": 0.0,
+        "paired_permutation_p": 1.0
+      }
+    }
+  }
+}

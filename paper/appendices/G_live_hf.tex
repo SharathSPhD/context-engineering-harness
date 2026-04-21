@@ -268,3 +268,187 @@ checkpoints under
 \passthrough{\lstinline!.cache/live\_hf\_checkpoints/!} when interrupted
 by an Anthropic rolling-window exhaustion. Expect a total wall-clock of
 \(\sim\)60--90 minutes per completed 5-hour rolling window.
+
+\subsection{v2.1.1 Power-extension addendum (pre-execution
+amendment)}\label{live-hf-v2.1.1}
+
+The v2.1 read left three conclusions contingent on the
+\passthrough{\lstinline!N=15!} budget: RULER~16\,K
+(\emph{directional but underpowered at $p=0.117$}), TruthfulQA
+(\emph{null at $p=0.74$; CI wide enough to leave a small positive
+effect compatible with the data}), and SWE-bench Verified
+(\emph{partial at the CLI layer: 77\% of haiku attempts and 100\% of
+sonnet attempts aborted inside the Claude CLI's
+\passthrough{\lstinline!SessionStart!} hook under the scheduler's
+300\,s subprocess timeout, not inside the model response}). We wrote a
+\textbf{pre-execution amendment} --- filed under
+\passthrough{\lstinline!specs\_live.py::power\_ext\_specs!} and
+enforced at the CLI under \passthrough{\lstinline!--scope power\_ext!}
+--- to address those three contingencies \emph{minimally} rather than
+opening a new N:
+
+\begin{itemize}
+\tightlist
+\item \textbf{\passthrough{\lstinline!H1\_ruler\_16384\_live\_ext!}}:
+  $N$ doubled from $15$ to $30$ (per (model, seed, condition) cell),
+  same two seeds, same two models, same strict-HF provenance. The
+  RULER adapter's HF loader is deterministic in \passthrough{\lstinline!seed!}
+  (standard-library \passthrough{\lstinline!random.Random(seed).shuffle!} over
+  the full HF revision at the pinned commit), so the $N=30$ pull is a
+  strict \emph{superset} of the $N=15$ pull at the same seed; the v2.1
+  checkpoint JSONL is seeded verbatim into the \passthrough{\lstinline!\_ext!}
+  file so the first 15 rows per cell replay as cache-hits and only
+  the additional 15 bill.
+\item \textbf{\passthrough{\lstinline!H\_TQA\_live\_v2\_ext!}}: $N$
+  doubled from $15$ to $30$ with the same checkpoint-seeding trick.
+  Goal: narrow the 95\% CI around zero to either confirm the null
+  at $\ge 0.8$ power for $|d|\ge 0.30$ or surface a previously
+  undetected effect.
+\item \textbf{\passthrough{\lstinline!H\_SWEB\_live\_ext!}}: $N$
+  held at the pre-registered $15$, seeds unchanged, models
+  unchanged, scorer unchanged; the \emph{only} change is the CLI
+  subprocess timeout --- raised from 300\,s to
+  \passthrough{\lstinline!LIVE\_EXT\_SWEB\_TIMEOUT\_S = 900!}~s
+  so the \passthrough{\lstinline!SessionStart!}-hook abort path
+  from \S\ref{live-hf-sweb-cli-limitation} is eliminated. We
+  explicitly refuse to extend $N$ on SWE-bench: \emph{even at a
+  larger $N$ the heuristic scorer has a low per-instance ceiling,
+  so a power extension would still be underpowered at reachable
+  budgets, whereas the infrastructure fix converts the already-paid
+  budget from CLI-aborts into scored patches}. The v2.1 JSONL is
+  pre-filtered to drop error rows before being seeded into the
+  \passthrough{\lstinline!\_ext!} checkpoint, so previously errored
+  (model, seed, instance, condition) tuples re-bill under the new
+  timeout.
+\end{itemize}
+
+The amendment was filed and the CLI pre-registration lock was
+extended (see \passthrough{\lstinline!run\_live\_hf.py::\_enforce\_preregistration!}
+with the \passthrough{\lstinline!power\_ext!} arm) \emph{before}
+any power-extension row was billed. The three \passthrough{\lstinline!\_ext!}
+bundles carry their own hypothesis ids (\passthrough{\lstinline!H1\_ext!},
+\passthrough{\lstinline!H\_TQA\_v2\_ext!}, \passthrough{\lstinline!H\_SWEB\_ext!})
+so downstream analysis can never confuse a v2.1 N=15 row with a
+v2.1.1 N=30 row.
+
+\subsubsection{What actually happened}
+
+Anthropic's account-level rolling quota exhausted partway through the
+amendment. After halting the run we treated the checkpoint JSONLs as
+final and re-scored them offline (no further Claude CLI / Anthropic
+API traffic; the consolidator still performs a cached read-only
+\passthrough{\lstinline!HfApi().dataset\_info!} call per pinned
+dataset to stamp \passthrough{\lstinline!provenance.hf\_revision!},
+but this does not bill against Anthropic quota and is skipped when
+the revision is already stamped on the record) with
+\passthrough{\lstinline!tools/dev/score\_ext\_checkpoints.py!}. The
+score payloads are written next to the \passthrough{\lstinline!\_partial.json!}
+files as \passthrough{\lstinline!\_score.json!}; the consolidator
+splices them into \passthrough{\lstinline!\_summary\_live.json!}.
+
+\textbf{H1\_ruler\_16384\_live\_ext.} Pooled $n_\text{pair}=103$
+(haiku fully extended to $n=60$; sonnet seed~0 extended to $n=28$
+after two scheduler-level CLI aborts; sonnet seed~1 still at the
+original $n=15$). Treatment mean $0.9903$, baseline $0.9417$,
+paired $\Delta=+0.0485$, 95\% bootstrap CI \textbf{[+0.010,\,+0.087]
+(excludes 0)}, paired-permutation $p=0.064$, Cohen's $d_z=0.225$.
+Per-model: haiku $\Delta=+0.050$, $p=0.26$, $n=60$; sonnet
+$\Delta=+0.047$, $p=0.51$, $n=43$. Neither preregistered gate
+($\Delta\ge 0.05$ \emph{and} $p\le 0.05$) clears --- so the result
+reads as \textbf{tighter interval, same verdict: directional but
+underpowered}. The two sonnet seed-0 CLI aborts re-exposed the
+\passthrough{\lstinline!SessionStart!}-hook mode from
+\S\ref{live-hf-sweb-cli-limitation} on RULER prompts as well
+(not only on SWE-bench); the v2.1.1 CLI-timeout fix was carried in
+the \passthrough{\lstinline!power\_ext!} scope for RULER too, yet
+the aborts still surfaced intermittently, suggesting the CLI hook
+failure is partially non-timeout (a plain process exit on some
+invocations). We include the two error rows in the paired totals
+as scored 0 (per the pre-registered imputation convention); excluding
+them moves pooled $p$ to $0.061$ and $d_z$ to $0.229$ --- same
+verdict.
+
+\textbf{H\_TQA\_live\_v2\_ext.} No new rows billed before the
+quota halted. The checkpoint is byte-identical to the v2.1 N=15
+TruthfulQA checkpoint; the re-score is the v2.1 result re-reported
+at $n_\text{pair}=60$: $\Delta=-0.033$, $p=0.736$, $d_z=-0.091$.
+The v2.1.1 read on TruthfulQA therefore adds \emph{no new
+information}; the v2.1 null remains the operative verdict, and a
+proper power-extension is left as pre-registered open work.
+
+\textbf{H\_SWEB\_live\_ext.} The infra-rescue code ships
+(\passthrough{\lstinline!--scheduler-timeout-s!} CLI flag wired
+end-to-end, \passthrough{\lstinline!LIVE\_EXT\_SWEB\_TIMEOUT\_S!}
+default to 900\,s, pre-registration lock extended) but only one
+paired (seed, instance) observation billed before the quota halted
+--- so the v2.1 haiku-only row in Table~\ref{tab:t8_live_hf}
+remains the operative SWE-bench live read, and the new timeout
+floor is shipped-but-unexercised. A future rerun on a refreshed
+Anthropic window will exercise the fix without changing any
+paper numbers upstream of SWE-bench.
+
+\subsubsection{Pre-registration integrity and what the amendment
+does not do}
+
+The v2.1.1 amendment is a \emph{pre-execution} amendment: it was
+filed and the CLI enforcement was wired \emph{before} any
+\passthrough{\lstinline!\_ext!} row was billed, and the three
+\passthrough{\lstinline!\_ext!} bundles are \emph{new labels},
+not overrides of the v2.1 bundles. The v2.1 JSON outputs, the v2.1
+\passthrough{\lstinline!SHA256SUMS!} lines, and Table~\ref{tab:t8_live_hf}
+v2.1 rows remain byte-reproducible from the v2.1 commit tag. The
+amendment also does not open SWE-bench to a larger $N$ (for the
+reason above): the SWE-bench cell stays at the original
+pre-registered $N=15$ / seeds $(0,1)$ / models / scorer and only
+the subprocess timeout moves. We therefore treat the v2.1.1
+numbers as \emph{companion reads} rather than as replacements
+for the v2.1 rows, and surface both in Table~\ref{tab:t8_live_hf}.
+
+\subsubsection{Replay the v2.1.1 run}
+
+\begin{lstlisting}[language=bash]
+# (1) optional: rebuild the seeded _ext checkpoints from the v2.1
+# JSONLs (already committed; this step is idempotent):
+cp .cache/live_hf_checkpoints/H1_ruler_16384_live.jsonl \
+   .cache/live_hf_checkpoints/H1_ruler_16384_live_ext.jsonl
+cp .cache/live_hf_checkpoints/H_TQA_live_v2.jsonl \
+   .cache/live_hf_checkpoints/H_TQA_live_v2_ext.jsonl
+# SWE seed file: drop rows with error != "":
+python3 -c "
+import json, pathlib
+src = pathlib.Path('.cache/live_hf_checkpoints/H_SWEB_live_n15.jsonl')
+dst = pathlib.Path('.cache/live_hf_checkpoints/H_SWEB_live_ext.jsonl')
+keep = [l for l in src.read_text().splitlines()
+        if l.strip() and not json.loads(l).get('error')]
+dst.write_text('\n'.join(keep) + '\n')
+"
+
+# (2) run the power_ext scope (enforces pre-registration lock on
+#     N=30 / tiers=(16384,) / timeout=900s; the CLI defaults still
+#     match v2.1, so the locked overrides must be passed explicitly.
+#     --bootstrap-n 10000 --permutation-n 10000 aligns the live
+#     scorer with score_ext_checkpoints.py):
+uv run python -m experiments.v2.p6a.run_live_hf \
+    --scope power_ext --live --continue-on-partial \
+    --ruler-n 30 --hallu-n 30 --tiers 16384 \
+    --scheduler-timeout-s 900 \
+    --bootstrap-n 10000 --permutation-n 10000
+
+# (3) offline re-score the checkpoints (no CLI traffic):
+uv run python -m tools.dev.score_ext_checkpoints
+
+# (4) consolidator splices the *_score.json overlays in:
+uv run python -m tools.dev.live_hf_consolidate
+
+# (5) SWE outcomes side-car (v2.1 + v2.1.1):
+uv run python -m tools.dev.sweb_outcomes
+\end{lstlisting}
+
+Outputs: \passthrough{\lstinline!.cache/live\_hf\_checkpoints/H\{1\_ruler\_16384,\_TQA\_live\_v2,\_SWEB\}\_live\_ext.jsonl!}
+(checkpoints), \passthrough{\lstinline!.cache/live\_hf\_checkpoints/*\_ext\_score.json!}
+(offline score side-cars), \passthrough{\lstinline!experiments/results/p6a/\_summary\_live.json!}
+(7 bundles: the original 4 v2.1 bundles plus the 3 v2.1.1 \passthrough{\lstinline!\_ext!}
+bundles, each carrying pooled + per-model outcomes and caveats),
+\passthrough{\lstinline!experiments/results/p6a/swe\_bench\_outcomes.json!}
+(v2.1 haiku-only paired slice), \passthrough{\lstinline!experiments/results/p6a/swe\_bench\_outcomes\_ext.json!}
+(v2.1.1 haiku-only paired slice, essentially uninformative at $n_\text{pair}=1$).

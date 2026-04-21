@@ -64,6 +64,10 @@ from .specs_live import (
     LIVE_DEFAULT_SEEDS,
     LIVE_DEFAULT_SWEB_N,
     LIVE_DEFAULT_TIERS,
+    LIVE_EXT_HALLU_N,
+    LIVE_EXT_RULER_N,
+    LIVE_EXT_RULER_TIERS,
+    LIVE_EXT_SWEB_TIMEOUT_S,
     P6ASpecBundle,
     core4_specs,
     full_battery_specs,
@@ -71,6 +75,7 @@ from .specs_live import (
     h1b_ruler_multi_live_specs,
     h_swebench_verified_live_n15_spec,
     hallu_live_specs,
+    power_ext_specs,
 )
 
 logger = logging.getLogger(__name__)
@@ -153,6 +158,43 @@ class ProvenanceIntegrityError(RuntimeError):
     """
 
 
+_PREREG_LOCKED_SCOPES = ("full_battery", "core4", "power_ext")
+
+
+def _preregistration_locks(scope: str) -> dict[str, Any]:
+    """Return the pre-registered values locked for each scope.
+
+    * ``full_battery`` / ``core4`` — v2.1 locks: RULER N=15, hallu
+      N=15, sweb N=15, seeds=(0,1), tiers=(8192, 16384), two models.
+    * ``power_ext`` — v2.1.1 amendment: RULER N=30 (only 16K tier),
+      hallu N=30, sweb N=15, scheduler_timeout_s=900. Same seeds and
+      models. The amendment is pre-execution (see Appendix~G) and
+      must stay locked so the addendum stays reproducible.
+    """
+    if scope == "power_ext":
+        return {
+            "ruler_n": LIVE_EXT_RULER_N,
+            "hallu_n": LIVE_EXT_HALLU_N,
+            "sweb_n": LIVE_DEFAULT_SWEB_N,
+            "seeds": LIVE_DEFAULT_SEEDS,
+            "tiers": LIVE_EXT_RULER_TIERS,
+            "models": tuple(DEFAULT_MODELS),
+            "scheduler_timeout_s": LIVE_EXT_SWEB_TIMEOUT_S,
+        }
+    # full_battery + core4 share the same v2.1 locks.
+    return {
+        "ruler_n": LIVE_DEFAULT_RULER_N,
+        "hallu_n": LIVE_DEFAULT_HALLU_N,
+        "sweb_n": LIVE_DEFAULT_SWEB_N,
+        "seeds": LIVE_DEFAULT_SEEDS,
+        "tiers": LIVE_DEFAULT_TIERS,
+        "models": tuple(DEFAULT_MODELS),
+        # v2.1 used the scheduler default of 300 s. Not part of the
+        # v2.1 lock, so we skip it for full_battery/core4.
+        "scheduler_timeout_s": None,
+    }
+
+
 def _enforce_preregistration(
     scope: str,
     *,
@@ -162,44 +204,59 @@ def _enforce_preregistration(
     args_seeds: tuple[int, ...],
     args_tiers: tuple[int, ...],
     args_models: tuple[str, ...],
+    args_scheduler_timeout_s: int,
     allow_override: bool,
 ) -> None:
-    """Reject CLI overrides of the locked full-battery pre-registration.
+    """Reject CLI overrides of any locked pre-registered scope.
 
-    The ``full_battery`` scope is a registered, pre-committed run:
-    N=15 per RULER / hallu / sweb bundle, seeds=(0, 1),
-    tiers=(8192, 16384), models=(claude-haiku-4-5, claude-sonnet-4-6).
-    Any deviation would turn it into a new (unregistered) protocol, so
-    we fail loudly unless the operator passes
-    ``--allow-override-preregistration`` and therefore accepts that the
-    receipt is *not* the locked run.
+    Three scopes are registered:
+
+    * ``full_battery`` (v2.1) — N=15 per RULER / hallu / sweb bundle,
+      seeds=(0, 1), tiers=(8192, 16384), models=(haiku, sonnet).
+    * ``core4`` (v2.1) — same locks as full_battery; smaller bundle
+      count, unchanged per-bundle parameters.
+    * ``power_ext`` (v2.1.1) — N=30 for RULER 16K and TQA, N=15 for
+      SWE-bench, seeds=(0, 1), tiers=(16384,), models unchanged,
+      ``scheduler_timeout_s=900``.
+
+    Any CLI deviation turns the receipt into a new (unregistered)
+    protocol; we fail loudly unless the operator passes
+    ``--allow-override-preregistration`` and therefore accepts that
+    the receipt is *not* the locked run.
     """
-    if scope not in ("full_battery", "core4") or allow_override:
+    if scope not in _PREREG_LOCKED_SCOPES or allow_override:
         return
+    lock = _preregistration_locks(scope)
     mismatches: list[str] = []
-    if args_ruler_n != LIVE_DEFAULT_RULER_N:
+    if args_ruler_n != lock["ruler_n"]:
         mismatches.append(
-            f"--ruler-n={args_ruler_n} != locked {LIVE_DEFAULT_RULER_N}"
+            f"--ruler-n={args_ruler_n} != locked {lock['ruler_n']}"
         )
-    if args_hallu_n != LIVE_DEFAULT_HALLU_N:
+    if args_hallu_n != lock["hallu_n"]:
         mismatches.append(
-            f"--hallu-n={args_hallu_n} != locked {LIVE_DEFAULT_HALLU_N}"
+            f"--hallu-n={args_hallu_n} != locked {lock['hallu_n']}"
         )
-    if args_sweb_n != LIVE_DEFAULT_SWEB_N:
+    if args_sweb_n != lock["sweb_n"]:
         mismatches.append(
-            f"--sweb-n={args_sweb_n} != locked {LIVE_DEFAULT_SWEB_N}"
+            f"--sweb-n={args_sweb_n} != locked {lock['sweb_n']}"
         )
-    if args_seeds != LIVE_DEFAULT_SEEDS:
+    if args_seeds != lock["seeds"]:
         mismatches.append(
-            f"--seeds={list(args_seeds)} != locked {list(LIVE_DEFAULT_SEEDS)}"
+            f"--seeds={list(args_seeds)} != locked {list(lock['seeds'])}"
         )
-    if args_tiers != LIVE_DEFAULT_TIERS:
+    if args_tiers != lock["tiers"]:
         mismatches.append(
-            f"--tiers={list(args_tiers)} != locked {list(LIVE_DEFAULT_TIERS)}"
+            f"--tiers={list(args_tiers)} != locked {list(lock['tiers'])}"
         )
-    if args_models != tuple(DEFAULT_MODELS):
+    if args_models != lock["models"]:
         mismatches.append(
-            f"--models={list(args_models)} != locked {list(DEFAULT_MODELS)}"
+            f"--models={list(args_models)} != locked {list(lock['models'])}"
+        )
+    expected_timeout = lock["scheduler_timeout_s"]
+    if expected_timeout is not None and args_scheduler_timeout_s != expected_timeout:
+        mismatches.append(
+            f"--scheduler-timeout-s={args_scheduler_timeout_s} != locked "
+            f"{expected_timeout}"
         )
     if mismatches:
         raise PreregistrationViolation(
@@ -250,6 +307,18 @@ def _select_bundles(
             hallu_n=hallu_n,
             sweb_n=sweb_n,
             target_tokens_tiers=tiers,
+        )
+    if scope == "power_ext":
+        # tiers is ignored here: the ext RULER bundle is locked to
+        # 16384 only (the 8K tier already cleared both gates at N=15
+        # and re-running it is pure token burn). The pre-registration
+        # guard already rejects --tiers overrides for this scope.
+        return power_ext_specs(
+            models=models,
+            seeds=seeds,
+            ruler_n=ruler_n,
+            hallu_n=hallu_n,
+            sweb_n=sweb_n,
         )
     if scope == "full_battery":
         return full_battery_specs(
@@ -428,7 +497,7 @@ def _print_dry_run_table(estimates: list[DryRunEstimate]) -> None:
 # --- live run ---------------------------------------------------------
 
 
-def _build_scheduler(*, fail_fast_on_quota: bool):
+def _build_scheduler(*, fail_fast_on_quota: bool, timeout_s: int = 300):
     from tools.dev.scheduler import CLIBudgetScheduler, SchedulerConfig
 
     # ``max_input_tokens_per_window`` is a local safety rail, not the
@@ -438,6 +507,13 @@ def _build_scheduler(*, fail_fast_on_quota: bool):
     # does not artificially stall the pipeline. Real API rate limits
     # are still enforced by the scheduler's HALT regime detector
     # against 429 responses.
+    #
+    # ``timeout_s`` is the per-CLI-call subprocess timeout (not a
+    # scheduler budget). The scheduler's default of 300 s is fine
+    # for short RULER/TQA prompts but the Claude CLI's SessionStart
+    # hook can take >5 min to complete on SWE-bench-sized inputs;
+    # the v2.1.1 power-extension run bumps it to 900 s so those
+    # aborts go away.
     return CLIBudgetScheduler(
         SchedulerConfig(
             cache_root=".cache/llm",
@@ -446,6 +522,7 @@ def _build_scheduler(*, fail_fast_on_quota: bool):
             max_input_tokens_per_window=20_000_000,
             fail_fast_on_quota=fail_fast_on_quota,
             max_retries=3,
+            timeout_s=timeout_s,
         )
     )
 
@@ -456,6 +533,7 @@ def _run_live(
     runner_cfg: RunnerConfig,
     out_dir: Path,
     continue_on_partial: bool,
+    scheduler_timeout_s: int = 300,
 ) -> dict[str, Any]:
     # Only require HF_TOKEN to be set for actually calling out; dry-run
     # doesn't need it but load_real=True might, so we surface it early.
@@ -465,7 +543,9 @@ def _run_live(
             "dataset loads may fail for gated datasets"
         )
 
-    scheduler = _build_scheduler(fail_fast_on_quota=True)
+    scheduler = _build_scheduler(
+        fail_fast_on_quota=True, timeout_s=scheduler_timeout_s
+    )
     caller = LiveCLICaller(scheduler)
 
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -515,6 +595,7 @@ def _run_live(
             extra_metadata={
                 "scheduler_status": scheduler.status(),
                 "fail_fast_on_quota": True,
+                "scheduler_timeout_s": scheduler_timeout_s,
             },
         )
 
@@ -595,11 +676,23 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument(
         "--scope",
-        choices=("ruler", "hallu", "swebench", "all_real_capable", "core4", "full_battery"),
+        choices=(
+            "ruler",
+            "hallu",
+            "swebench",
+            "all_real_capable",
+            "core4",
+            "power_ext",
+            "full_battery",
+        ),
         default="full_battery",
         help=(
             "which benchmark family to re-run against real HF data; "
-            "'full_battery' is the locked 7-bundle v2 run (4 RULER + 2 hallu + SWE-bench)"
+            "'full_battery' is the locked 7-bundle v2.1 run (4 RULER + 2 "
+            "hallu + SWE-bench); 'core4' is the minimum-viable v2.1 subset; "
+            "'power_ext' is the v2.1.1 power-extension amendment "
+            "(H1_ruler_16384_live_ext N=30, H_TQA_live_v2_ext N=30, "
+            "H_SWEB_live_ext N=15 with scheduler_timeout_s=900)"
         ),
     )
     p.add_argument(
@@ -659,10 +752,22 @@ def main(argv: list[str] | None = None) -> int:
         "--allow-override-preregistration",
         action="store_true",
         help=(
-            "Allow CLI flags to override the locked full_battery or core4 "
-            "pre-registration (N, seeds, tiers, models). Default rejects any "
-            "override so operators cannot accidentally publish a non-preregistered "
-            "run under either pre-registered label."
+            "Allow CLI flags to override the locked full_battery / core4 / "
+            "power_ext pre-registration (N, seeds, tiers, models, scheduler "
+            "timeout). Default rejects any override so operators cannot "
+            "accidentally publish a non-preregistered run under any "
+            "pre-registered label."
+        ),
+    )
+    p.add_argument(
+        "--scheduler-timeout-s",
+        type=int,
+        default=300,
+        help=(
+            "per-CLI-call subprocess timeout (seconds). Default 300 s is "
+            "fine for RULER/TQA-sized prompts. The v2.1.1 power_ext scope "
+            f"locks this at {LIVE_EXT_SWEB_TIMEOUT_S} s to clear the Claude "
+            "CLI SessionStart-hook abort path on SWE-bench inputs."
         ),
     )
     p.add_argument(
@@ -718,6 +823,7 @@ def main(argv: list[str] | None = None) -> int:
             args_seeds=tuple(args.seeds),
             args_tiers=tuple(args.tiers),
             args_models=tuple(args.models),
+            args_scheduler_timeout_s=args.scheduler_timeout_s,
             allow_override=args.allow_override_preregistration,
         )
     except PreregistrationViolation as exc:
@@ -758,6 +864,7 @@ def main(argv: list[str] | None = None) -> int:
             runner_cfg=runner_cfg,
             out_dir=out_dir,
             continue_on_partial=args.continue_on_partial,
+            scheduler_timeout_s=args.scheduler_timeout_s,
         )
     except ProvenanceIntegrityError as exc:
         print(f"error: {exc}", file=sys.stderr)

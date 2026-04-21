@@ -1,6 +1,6 @@
 {
-  "ts": "2026-04-21T08:27:09+00:00",
-  "git_sha": "32a3f51ee3c8337a6692afd1485a3101f249246b",
+  "ts": "2026-04-21T10:43:22+00:00",
+  "git_sha": "6eb6c6c26c06bdb11aaedf8c0f96c53eda9516d7",
   "source": "live_hf_consolidate",
   "bundles": [
     {
@@ -107,6 +107,190 @@
       }
     },
     {
+      "label": "H1_ruler_16384_live_ext",
+      "status": "partial_quota",
+      "out_path": "/Users/sharath/Library/CloudStorage/OneDrive-Personal/wsl_projects/context/.cache/live_hf_checkpoints/H1_ruler_16384_live_ext_partial.json",
+      "wallclock_s": 4.721,
+      "partial_reason": "rate-limit detected (attempt 1): \\b429\\b",
+      "window_summary": {
+        "window_hours": 5.0,
+        "started_at_unix": 1776749569.47048,
+        "n_calls": 200,
+        "n_cache_hits": 0,
+        "input_tokens": 4885634,
+        "billed_input_tokens": 4885634,
+        "output_tokens": 39621,
+        "n_rate_limited": 5,
+        "next_window_at": "2026-04-21T15:00:00+00:00",
+        "model": "claude-sonnet-4-6",
+        "prompt_hash": "ae132ecc3bed0ce240cae41598856df7da329aa9ef468668150e5fd7a33c15c7",
+        "attempt": 1
+      },
+      "checkpointed_records": 208,
+      "provenance": {
+        "source": "huggingface",
+        "adapter_name": "ruler_niah",
+        "adapter_kwargs": {
+          "target_tokens": 16384,
+          "default_n": 30,
+          "load_real": true,
+          "strict_hf": true,
+          "hf_task_filter": "niah_single_1"
+        },
+        "hf_dataset_id": "simonjegou/ruler",
+        "hf_config": "",
+        "hf_task": "niah_single_1",
+        "load_real": true,
+        "strict_hf": true,
+        "git_sha": "6eb6c6c26c06bdb11aaedf8c0f96c53eda9516d7",
+        "ts": "2026-04-21T10:32:44.718601+00:00",
+        "hf_revision": "24adceac8a0e6532936e8d721cd9e9084d2e4686"
+      },
+      "score_source": "/Users/sharath/Library/CloudStorage/OneDrive-Personal/wsl_projects/context/.cache/live_hf_checkpoints/H1_ruler_16384_live_ext_score.json",
+      "outcome": {
+        "treatment_metric": 0.9903,
+        "baseline_metric": 0.9417,
+        "delta_observed": 0.0485,
+        "ci_low": 0.0097,
+        "ci_high": 0.0874,
+        "p_value": 0.063894,
+        "cohens_d": 0.2248,
+        "target_met": false,
+        "n_paired": 103
+      },
+      "per_model_outcome": {
+        "claude-haiku-4-5": {
+          "n_paired": 60,
+          "treatment_metric": 1.0,
+          "baseline_metric": 0.95,
+          "delta_observed": 0.05,
+          "ci_low": 0.0,
+          "ci_high": 0.1167,
+          "p_value": 0.255074,
+          "cohens_d": 0.2275,
+          "target_met": false
+        },
+        "claude-sonnet-4-6": {
+          "n_paired": 43,
+          "treatment_metric": 0.9767,
+          "baseline_metric": 0.9302,
+          "delta_observed": 0.0465,
+          "ci_low": 0.0,
+          "ci_high": 0.1163,
+          "p_value": 0.506949,
+          "cohens_d": 0.2183,
+          "target_met": false
+        }
+      },
+      "per_cell_counts": {
+        "claude-haiku-4-5": {
+          "seed0_harness_on": 30,
+          "seed0_harness_off": 30,
+          "seed1_harness_on": 30,
+          "seed1_harness_off": 30
+        },
+        "claude-sonnet-4-6": {
+          "seed0_harness_on": 30,
+          "seed0_harness_off": 28,
+          "seed1_harness_on": 15,
+          "seed1_harness_off": 15
+        }
+      },
+      "caveats": [
+        "v2.1.1 power extension of the v2.1 N=15 run. First 15 rows per (model, seed, condition) are seeded from H1_ruler_16384_live.jsonl (same seeds \u21d2 deterministic superset); the additional rows were billed in v2.1.1.",
+        "Per-cell sample imbalance vs. pre-registered N: claude-sonnet-4-6 seed0_harness_off=28 (expected 30); claude-sonnet-4-6 seed1_harness_off=15 (expected 30); claude-sonnet-4-6 seed1_harness_on=15 (expected 30)",
+        "2 row(s) recorded with ``error != ''`` (scored 0 at CLI level per checkpoint schema); included in paired totals as-is."
+      ]
+    },
+    {
+      "label": "H_SWEB_live_ext",
+      "status": "partial_quota",
+      "out_path": "/Users/sharath/Library/CloudStorage/OneDrive-Personal/wsl_projects/context/.cache/live_hf_checkpoints/H_SWEB_live_ext_partial.json",
+      "wallclock_s": 2.685,
+      "partial_reason": "rate-limit detected (attempt 1): \\b429\\b",
+      "window_summary": {
+        "window_hours": 5.0,
+        "started_at_unix": 1776749578.448341,
+        "n_calls": 202,
+        "n_cache_hits": 0,
+        "input_tokens": 4885634,
+        "billed_input_tokens": 4885634,
+        "output_tokens": 39621,
+        "n_rate_limited": 7,
+        "next_window_at": "2026-04-21T15:00:00+00:00",
+        "model": "claude-haiku-4-5",
+        "prompt_hash": "55ffb57e7e04122e77ad44bc2f9cc42d409bdd41e075ac47ace3bb9c2cf7bcf0",
+        "attempt": 1
+      },
+      "checkpointed_records": 14,
+      "provenance": {
+        "source": "huggingface",
+        "adapter_name": "swe_bench_verified",
+        "adapter_kwargs": {
+          "default_n": 15,
+          "load_real": true,
+          "strict_hf": true
+        },
+        "hf_dataset_id": "princeton-nlp/SWE-bench_Verified",
+        "hf_config": "",
+        "hf_task": "",
+        "load_real": true,
+        "strict_hf": true,
+        "git_sha": "6eb6c6c26c06bdb11aaedf8c0f96c53eda9516d7",
+        "ts": "2026-04-21T10:32:55.734800+00:00",
+        "hf_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a"
+      },
+      "score_source": "/Users/sharath/Library/CloudStorage/OneDrive-Personal/wsl_projects/context/.cache/live_hf_checkpoints/H_SWEB_live_ext_score.json",
+      "outcome": {
+        "treatment_metric": 0.5,
+        "baseline_metric": 0.5,
+        "delta_observed": 0.0,
+        "ci_low": 0.0,
+        "ci_high": 0.0,
+        "p_value": 1.0,
+        "cohens_d": 0.0,
+        "target_met": false,
+        "n_paired": 1
+      },
+      "per_model_outcome": {
+        "claude-haiku-4-5": {
+          "n_paired": 1,
+          "treatment_metric": 0.5,
+          "baseline_metric": 0.5,
+          "delta_observed": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0,
+          "p_value": 1.0,
+          "cohens_d": 0.0,
+          "target_met": false
+        },
+        "claude-sonnet-4-6": {
+          "n_paired": 0,
+          "treatment_metric": null,
+          "baseline_metric": null,
+          "delta_observed": null,
+          "ci_low": null,
+          "ci_high": null,
+          "p_value": null,
+          "cohens_d": null,
+          "target_met": false,
+          "note": "no rows for this model in checkpoint"
+        }
+      },
+      "per_cell_counts": {
+        "claude-haiku-4-5": {
+          "seed0_harness_on": 4,
+          "seed0_harness_off": 2,
+          "seed1_harness_on": 3,
+          "seed1_harness_off": 5
+        }
+      },
+      "caveats": [
+        "v2.1.1 infrastructure rescue of the v2.1 SWE-bench run. Seed file built by filtering error rows out of H_SWEB_live_n15.jsonl; v2.1.1 live run hit QuotaExhausted before any new rows were billed, so this checkpoint contains only the successful v2.1 rows (haiku-only) and no sonnet coverage. Pooled scoring below is therefore a haiku-only paired read; the ``n_paired`` count will under-count the pre-registered (15 \u00d7 2 \u00d7 2) cells.",
+        "Per-cell sample imbalance vs. pre-registered N: claude-haiku-4-5 seed0_harness_off=2 (expected 15); claude-haiku-4-5 seed0_harness_on=4 (expected 15); claude-haiku-4-5 seed1_harness_off=5 (expected 15); claude-haiku-4-5 seed1_harness_on=3 (expected 15)"
+      ]
+    },
+    {
       "label": "H_SWEB_live_n15",
       "status": "partial_quota",
       "out_path": "/Users/sharath/Library/CloudStorage/OneDrive-Personal/wsl_projects/context/.cache/live_hf_checkpoints/H_SWEB_live_n15_partial.json",
@@ -144,25 +328,118 @@
         "ts": "2026-04-21T07:27:19.379049+00:00",
         "hf_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a"
       }
+    },
+    {
+      "label": "H_TQA_live_v2_ext",
+      "status": "partial_quota",
+      "out_path": "/Users/sharath/Library/CloudStorage/OneDrive-Personal/wsl_projects/context/.cache/live_hf_checkpoints/H_TQA_live_v2_ext_partial.json",
+      "wallclock_s": 3.142,
+      "partial_reason": "rate-limit detected (attempt 1): \\b429\\b",
+      "window_summary": {
+        "window_hours": 5.0,
+        "started_at_unix": 1776749574.5637372,
+        "n_calls": 201,
+        "n_cache_hits": 0,
+        "input_tokens": 4885634,
+        "billed_input_tokens": 4885634,
+        "output_tokens": 39621,
+        "n_rate_limited": 6,
+        "next_window_at": "2026-04-21T15:00:00+00:00",
+        "model": "claude-haiku-4-5",
+        "prompt_hash": "9e4d4de5825d1746a9626fa88c55d6ab6d487a4be620da76ea7d9e39fe4df1f2",
+        "attempt": 1
+      },
+      "checkpointed_records": 120,
+      "provenance": {
+        "source": "huggingface",
+        "adapter_name": "truthful_qa",
+        "adapter_kwargs": {
+          "default_n": 30,
+          "load_real": true,
+          "strict_hf": true
+        },
+        "hf_dataset_id": "truthful_qa",
+        "hf_config": "generation",
+        "hf_task": "",
+        "load_real": true,
+        "strict_hf": true,
+        "git_sha": "6eb6c6c26c06bdb11aaedf8c0f96c53eda9516d7",
+        "ts": "2026-04-21T10:32:51.396927+00:00",
+        "hf_revision": "741b8276f2d1982aa3d5b832d3ee81ed3b896490"
+      },
+      "score_source": "/Users/sharath/Library/CloudStorage/OneDrive-Personal/wsl_projects/context/.cache/live_hf_checkpoints/H_TQA_live_v2_ext_score.json",
+      "outcome": {
+        "treatment_metric": 0.05,
+        "baseline_metric": 0.0833,
+        "delta_observed": -0.0333,
+        "ci_low": -0.1333,
+        "ci_high": 0.05,
+        "p_value": 0.735826,
+        "cohens_d": -0.0909,
+        "target_met": false,
+        "n_paired": 60
+      },
+      "per_model_outcome": {
+        "claude-haiku-4-5": {
+          "n_paired": 30,
+          "treatment_metric": 0.0667,
+          "baseline_metric": 0.1,
+          "delta_observed": -0.0333,
+          "ci_low": -0.1667,
+          "ci_high": 0.1,
+          "p_value": 1.0,
+          "cohens_d": -0.0805,
+          "target_met": false
+        },
+        "claude-sonnet-4-6": {
+          "n_paired": 30,
+          "treatment_metric": 0.0333,
+          "baseline_metric": 0.0667,
+          "delta_observed": -0.0333,
+          "ci_low": -0.1333,
+          "ci_high": 0.0667,
+          "p_value": 1.0,
+          "cohens_d": -0.1042,
+          "target_met": false
+        }
+      },
+      "per_cell_counts": {
+        "claude-haiku-4-5": {
+          "seed0_harness_on": 15,
+          "seed0_harness_off": 15,
+          "seed1_harness_on": 15,
+          "seed1_harness_off": 15
+        },
+        "claude-sonnet-4-6": {
+          "seed0_harness_on": 15,
+          "seed0_harness_off": 15,
+          "seed1_harness_on": 15,
+          "seed1_harness_off": 15
+        }
+      },
+      "caveats": [
+        "v2.1.1 power extension of the v2.1 N=15 run. Seed file H_TQA_live_v2.jsonl copied verbatim; v2.1.1 live run hit QuotaExhausted before any new rows were billed, so this checkpoint is byte-identical to v2.1 and the outcome below is the v2.1 N=15 result re-reported.",
+        "Per-cell sample imbalance vs. pre-registered N: claude-haiku-4-5 seed0_harness_off=15 (expected 30); claude-haiku-4-5 seed0_harness_on=15 (expected 30); claude-haiku-4-5 seed1_harness_off=15 (expected 30); claude-haiku-4-5 seed1_harness_on=15 (expected 30); claude-sonnet-4-6 seed0_harness_off=15 (expected 30); claude-sonnet-4-6 seed0_harness_on=15 (expected 30); claude-sonnet-4-6 seed1_harness_off=15 (expected 30); claude-sonnet-4-6 seed1_harness_on=15 (expected 30)"
+      ]
     }
   ],
   "scheduler_status": {
     "window_hours": 5.0,
-    "n_calls": 104,
+    "n_calls": 202,
     "n_cache_hits": 0,
     "cache_hit_rate": 0.0,
-    "input_tokens": 302068,
-    "billed_input_tokens": 302068,
-    "output_tokens": 14914,
-    "n_rate_limited": 1,
+    "input_tokens": 4885634,
+    "billed_input_tokens": 4885634,
+    "output_tokens": 39621,
+    "n_rate_limited": 7,
     "max_input_tokens_per_window": 2000000,
     "max_calls_per_window": null,
-    "exhausted": false,
-    "next_window_at": "2026-04-21T10:00:00+00:00",
+    "exhausted": true,
+    "next_window_at": "2026-04-21T15:00:00+00:00",
     "total": {
-      "n_calls": 374,
-      "input_tokens": 11677896,
-      "output_tokens": 80550,
+      "n_calls": 472,
+      "input_tokens": 16261462,
+      "output_tokens": 105257,
       "n_cache_hits": 60
     }
   }

@@ -131,6 +131,55 @@ def _extract_partial_entry(path: Path) -> dict[str, Any]:
     }
 
 
+def _load_ext_score_overlays(checkpoint_dir: Path) -> dict[str, dict[str, Any]]:
+    """Load ``*_score.json`` files produced by
+    :mod:`tools.dev.score_ext_checkpoints`.
+
+    These are offline re-reads of ``_ext`` checkpoint JSONLs and carry
+    pooled + per-model outcomes plus caveats. We splice them into the
+    partial-bundle entries so ``_summary_live.json`` carries a scored
+    outcome for the v2.1.1 power-extension bundles even when the live
+    run ended in ``partial_quota``.
+    """
+    if not checkpoint_dir.exists():
+        return {}
+    overlays: dict[str, dict[str, Any]] = {}
+    for p in sorted(checkpoint_dir.glob("*_score.json")):
+        try:
+            data = _load_json(p)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("skip score file %s: %s", p, exc)
+            continue
+        label = data.get("label") or p.stem.replace("_score", "")
+        overlays[label] = {"path": str(p), "payload": data}
+    return overlays
+
+
+def _splice_ext_overlay(
+    entry: dict[str, Any],
+    overlay: dict[str, Any],
+) -> dict[str, Any]:
+    payload = overlay["payload"]
+    pooled = payload.get("pooled_outcome") or {}
+    entry = dict(entry)
+    entry["score_source"] = overlay["path"]
+    entry["outcome"] = {
+        "treatment_metric": pooled.get("treatment_metric"),
+        "baseline_metric": pooled.get("baseline_metric"),
+        "delta_observed": pooled.get("delta_observed"),
+        "ci_low": pooled.get("ci_low"),
+        "ci_high": pooled.get("ci_high"),
+        "p_value": pooled.get("p_value"),
+        "cohens_d": pooled.get("cohens_d"),
+        "target_met": pooled.get("target_met"),
+        "n_paired": pooled.get("n_paired"),
+    }
+    entry["per_model_outcome"] = payload.get("per_model_outcome")
+    entry["per_cell_counts"] = payload.get("per_cell_counts")
+    entry["caveats"] = payload.get("caveats")
+    return entry
+
+
 def _count_quota_events(journal_path: Path) -> dict[str, int]:
     """Count QUOTA_EXHAUSTED / rate-limit events in the attractor journal."""
     if not journal_path.exists():
@@ -190,11 +239,16 @@ def consolidate(
     for label, p in sorted(completed_by_label.items()):
         bundles.append(_extract_completed_entry(p))
 
+    ext_overlays = _load_ext_score_overlays(checkpoint_dir)
+
     partial_paths = sorted(checkpoint_dir.glob("*_partial.json")) if checkpoint_dir.exists() else []
     for p in partial_paths:
         entry = _extract_partial_entry(p)
         if entry["label"] in completed_by_label:
             continue
+        overlay = ext_overlays.get(entry["label"])
+        if overlay is not None:
+            entry = _splice_ext_overlay(entry, overlay)
         bundles.append(entry)
 
     scheduler = CLIBudgetScheduler(

@@ -14,6 +14,9 @@ mlruns/
 # Scheduler local cache + cost ledger (per-machine, large, non-portable)
 .cache/
 
+# Ralph loop / power-ext run logs (per-machine, regenerated on each run)
+tools/dev/orchestration/logs/
+
 # Private planning artifacts — user-facing docs (guide.md, validation_report.md) are tracked
 docs/prd.md
 docs/spec.md

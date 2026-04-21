@@ -62,6 +62,30 @@ LIVE_DEFAULT_SWEB_N: int = 15
 # tier; paper language updates accordingly.
 LIVE_DEFAULT_TIERS: tuple[int, ...] = (8_192, 16_384)
 
+# --- Power-extension (v2.1.1) ----------------------------------------
+# At N=15 (=60 paired obs) the 16K-RULER and TruthfulQA bundles were
+# inconclusive (p≥0.10, |d|≤0.27 and a null respectively). As a
+# pre-execution amendment to the v2.1 pre-registration — documented in
+# Appendix~G and ``docs/release_v2.1.1_power_ext.md`` — we double N to
+# 30 (=120 paired obs) on those two surfaces only. Because the adapter
+# shuffle is deterministic in ``seed``, the N=30 pull is a strict
+# *superset* of the v2.1 N=15 pull at the same seed; the existing
+# checkpoint JSONLs are seeded into the ``_ext`` files so the first
+# 15 example rows are cache-hits and only the additional 15 cost CLI
+# calls. SWE-bench is *not* power-extended (that would still be
+# underpowered at reachable N); it is **infrastructure-rescued**: the
+# CLI ``SessionStart`` hook requires >300 s on SWE-bench prompts, so
+# the power-extension run bumps ``scheduler_timeout_s`` from 300 s to
+# ``LIVE_EXT_SWEB_TIMEOUT_S`` and re-executes the errored rows from
+# the v2.1 checkpoint.
+LIVE_EXT_RULER_N: int = 30
+LIVE_EXT_HALLU_N: int = 30
+LIVE_EXT_SWEB_TIMEOUT_S: int = 900
+# Only the 16384 tier needs power extension; 8K already cleared both
+# gates at N=15 (d=0.547, p=0.0005) so re-running it is a pure token
+# burn with no inferential upside.
+LIVE_EXT_RULER_TIERS: tuple[int, ...] = (16_384,)
+
 # HF dataset IDs mirrored here so provenance blocks stay stable even if
 # the adapter defaults drift.
 HF_IDS: dict[str, dict[str, str]] = {
@@ -393,6 +417,219 @@ def core4_specs(
         ),
         h_tqa_live_v2_spec(models=models, seeds=seeds, n_examples=hallu_n),
         h_swebench_verified_live_n15_spec(
+            models=models, seeds=seeds, n_examples=sweb_n
+        ),
+    ]
+
+
+# --- Power-extension specs (v2.1.1) ----------------------------------
+#
+# The ``*_ext`` bundles are NEW labels, not overrides of the v2.1
+# bundles. This matters for three reasons:
+# 1. The v2.1 JSON outputs and SHA256SUMS line stay intact so the
+#    paper's v2.1 addendum remains byte-reproducible from the commit
+#    tag.
+# 2. The new label forces a distinct checkpoint JSONL, which the
+#    orchestrator seeds from the v2.1 JSONL so the first 15 rows are
+#    cache hits (no CLI cost) and only the marginal 15 rows bill.
+# 3. The provenance block on every record keeps pointing at the
+#    exact pre-registered amendment (``pre_registration_version ==
+#    "v2.1.1-power-ext"``) so downstream analysis can never confuse
+#    a v2.1 N=15 row with a v2.1.1 N=30 row.
+
+
+def h1_ruler_16384_ext_spec(
+    *,
+    models: tuple[str, ...] = DEFAULT_MODELS,
+    seeds: tuple[int, ...] = LIVE_DEFAULT_SEEDS,
+    n_examples: int = LIVE_EXT_RULER_N,
+) -> P6ASpecBundle:
+    """Power extension of ``H1_ruler_16384_live`` to N=30.
+
+    At N=15 the paired-delta was +0.067 with p=0.117 and d_z=0.265 —
+    directional but underpowered. Doubling N to 30 raises the
+    nominal power for d≈0.30 at α=0.05 above 0.8 on a paired
+    permutation test (120 observations, same two seeds, same two
+    models).
+    """
+    return P6ASpecBundle(
+        label="H1_ruler_16384_live_ext",
+        spec=HypothesisSpec(
+            hypothesis_id="H1_ext",
+            description=(
+                "[LIVE-HF v2.1.1 power-ext] Avacchedaka structured retriever "
+                "prompt lifts RULER NIAH accuracy at 16384-token contexts on "
+                "the real simonjegou/ruler dataset; effect ≥ 5 pts. Pre-"
+                "execution amendment of the v2.1 N=15 run to reach "
+                "≥0.8 power at d≈0.30."
+            ),
+            adapter_name="ruler_niah",
+            treatment_condition="harness_on",
+            baseline_condition="harness_off",
+            metric="accuracy",
+            direction=TargetDirection.GREATER,
+            delta=0.05,
+            n_examples=n_examples,
+            seeds=seeds,
+            models=models,
+            significance_alpha=0.05,
+            notes=(
+                f"Tier=16384 tokens. load_real=True, "
+                "dataset=simonjegou/ruler, task=niah_single_1. "
+                f"Pre-registered (v2.1.1 amendment) N={n_examples}, "
+                f"seeds={list(seeds)}. Strict superset of the v2.1 N=15 "
+                "pull at the same seeds (adapter shuffle is deterministic "
+                "in seed). Stopping rule: stop at N, no peeking."
+            ),
+        ),
+        adapter_kwargs={
+            "target_tokens": 16_384,
+            "default_n": n_examples,
+            "load_real": True,
+            "strict_hf": True,
+            "hf_task_filter": "niah_single_1",
+        },
+    )
+
+
+def h_tqa_live_v2_ext_spec(
+    *,
+    models: tuple[str, ...] = DEFAULT_MODELS,
+    seeds: tuple[int, ...] = LIVE_DEFAULT_SEEDS,
+    n_examples: int = LIVE_EXT_HALLU_N,
+) -> P6ASpecBundle:
+    """Power extension of ``H_TQA_live_v2`` to N=30.
+
+    At N=15 the paired-delta was −0.033 with p=0.74 and d_z=−0.091
+    — a directionless null. Doubling N narrows the 95% CI around
+    zero and either confirms the null at ≥0.8 power for |d|≥0.30 or
+    surfaces a previously-undetected effect.
+    """
+    return P6ASpecBundle(
+        label="H_TQA_live_v2_ext",
+        spec=HypothesisSpec(
+            hypothesis_id="H_TQA_v2_ext",
+            description=(
+                "[LIVE-HF v2.1.1 power-ext] Harness misconception-self-check "
+                "on TruthfulQA (real truthful_qa/generation split). Pre-"
+                "execution amendment of the v2.1 N=15 run: N doubled to "
+                "30 to tighten the null-detection CI."
+            ),
+            adapter_name="truthful_qa",
+            treatment_condition="harness_on",
+            baseline_condition="harness_off",
+            metric="accuracy",
+            direction=TargetDirection.GREATER,
+            delta=0.05,
+            n_examples=n_examples,
+            seeds=seeds,
+            models=models,
+            significance_alpha=0.05,
+            notes=(
+                "load_real=True, dataset=truthful_qa, config=generation. "
+                f"Pre-registered (v2.1.1 amendment) N={n_examples}, "
+                f"seeds={list(seeds)}. Strict superset of the v2.1 N=15 "
+                "pull at the same seeds (HF loader shuffle is deterministic "
+                "in seed)."
+            ),
+        ),
+        adapter_kwargs={
+            "default_n": n_examples,
+            "load_real": True,
+            "strict_hf": True,
+        },
+    )
+
+
+def h_swebench_verified_live_ext_spec(
+    *,
+    models: tuple[str, ...] = DEFAULT_MODELS,
+    seeds: tuple[int, ...] = LIVE_DEFAULT_SEEDS,
+    n_examples: int = LIVE_DEFAULT_SWEB_N,
+) -> P6ASpecBundle:
+    """Infrastructure rescue of ``H_SWEB_live_n15``.
+
+    At N=15 the v2.1 run had 77% of haiku attempts and 100% of
+    sonnet attempts aborted at the CLI ``SessionStart`` hook
+    (300 s default timeout); the paired-delta on the remaining
+    haiku slice was +0.109, p=0.032, d_z=0.488 under the pre-
+    registered "errors score 0 on both sides" imputation. Rather
+    than extend N (still underpowered at reachable budgets), the
+    v2.1.1 amendment **raises the scheduler timeout** so the
+    SessionStart hook completes and the CLI actually returns a
+    scored patch. Pre-registered N, seeds, and models are
+    unchanged.
+    """
+    return P6ASpecBundle(
+        label="H_SWEB_live_ext",
+        spec=HypothesisSpec(
+            hypothesis_id="H_SWEB_ext",
+            description=(
+                "[LIVE-HF v2.1.1 infra-rescue] Plan-then-act harness "
+                "discipline on SWE-bench Verified (N=15 instances, "
+                "heuristic scorer); real princeton-nlp/SWE-bench_Verified. "
+                f"Pre-registered N={n_examples}, seeds=(0,1). CLI timeout "
+                f"raised from 300 s to {LIVE_EXT_SWEB_TIMEOUT_S} s to "
+                "clear the SessionStart-hook abort path that blocked the "
+                "v2.1 run; pre-registration otherwise unchanged."
+            ),
+            adapter_name="swe_bench_verified",
+            treatment_condition="harness_on",
+            baseline_condition="harness_off",
+            metric="score",
+            direction=TargetDirection.GREATER,
+            delta=0.05,
+            n_examples=n_examples,
+            seeds=seeds,
+            models=models,
+            significance_alpha=0.05,
+            notes=(
+                "load_real=True, dataset=princeton-nlp/SWE-bench_Verified, "
+                "split=test. Heuristic offline scorer "
+                "(file_overlap_weight=0.5, line_jaccard_weight=0.5, "
+                "correctness_threshold=0.5). The v2.1 run's "
+                "SessionStart-hook timeouts were infrastructure, not "
+                f"model, failures; scheduler_timeout_s={LIVE_EXT_SWEB_TIMEOUT_S} "
+                "here resolves them without changing N, seeds, models, "
+                "or scorer."
+            ),
+        ),
+        adapter_kwargs={
+            "default_n": n_examples,
+            "load_real": True,
+            "strict_hf": True,
+        },
+    )
+
+
+def power_ext_specs(
+    *,
+    models: tuple[str, ...] = DEFAULT_MODELS,
+    seeds: tuple[int, ...] = LIVE_DEFAULT_SEEDS,
+    ruler_n: int = LIVE_EXT_RULER_N,
+    hallu_n: int = LIVE_EXT_HALLU_N,
+    sweb_n: int = LIVE_DEFAULT_SWEB_N,
+) -> list[P6ASpecBundle]:
+    """v2.1.1 power-extension bundles (paper Appendix~G addendum).
+
+    Three bundles, executed in cheapest-first order so the
+    expensive SWE-bench rerun is the last thing to bill:
+
+    * ``H1_ruler_16384_live_ext`` — N=30 (power ext of 16K tier).
+    * ``H_TQA_live_v2_ext`` — N=30 (tighter null-detection CI).
+    * ``H_SWEB_live_ext`` — N=15 same pre-reg, but CLI timeout raised
+      to ``LIVE_EXT_SWEB_TIMEOUT_S`` so SessionStart-hook aborts are
+      eliminated.
+
+    Seeds are identical to v2.1 so the ``_ext`` checkpoint JSONLs can
+    be seeded from the v2.1 JSONLs for cache-hit re-use of the
+    already-billed rows. Pre-registration lock is enforced at the
+    runner CLI under ``--scope power_ext``.
+    """
+    return [
+        h1_ruler_16384_ext_spec(models=models, seeds=seeds, n_examples=ruler_n),
+        h_tqa_live_v2_ext_spec(models=models, seeds=seeds, n_examples=hallu_n),
+        h_swebench_verified_live_ext_spec(
             models=models, seeds=seeds, n_examples=sweb_n
         ),
     ]

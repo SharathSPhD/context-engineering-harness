@@ -3,6 +3,10 @@
 % + experiments/results/p6a/swe_bench_outcomes.json (haiku-only paired slice).
 % Dataset pins: simonjegou/ruler@24adcea, truthfulqa/truthful_qa@741b827,
 % princeton-nlp/SWE-bench_Verified@c104f84.
+%
+% v2.1.1 power-extension rows added from
+% .cache/live_hf_checkpoints/*_score.json (offline re-score of the
+% partial-quota checkpoint JSONLs; no extra CLI traffic).
 {\def\LTcaptype{none}
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.285}}
@@ -19,6 +23,7 @@ bundle & treat. & base. & $\Delta$ & paired $p$ & $d$ & $n$ & status \\
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
+\multicolumn{8}{@{}l}{\textit{v2.1 \texttt{core4} battery (N=15 examples $\times$ 2 seeds $\times$ 2 models)}} \\
 H1\_ruler\_8192\_live &
 1.0000 & 0.7667 & +0.2333 & 0.0005 & 0.547 & 60 & complete, target met \\
 H1\_ruler\_16384\_live &
@@ -27,5 +32,21 @@ H\_TQA\_live\_v2 &
 0.0500 & 0.0833 & $-$0.0333 & 0.7386 & $-$0.091 & 60 & complete, null \\
 H\_SWEB\_live\_n15 (haiku-only) &
 0.1259 & 0.0167 & +0.1093 & 0.0322 & 0.488 & 30 & partial (CLI-blocked) \\
+\midrule\noalign{}
+\multicolumn{8}{@{}l}{\textit{v2.1.1 power-extension addendum (pre-execution amendment; see Appendix \ref{live-hf-v2.1.1})}} \\
+H1\_ruler\_16384\_live\_ext &
+0.9903 & 0.9417 & +0.0485 & 0.0639 & 0.225 & 103 & partial ext., CI {[}+0.010,+0.087{]} excludes 0, gate not met \\
+H\_TQA\_live\_v2\_ext &
+0.0500 & 0.0833 & $-$0.0333 & 0.7358\textsuperscript{$\dagger$} & $-$0.091 & 60 & quota halted, no new rows; null unchanged \\
+H\_SWEB\_live\_ext &
+--- & --- & --- & --- & --- & 1 & quota halted, infra-rescue code shipped but un-exercised \\
 \end{longtable}
+
+\vspace{-0.25em}
+{\footnotesize \textsuperscript{$\dagger$}The H\_TQA\_live\_v2 and
+H\_TQA\_live\_v2\_ext rows are computed on byte-identical checkpoint
+JSONLs; the $p$-value gap (0.7386 vs. 0.7358) is Monte-Carlo noise
+between the v2.1 live-runner permutation pool ($n_\text{perm}=2{,}000$) and the
+v2.1.1 offline re-score ($n_\text{perm}=10{,}000$, see Appendix~\ref{live-hf-v2.1.1}).
+Both values encode the same null verdict.}
 }
