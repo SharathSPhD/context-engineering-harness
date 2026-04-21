@@ -54,16 +54,16 @@ traffic) with the new `tools/dev/score_ext_checkpoints.py` script.
 
 | bundle                       | n_paired | treatment | baseline | Δ        | 95 % CI            | paired *p* | *d_z*   | verdict                                          |
 | ---------------------------- | -------- | --------- | -------- | -------- | ------------------ | ---------- | ------- | ------------------------------------------------ |
-| `H1_ruler_16384_live_ext`    | 103      | 0.9903    | 0.9417   | +0.0485  | **[+0.010, +0.087]** | 0.064      | 0.225   | tighter CI (excludes 0), still below *p* gate   |
+| `H1_ruler_16384_live_ext`    | 103      | 0.9903    | 0.9417   | +0.0485  | **[+0.010, +0.087]** | 0.064      | 0.225   | tighter CI (excludes 0), both *d_z* and *p* gates still shy |
 | `H_TQA_live_v2_ext`          | 60       | 0.0500    | 0.0833   | −0.0333  | —                  | 0.736      | −0.091  | null (byte-identical to v2.1; no new rows)      |
 | `H_SWEB_live_ext`            | 1        | —         | —        | —        | —                  | —          | —       | CLI fix shipped, not exercised under load       |
 
 **RULER 16K.** Haiku fully extended to n = 60; sonnet seed 0 to n = 28
 (two scheduler-level CLI aborts) and sonnet seed 1 still at n = 15.
 Per-model: haiku Δ = +0.050, *p* = 0.26; sonnet Δ = +0.047,
-*p* = 0.51. Neither preregistered gate (Δ ≥ 0.05 **and** *p* ≤ 0.05)
-clears; the reading is **tighter interval, same verdict —
-directional, still underpowered**.
+*p* = 0.51. Neither half of the preregistered combined gate
+(*d_z* ≥ 0.5 **and** *p* ≤ 0.05) clears; the reading is **tighter
+interval, same verdict — directional, still underpowered**.
 
 **TruthfulQA.** No new rows billed before the quota halted; the
 checkpoint is byte-identical to v2.1's N = 60. The null stands.
@@ -237,10 +237,39 @@ checkpoints return byte-identical score JSON.
   now has a power-extension replay recipe.
 - `docs/article_substack.md` and `docs/index.html` — v2.1.1
   power-extension addendum block now published on both the Substack
-  source and the public landing page.
-- `release/pratyaksha-v2.1.1-preprint.pdf` — rebuilt preprint PDF.
-- `release/SHA256SUMS` — regenerated checksums (now also covers
-  `docs/article_substack.md` and `docs/index.html`).
+  source and the public landing page. Both surfaces now render T8
+  inline with v2.1 and v2.1.1 bands and color-coded gate verdicts,
+  embed F14 (live-HF forest) and F15 (RULER 16K per-model panel)
+  directly, and relabel the F12/F13 diptych as v2.0
+  synthetic-fallback.
+- `paper/figures/F14_live_hf_forest.png` — new forest plot of all
+  seven live-HF bundles (four v2.1 `core4` + three v2.1.1 `_ext`)
+  with preregistered-gate verdicts colour-encoded on each marker.
+- `paper/figures/F15_ruler16k_ext_per_model.png` — new two-panel
+  composition figure for the RULER 16K extension: pooled + per-model
+  forest on the left, per-cell paired-observation counts on the
+  right.
+- `paper/figures/F14_F15_provenance.json` — deterministic
+  provenance dump (Δ, CI bounds, *p*, *d_z*, *n*_pair, gate status,
+  CI source) backing F14 + F15 so adversarial review can diff
+  numbers without re-reading raw summaries.
+- `docs/pratyaksha_images/F01_*.png`, `F02_*.png`, `F12_*.png`,
+  `F13_*.png`, `F14_live_hf_forest.png`,
+  `F15_ruler16k_ext_per_model.png` — locally-hosted copies of all
+  landing-page figures, replacing the external v2.0.0 GitHub-release
+  URLs the site previously used.
+- `experiments/v2/p6a/aggregate_live_figures.py` — new deterministic
+  figure-generator for F14 and F15; reads
+  `experiments/results/p6a/_summary_live.json` and
+  `experiments/results/p6a/swe_bench_outcomes.json`; emits both PNGs
+  and the provenance JSON into `paper/figures/`.
+- `release/pratyaksha-v2.1.1-preprint.pdf` — rebuilt preprint PDF
+  now embeds F14 (§8 after Table T8) and F15 (Appendix G near the
+  n_pair = 103 discussion).
+- `release/SHA256SUMS` — regenerated checksums now cover the new
+  F14 / F15 PNGs, the provenance JSON, the rebuilt preprint PDF,
+  the updated `docs/index.html`, and the updated
+  `docs/article_substack.md`.
 
 ## Acknowledgements
 

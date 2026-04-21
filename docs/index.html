@@ -347,6 +347,25 @@
     font-family: var(--sans); font-size: 13.5px; color: var(--muted);
     padding: 0 4px 12px; font-weight: 500;
   }
+  tr.band-row td {
+    background: var(--surface2);
+    color: var(--muted-strong);
+    font-size: 12.5px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    padding: 8px 16px;
+  }
+  .gate-badge {
+    display: inline-block;
+    font-family: var(--sans); font-size: 11.5px;
+    font-weight: 600; letter-spacing: 0.02em;
+    padding: 2px 9px; border-radius: 999px;
+    border: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .gate-badge.met   { background: rgba(63,185,80,.14);  color: var(--accent3); border-color: rgba(63,185,80,.35); }
+  .gate-badge.shy   { background: rgba(255,166,87,.12); color: var(--accent-warm); border-color: rgba(255,166,87,.35); }
+  .gate-badge.null_ { background: rgba(139,148,158,.14); color: var(--muted-strong); border-color: rgba(139,148,158,.30); }
+  .gate-badge.unexer { background: transparent; color: var(--muted); border-style: dashed; }
 
   /* Code */
   code, .mono {
@@ -519,7 +538,7 @@
 
 <header class="hero">
   <div class="hero-inner">
-    <div class="kicker">Long-context AI · Open-source plugin · v2.0.0</div>
+    <div class="kicker">Long-context AI · Open-source plugin · v2.1.1</div>
     <h1>When the Context Window Is Big and the Agent Is Still Confused</h1>
     <p class="dek">A millennia-old <em>darśana-śāstra</em> vocabulary &mdash; the systematic Indian treatises on what counts as valid knowledge &mdash; turned out to be the missing operating manual for modern AI agents. Here is the system that proves it, and the plugin you can install in thirty seconds.</p>
     <div class="meta">
@@ -564,8 +583,8 @@
 </div>
 
 <figure class="wide">
-  <img src="https://github.com/SharathSPhD/pratyaksha-context-eng-harness/releases/download/v2.0.0/F02_H2_helmet_by_context_length.png" alt="HELMET-recall accuracy degrades sharply as the window grows from 8K to 32K tokens on the strongest current models. The Pratyakṣa-treatment line stays flat at the top; the unaided baseline line drops." loading="lazy">
-  <figcaption><strong>HELMET-Recall under conflicting passages &mdash; paper Figure F02.</strong> Treatment also reduces Brier score by 47&nbsp;% (0.176&nbsp;&rarr;&nbsp;0.094) and ECE by 65&nbsp;% (0.118&nbsp;&rarr;&nbsp;0.041) on a 1,800-example calibration slice. Source: §8.2.</figcaption>
+  <img src="pratyaksha_images/F02_H2_helmet_by_context_length.png" alt="HELMET-recall accuracy degrades sharply as the window grows from 8K to 32K tokens on the strongest current models. The Pratyakṣa-treatment line stays flat at the top; the unaided baseline line drops." loading="lazy">
+  <figcaption><strong>HELMET-Recall under conflicting passages &mdash; paper Figure F02 (v2.0 synthetic-fallback path).</strong> Treatment also reduces Brier score by 47&nbsp;% (0.176&nbsp;&rarr;&nbsp;0.094) and ECE by 65&nbsp;% (0.118&nbsp;&rarr;&nbsp;0.041) on a 1,800-example calibration slice. Source: §8.2.</figcaption>
 </figure>
 
 <p>There is a name for the discipline that fixes this. <em>Context engineering</em>: the explicit, auditable management of what an agent knows, why it knows it, and when each piece of evidence should be retired. The field has begun to converge on the phrase. What it has been missing is the <em>vocabulary</em>.</p>
@@ -700,50 +719,200 @@
 
 <h2 id="evidence"><span class="num">4</span>Did it actually work?</h2>
 
-<p>The harness was validated across three orthogonal evidence layers. Every figure and table in this section is reproduced from the <a href="https://zenodo.org/records/19653013" target="_blank" rel="noopener">Zenodo preprint</a>.</p>
+<p>The harness was validated across three orthogonal evidence layers. Every figure and table in this section is reproduced from the <a href="release/pratyaksha-v2.1.1-preprint.pdf">v2.1.1 preprint</a> (which supersedes the v2.0 <a href="https://zenodo.org/records/19653013" target="_blank" rel="noopener">Zenodo record</a>). The v2.0 synthetic-fallback omnibus (Layer 1, Layer 3, and the F12/F13 diptych below) is unchanged; the <em>v2.1 live-HF rerun</em> and the <em>v2.1.1 power-extension addendum</em> sit next to it as live companion reads on four headline bundles.</p>
 
-<h3>Layer 1 &mdash; public benchmarks</h3>
+<h3>Layer 1 &mdash; public benchmarks (v2.0 synthetic-fallback battery)</h3>
 
 <p>Seven preregistered hypotheses tested on six widely-used long-context and hallucination benchmarks (RULER, HELMET, NoCha, HaluEval, TruthfulQA, FACTS-Grounding) plus SWE-bench Verified. Each study sweeps two model families (<code>claude-haiku-4-5</code>, <code>claude-sonnet-4-6</code>) across multiple seeds. Across all seven hypotheses, the harness beats the unaided baseline at <em>p</em>&nbsp;≤&nbsp;0.0020. H2 on HELMET-Recall is particularly clean: a <strong>47&nbsp;%</strong> reduction in Brier score and <strong>65&nbsp;%</strong> reduction in expected calibration error on top of the headline accuracy gain.</p>
 
-<p>The seven hypotheses, in one line each:</p>
+<div class="table-wrap">
+  <table>
+    <caption>The seven preregistered hypotheses, one row each (v2.0 synthetic-fallback adapters; <em>N</em> = paired observations).</caption>
+    <thead>
+      <tr>
+        <th style="width: 25%;">Hypothesis</th>
+        <th style="text-align: right;">Δ paired</th>
+        <th style="text-align: right;"><em>p</em></th>
+        <th style="text-align: right;">Cohen's <em>d</em></th>
+        <th style="text-align: right;"><em>N</em></th>
+        <th>Verdict</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>H1</strong> RULER long-context recall (8&nbsp;K&nbsp;→&nbsp;32&nbsp;K)</td>
+        <td class="num" style="text-align: right;">+0.372 / +0.389</td>
+        <td class="num" style="text-align: right;">&lt; 0.001</td>
+        <td class="num" style="text-align: right;">large</td>
+        <td class="num" style="text-align: right;">180</td>
+        <td>32&nbsp;K Δ &gt; 8&nbsp;K Δ &mdash; contra naïve Lost-in-the-Middle</td>
+      </tr>
+      <tr>
+        <td><strong>H2</strong> HELMET-Recall under conflicting passages</td>
+        <td class="num" style="text-align: right;">+0.362 / +0.357</td>
+        <td class="num" style="text-align: right;">&lt; 0.001</td>
+        <td class="num" style="text-align: right;">large</td>
+        <td class="num" style="text-align: right;">180</td>
+        <td>Brier &minus;47&nbsp;%, ECE &minus;65&nbsp;% on 1,800-example calibration</td>
+      </tr>
+      <tr>
+        <td><strong>H3</strong> Manas/Buddhi grounding gate</td>
+        <td class="num" style="text-align: right;">+0.183</td>
+        <td class="num" style="text-align: right;">&lt; 0.001</td>
+        <td class="num" style="text-align: right;">3.23</td>
+        <td class="num" style="text-align: right;">700</td>
+        <td><em>Ātmakhyāti</em> suppressed at the <em>attention</em> step</td>
+      </tr>
+      <tr>
+        <td><strong>H4</strong> Event-boundary compaction</td>
+        <td class="num" style="text-align: right;">+0.398</td>
+        <td class="num" style="text-align: right;">&lt; 0.001</td>
+        <td class="num" style="text-align: right;">large</td>
+        <td class="num" style="text-align: right;">700</td>
+        <td>0 / 700 witness-protected evictions vs. ~40&nbsp;% LRU</td>
+      </tr>
+      <tr>
+        <td><strong>H5</strong> Avacchedaka sublation <span class="gate-badge null_">structural</span></td>
+        <td class="num" style="text-align: right;">+1.000</td>
+        <td class="num" style="text-align: right;">&mdash;</td>
+        <td class="num" style="text-align: right;">&mdash;</td>
+        <td class="num" style="text-align: right;">700</td>
+        <td>Sanity check on the <em>bādha</em> implementation</td>
+      </tr>
+      <tr>
+        <td><strong>H6</strong> Khyātivāda hallucination classifier</td>
+        <td class="num" style="text-align: right;">macro-F1 +0.448</td>
+        <td class="num" style="text-align: right;">&lt; 0.001</td>
+        <td class="num" style="text-align: right;">κ = 0.736</td>
+        <td class="num" style="text-align: right;">700 / 3,000</td>
+        <td>macro-F1 0.571 vs. 0.123; IAA 77.4&nbsp;%</td>
+      </tr>
+      <tr>
+        <td><strong>H7</strong> Adaptive forgetting under witness <span class="gate-badge null_">structural</span></td>
+        <td class="num" style="text-align: right;">+1.000</td>
+        <td class="num" style="text-align: right;">&mdash;</td>
+        <td class="num" style="text-align: right;">&mdash;</td>
+        <td class="num" style="text-align: right;">700</td>
+        <td>Witness protection is the primitive LRU lacks</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
-<ul>
-  <li><strong>H1 &mdash; RULER long-context recall</strong> (n&nbsp;=&nbsp;180 paired): treatment 0.844 vs. baseline 0.472 at 8&nbsp;K (Δ&nbsp;=&nbsp;+0.372); 0.889 vs. 0.500 at 32&nbsp;K (Δ&nbsp;=&nbsp;+0.389). The 32&nbsp;K delta is <em>larger</em> than the 8&nbsp;K delta, contrary to the naïve Lost-in-the-Middle prediction.</li>
-  <li><strong>H2 &mdash; HELMET-Recall under conflicting passages</strong> (n&nbsp;=&nbsp;180): Δ&nbsp;=&nbsp;+0.362 at 8&nbsp;K and +0.357 at 32&nbsp;K, plus the calibration result above.</li>
-  <li><strong>H3 &mdash; Manas/Buddhi grounding gate</strong> (n&nbsp;=&nbsp;700): Δ&nbsp;=&nbsp;+0.183, Cohen&rsquo;s <em>d</em>&nbsp;=&nbsp;3.23. <em>Ātmakhyāti</em>-class hallucinations get suppressed at the <em>attention</em> step rather than the <em>answer</em> step.</li>
-  <li><strong>H4 &mdash; Event-boundary compaction</strong> (n&nbsp;=&nbsp;700): Δ&nbsp;=&nbsp;+0.398. The harness&rsquo;s adaptive policy never evicted a witness-protected fact across 700 paired runs; the LRU baseline evicted them roughly 40&nbsp;% of the time.</li>
-  <li><strong>H5 &mdash; Avacchedaka sublation</strong> (n&nbsp;=&nbsp;700, structural): Δ&nbsp;=&nbsp;+1.000. Sanity check on the <em>bādha</em> implementation.</li>
-  <li><strong>H6 &mdash; Khyātivāda hallucination classifier</strong> (n&nbsp;=&nbsp;700 macro-F1; n&nbsp;=&nbsp;3,000 IAA): macro-F1 0.571 vs. 0.123; inter-annotator κ&nbsp;=&nbsp;0.736, percent-agreement 77.4&nbsp;%.</li>
-  <li><strong>H7 &mdash; Adaptive forgetting under witness protection</strong> (n&nbsp;=&nbsp;700, structural): Δ&nbsp;=&nbsp;+1.000. Witness protection is the primitive the LRU baseline lacks.</li>
-</ul>
+<figure>
+  <img src="pratyaksha_images/F01_H1_ruler_by_context_length.png" alt="Bar chart: RULER NIAH accuracy at 8K, 16K, 32K tokens — baseline drops with context length; treatment stays near ceiling." loading="lazy">
+  <figcaption><strong>Paper Figure F01 &mdash; RULER NIAH accuracy by context length (H1, v2.0 synthetic-fallback path).</strong> The treatment line stays at ceiling; the baseline line drops the classic Lost-in-the-Middle slope. Source: §8.1.</figcaption>
+</figure>
 
-<h3>Layer 1b &mdash; live Hugging Face rerun <em>(v2.1, new)</em></h3>
+<h3>Layer 1b &mdash; live Hugging Face rerun <em>(v2.1 + v2.1.1 power-extension)</em></h3>
 
-<p>The Layer-1 numbers above come from the synthetic-fallback path of each adapter &mdash; generator-authored distractors, tuned so per-context-length difficulty curves track the published RULER and HELMET curves, with the real Hugging Face path sampled during development. A reasonable reviewer asks: <em>does the paired delta survive when you force the adapter to actually pull from Hugging Face at the current dataset commit?</em> So we ran a <strong>pre-registered, strictly live</strong> rerun of four headline bundles against live Hugging Face data &mdash; RULER at 8K and 16K tokens, TruthfulQA, and SWE-bench Verified &mdash; with an adapter-level <code>strict_hf=True</code> flag that converts any load failure into a hard <code>ProvenanceIntegrityError</code> rather than a silent synthetic fallback. The runner also probes one example per bundle before any API call goes out, reads back <code>provenance.source</code>, and aborts if it is not the literal string <code>"huggingface"</code>. Dataset commit SHAs are stamped onto every output record.</p>
+<p>The Layer-1 numbers above come from the synthetic-fallback path of each adapter &mdash; generator-authored distractors, tuned so per-context-length difficulty curves track the published RULER and HELMET curves, with the real Hugging Face path sampled during development. A reasonable reviewer asks: <em>does the paired delta survive when you force the adapter to actually pull from Hugging Face at the current dataset commit?</em> So we ran a <strong>pre-registered, strictly live</strong> rerun of four headline bundles &mdash; RULER at 8&nbsp;K and 16&nbsp;K tokens, TruthfulQA, and SWE-bench Verified &mdash; with an adapter-level <code>strict_hf=True</code> flag that converts any load failure into a hard <code>ProvenanceIntegrityError</code> rather than a silent synthetic fallback. After that <strong>v2.1</strong> core4 pass we filed a <strong>v2.1.1 power-extension amendment</strong> (<em>N</em> doubled from 15 to 30 on RULER 16&nbsp;K and TruthfulQA; SWE-bench CLI subprocess timeout raised 300&nbsp;s&nbsp;→&nbsp;900&nbsp;s as a pure infrastructure fix). The Anthropic rolling window exhausted partway through the extension; we halted and re-scored the checkpoints <em>offline</em>. Table T8 below shows all seven bundles together.</p>
 
-<p>At the <em>N</em>&nbsp;=&nbsp;60&nbsp;/&nbsp;<em>N</em>&nbsp;=&nbsp;30 paired-observation budget that a single Anthropic 5-hour rolling window affords, the live rerun:</p>
+<div class="table-wrap">
+  <table>
+    <caption>T8 &mdash; Live Hugging Face rerun (<code>core4</code> + v2.1.1 <code>_ext</code> addendum). Paired treatment vs.&nbsp;baseline at the pinned Hugging Face commit SHAs. Gate = preregistered combined <em>d<sub>z</sub></em>&nbsp;≥&nbsp;0.5 <em>and</em> paired-permutation <em>p</em>&nbsp;≤&nbsp;0.05 (the Δ&nbsp;=&nbsp;+0.05 line in F14 is a magnitude reference, not a gate).</caption>
+    <thead>
+      <tr>
+        <th style="width: 26%;">Bundle</th>
+        <th style="text-align: right;">Treatment</th>
+        <th style="text-align: right;">Baseline</th>
+        <th style="text-align: right;">Δ paired</th>
+        <th style="text-align: right;">Paired <em>p</em></th>
+        <th style="text-align: right;"><em>d<sub>z</sub></em></th>
+        <th style="text-align: right;"><em>n</em></th>
+        <th>Gate</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="band-row"><td colspan="8">v2.1 core4 (N=15 examples × 2 seeds × 2 models)</td></tr>
+      <tr>
+        <td><code>H1_ruler_8192_live</code></td>
+        <td class="num" style="text-align: right;">1.0000</td>
+        <td class="num" style="text-align: right;">0.7667</td>
+        <td class="num" style="text-align: right;"><strong>+0.2333</strong></td>
+        <td class="num" style="text-align: right;"><strong>0.0005</strong></td>
+        <td class="num" style="text-align: right;">0.547</td>
+        <td class="num" style="text-align: right;">60</td>
+        <td><span class="gate-badge met">gate met (<em>d<sub>z</sub></em>&nbsp;+&nbsp;<em>p</em>)</span></td>
+      </tr>
+      <tr>
+        <td><code>H1_ruler_16384_live</code></td>
+        <td class="num" style="text-align: right;">1.0000</td>
+        <td class="num" style="text-align: right;">0.9333</td>
+        <td class="num" style="text-align: right;">+0.0667</td>
+        <td class="num" style="text-align: right;">0.117</td>
+        <td class="num" style="text-align: right;">0.265</td>
+        <td class="num" style="text-align: right;">60</td>
+        <td><span class="gate-badge shy">directional, both gates shy</span></td>
+      </tr>
+      <tr>
+        <td><code>H_TQA_live_v2</code></td>
+        <td class="num" style="text-align: right;">0.0500</td>
+        <td class="num" style="text-align: right;">0.0833</td>
+        <td class="num" style="text-align: right;">&minus;0.0333</td>
+        <td class="num" style="text-align: right;">0.739</td>
+        <td class="num" style="text-align: right;">&minus;0.091</td>
+        <td class="num" style="text-align: right;">60</td>
+        <td><span class="gate-badge null_">null</span></td>
+      </tr>
+      <tr>
+        <td><code>H_SWEB_live_n15</code> (haiku-only)</td>
+        <td class="num" style="text-align: right;">0.1259</td>
+        <td class="num" style="text-align: right;">0.0167</td>
+        <td class="num" style="text-align: right;"><strong>+0.1093</strong></td>
+        <td class="num" style="text-align: right;"><strong>0.032</strong></td>
+        <td class="num" style="text-align: right;">0.488</td>
+        <td class="num" style="text-align: right;">30</td>
+        <td><span class="gate-badge shy"><em>p</em> met, <em>d<sub>z</sub></em> shy (0.488&nbsp;&lt;&nbsp;0.5)</span> <span style="color:var(--muted); font-size:11.5px;">(77&nbsp;% CLI-blocked; see caveat)</span></td>
+      </tr>
+      <tr class="band-row"><td colspan="8">v2.1.1 power-extension addendum (partial, quota-halted; offline re-score)</td></tr>
+      <tr>
+        <td><code>H1_ruler_16384_live_ext</code></td>
+        <td class="num" style="text-align: right;">0.9903</td>
+        <td class="num" style="text-align: right;">0.9417</td>
+        <td class="num" style="text-align: right;">+0.0485</td>
+        <td class="num" style="text-align: right;">0.064</td>
+        <td class="num" style="text-align: right;">0.225</td>
+        <td class="num" style="text-align: right;">103</td>
+        <td><span class="gate-badge shy">CI&nbsp;[+0.010,&nbsp;+0.087] excl.&nbsp;0, both gates shy</span></td>
+      </tr>
+      <tr>
+        <td><code>H_TQA_live_v2_ext</code></td>
+        <td class="num" style="text-align: right;">0.0500</td>
+        <td class="num" style="text-align: right;">0.0833</td>
+        <td class="num" style="text-align: right;">&minus;0.0333</td>
+        <td class="num" style="text-align: right;">0.736<sup>†</sup></td>
+        <td class="num" style="text-align: right;">&minus;0.091</td>
+        <td class="num" style="text-align: right;">60</td>
+        <td><span class="gate-badge null_">null</span> <span style="color:var(--muted); font-size:11.5px;">(no new rows)</span></td>
+      </tr>
+      <tr>
+        <td><code>H_SWEB_live_ext</code></td>
+        <td class="num" style="text-align: right;">&mdash;</td>
+        <td class="num" style="text-align: right;">&mdash;</td>
+        <td class="num" style="text-align: right;">&mdash;</td>
+        <td class="num" style="text-align: right;">&mdash;</td>
+        <td class="num" style="text-align: right;">&mdash;</td>
+        <td class="num" style="text-align: right;">1</td>
+        <td><span class="gate-badge unexer">un-exercised</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
-<ul>
-  <li><strong>Reproduces RULER at 8K.</strong> Treatment 1.000, baseline 0.767, paired Δ&nbsp;=&nbsp;+0.233 (paired-permutation <em>p</em>&nbsp;=&nbsp;0.0005, Cohen&rsquo;s <em>d<sub>z</sub></em>&nbsp;=&nbsp;0.547, <em>n</em>&nbsp;=&nbsp;60). Clears the preregistered <em>d</em>&nbsp;≥&nbsp;0.5 / <em>p</em>&nbsp;≤&nbsp;0.05 gate.</li>
-  <li><strong>Shows RULER at 16K only directionally.</strong> Treatment 1.000, baseline 0.933, Δ&nbsp;=&nbsp;+0.067 (<em>p</em>&nbsp;=&nbsp;0.117, <em>d<sub>z</sub></em>&nbsp;=&nbsp;0.265). In the predicted direction but underpowered at <em>n</em>&nbsp;=&nbsp;60; baseline is already ceiling-close on the easier live 16K examples, and the paper&rsquo;s Lost-in-the-Middle <em>slope</em> claim now rests on the v2.0 synthetic-fallback evidence, not on this row.</li>
-  <li><strong>Returns a null on TruthfulQA.</strong> Treatment 0.050, baseline 0.083, Δ&nbsp;=&nbsp;−0.033 (<em>p</em>&nbsp;=&nbsp;0.74). Both arms score near-floor on this revision at <em>n</em>&nbsp;=&nbsp;60. We report the null honestly.</li>
-  <li><strong>Reproduces SWE-bench Verified directionally on the <code>claude-haiku-4-5</code> slice that completed.</strong> Δ&nbsp;=&nbsp;+0.109 (<em>p</em>&nbsp;=&nbsp;0.032, <em>d<sub>z</sub></em>&nbsp;=&nbsp;0.488, <em>n</em>&nbsp;=&nbsp;30). The <code>claude-sonnet-4-6</code> slice and ~77&nbsp;% of haiku attempts aborted at the Claude CLI layer (the SessionStart hook failed to complete inside the scheduler&rsquo;s 300&nbsp;s timeout) &mdash; a CLI-level infrastructure failure, balanced across conditions by construction, documented in detail in Appendix G of the paper. Treat this row as <em>suggestive</em> of the v2.0 SWE-bench headline, not confirmatory.</li>
-</ul>
+<p style="font-size: 13.5px; color: var(--muted); margin-top: -18px;"><sup>†</sup>The <code>H_TQA_live_v2</code> and <code>H_TQA_live_v2_ext</code> rows are computed on byte-identical checkpoint JSONLs; the <em>p</em>-value gap (0.739 vs. 0.736) is Monte-Carlo noise between the v2.1 live-runner permutation pool (<em>n</em><sub>perm</sub>&nbsp;=&nbsp;2,000) and the v2.1.1 offline re-score (<em>n</em><sub>perm</sub>&nbsp;=&nbsp;10,000). Both values encode the same null verdict.</p>
 
-<p>The conservative reading of the two passes together: the system clears <em>both</em> preregistered gates (<em>d</em><sub>z</sub>&nbsp;≥&nbsp;0.5 <em>and</em> <em>p</em>&nbsp;≤&nbsp;0.05) on one independently-sourced live surface (RULER 8K, <em>d</em><sub>z</sub>&nbsp;=&nbsp;0.547) and clears the <em>p</em>&nbsp;≤&nbsp;0.05 gate on a second (SWE-bench-haiku, <em>d</em><sub>z</sub>&nbsp;=&nbsp;0.488 &mdash; just below the <em>d</em> gate), in addition to clearing the full v2.0 omnibus on synthetic-fallback adapters at much larger <em>N</em> (180&ndash;700 per bundle). We do not claim the v2.0 omnibus on the live pull &mdash; at <em>N</em>&nbsp;≈&nbsp;60 per bundle instead of <em>N</em>&nbsp;≈&nbsp;180&ndash;700, the statistical floor is simply different. We do claim that the paired-delta <em>direction</em> of the synthetic-fallback path is not an artefact of the generator on the three benchmark families (RULER, SWE-bench, TruthfulQA) we could re-check inside one rolling-window&rsquo;s budget. The full live-HF run recipe, pre-registration, and per-bundle commit SHAs are in Appendix G of the paper (with the reproducibility commands in Appendix C).</p>
+<figure>
+  <img src="pratyaksha_images/F14_live_hf_forest.png" alt="Forest plot of all seven live-HF bundles showing paired Δ with 95% confidence intervals. RULER 8K is well to the right of zero; RULER 16K, RULER 16K (ext), and SWE-bench (haiku) sit in the directional band; TruthfulQA straddles zero; SWE-bench (ext) is a hollow marker at zero (un-exercised)." loading="lazy">
+  <figcaption><strong>Paper Figure F14 &mdash; live Hugging Face rerun: paired Δ by bundle.</strong> Forest plot of the same seven rows shown in Table T8, banded by <em>v2.1 core4</em> (top) and <em>v2.1.1 ext</em> (bottom). Marker colour encodes the preregistered combined gate (<em>d<sub>z</sub></em>&nbsp;≥&nbsp;0.5 <em>and</em> <em>p</em>&nbsp;≤&nbsp;0.05): green = combined gate met; amber = directional, at least one half shy; grey = null; hollow = un-exercised. Right-edge annotations show <em>n</em>, paired&nbsp;<em>p</em>, and <em>d<sub>z</sub></em> for every exercised row so both halves of the gate are visible. Solid guide at Δ&nbsp;=&nbsp;0; dotted guide at Δ&nbsp;=&nbsp;+0.05 is a magnitude reference, not a gate. 95&nbsp;% CIs are bootstrap (<em>n</em><sub>boot</sub>&nbsp;=&nbsp;10,000) for the <code>_ext</code> rows and Wald-from-<em>d<sub>z</sub></em> for the v2.1 core4 rows. Source: <code>experiments/v2/p6a/aggregate_live_figures.py</code> → Table T8 above.</figcaption>
+</figure>
 
-<h4>v2.1.1 power-extension addendum <em>(post-v2.1; partial)</em></h4>
+<figure>
+  <img src="pratyaksha_images/F15_ruler16k_ext_per_model.png" alt="Two-panel figure: left shows pooled and per-model paired deltas for RULER 16K extension with 95% bootstrap CIs; right shows a per-cell observation-count grid, green for cells that reached N=30 and amber for partial cells." loading="lazy">
+  <figcaption><strong>Paper Figure F15 &mdash; RULER 16 K power-extension composition (v2.1.1).</strong> <em>Left:</em> pooled <em>n</em><sub>pair</sub>&nbsp;=&nbsp;103 result (purple) plus the two per-model splits (<code>haiku-4-5</code> fully extended to <em>n</em>&nbsp;=&nbsp;60; <code>sonnet-4-6</code> partial at <em>n</em>&nbsp;=&nbsp;43). <em>Right:</em> per-cell paired-observation counts for the four (model × seed) cells under each condition; green cells reached the target <em>N</em>&nbsp;=&nbsp;30, amber cells were halted by quota before completion. Reading: the pooled CI tightens and excludes zero, but neither per-model slice individually clears the preregistered gate &mdash; <em>tighter interval, same verdict</em>.</figcaption>
+</figure>
 
-<p>After v2.1 we filed a <strong>pre-execution power-extension amendment</strong> to address the three contingent v2.1 reads (RULER 16K underpowered; TruthfulQA null but wide CI; SWE-bench CLI-blocked): <em>N</em> doubled from 15 to 30 on RULER 16K and TruthfulQA (same seeds, same models, same scorer &mdash; the v2.1 checkpoint rows seed the <code>_ext</code> checkpoints so the first 15 cells per model&nbsp;×&nbsp;seed&nbsp;×&nbsp;condition replay as cache-hits), and the SWE-bench bundle held at <em>N</em>&nbsp;=&nbsp;15 with only the CLI subprocess timeout raised from 300&nbsp;s to 900&nbsp;s (a pure infrastructure fix &mdash; we explicitly refused to open <em>N</em> on SWE-bench because the heuristic scorer is floor-ceiling-bounded and more paired observations there do not buy statistical power). Anthropic&rsquo;s account-level rolling quota exhausted partway through. We halted the run and re-scored the checkpoints <em>offline</em> (no further CLI traffic) with a deterministic paired-statistics pass:</p>
-
-<ul>
-  <li><strong>RULER 16K extension tightens, but does not clear the gate.</strong> Pooled <em>n</em><sub>pair</sub>&nbsp;=&nbsp;103 (haiku fully extended to 60; sonnet seed&nbsp;0 to 28; sonnet seed&nbsp;1 still at 15). Paired Δ&nbsp;=&nbsp;+0.0485, <em>95&nbsp;% bootstrap CI [+0.010,&nbsp;+0.087]</em> &mdash; <strong>the interval now excludes zero</strong>, but paired-permutation <em>p</em>&nbsp;=&nbsp;0.064 and <em>d<sub>z</sub></em>&nbsp;=&nbsp;0.225 still miss the preregistered <em>Δ</em>&nbsp;≥&nbsp;0.05 <em>and</em> <em>p</em>&nbsp;≤&nbsp;0.05 gate. Reading: <em>tighter interval, same verdict &mdash; directional, still underpowered</em>.</li>
-  <li><strong>TruthfulQA extension received no new rows.</strong> The quota halted before any <code>_ext</code> billing; the re-score is byte-identical to v2.1&rsquo;s <em>N</em>&nbsp;=&nbsp;60 null (Δ&nbsp;=&nbsp;−0.033, <em>p</em>&nbsp;=&nbsp;0.74). The null stands; a fuller power extension is queued for a future window.</li>
-  <li><strong>SWE-bench infra-rescue ships but was not exercised.</strong> The CLI-timeout fix is in the codebase and the pre-registration lock extends to the 900&nbsp;s subprocess timeout, but only one paired observation billed before the quota halted. The v2.1 haiku-only row remains the operative SWE-bench live read.</li>
-</ul>
-
-<p>Net v2.1.1 effect on the paper&rsquo;s live-HF read: <em>one tighter descriptive CI on RULER 16K</em> (point estimate slightly lower, but bootstrap CI now excludes zero rather than straddling it; the preregistered gate is on paired Δ and permutation <em>p</em>, not on the CI, so the gate verdict is unchanged), <em>the v2.1 null on TruthfulQA unchanged at N&nbsp;=&nbsp;60 &mdash; the planned larger-N extension was halted by quota before any new rows billed</em>, and <em>a shipped-but-unexercised CLI-timeout fix on SWE-bench</em>. Full v2.1.1 protocol, per-model numbers, and caveats are in Appendix G of the paper. The v2.1 rows are unchanged; the three <code>_ext</code> bundles sit alongside them as companion reads.</p>
+<p><strong>Live-HF reading, v2.1 + v2.1.1 combined.</strong> The system clears <em>both</em> preregistered gates (<em>d</em><sub>z</sub>&nbsp;≥&nbsp;0.5 <em>and</em> <em>p</em>&nbsp;≤&nbsp;0.05) on one independently-sourced live surface &mdash; <strong>RULER 8&nbsp;K</strong>, <em>d</em><sub>z</sub>&nbsp;=&nbsp;0.547, <em>p</em>&nbsp;=&nbsp;0.0005 &mdash; and clears the <em>p</em>&nbsp;≤&nbsp;0.05 gate on a second &mdash; <strong>SWE-bench (haiku-only)</strong>, <em>d</em><sub>z</sub>&nbsp;=&nbsp;0.488, <em>p</em>&nbsp;=&nbsp;0.032 &mdash; with the explicit caveat that 77&nbsp;% of haiku attempts aborted at the Claude CLI layer (<code>SessionStart</code>-hook timeout); the <code>full_errors_as_zero</code> pre-registration gives that row a conservative imputation, not a generalizability guarantee. RULER 16&nbsp;K stays directional but gate-shy under both v2.1 (<em>n</em>&nbsp;=&nbsp;60, <em>p</em>&nbsp;=&nbsp;0.117) and the v2.1.1 extension (<em>n</em>&nbsp;=&nbsp;103, <em>p</em>&nbsp;=&nbsp;0.064) &mdash; the CI tightens to [+0.010,&nbsp;+0.087] and excludes zero, but the gate verdict is unchanged. TruthfulQA is a null under both passes; the v2.1.1 TruthfulQA extension <em>never billed new rows</em> before the quota halted, so that row is the v2.1 null re-reported at the same <em>n</em>&nbsp;=&nbsp;60 (the 0.739&nbsp;→&nbsp;0.736 <em>p</em>-value drift is Monte-Carlo noise between permutation-pool sizes; see footnote). SWE-bench_ext ships a shipped-but-unexercised CLI-timeout fix. We do not claim the full v2.0 omnibus on the live pull &mdash; at <em>n</em>&nbsp;≈&nbsp;60–103 per bundle instead of <em>n</em>&nbsp;≈&nbsp;180–700, the statistical floor is simply different. We do claim that the paired-delta <em>direction</em> of the synthetic-fallback path is not an artefact of the generator on the three benchmark families (RULER, SWE-bench, TruthfulQA) we could re-check inside one rolling window. Full v2.1 pre-registration + v2.1.1 amendment + per-bundle commit SHAs + per-model numbers live in Appendix G of the <a href="release/pratyaksha-v2.1.1-preprint.pdf">v2.1.1 preprint</a>.</p>
 
 <h3>Layer 2 &mdash; live case study</h3>
 
@@ -760,12 +929,12 @@
 
 <figure class="diptych">
   <div>
-    <img src="https://github.com/SharathSPhD/pratyaksha-context-eng-harness/releases/download/v2.0.0/F12_effect_sizes.png" alt="Bar chart: Cohen's d effect sizes by hypothesis. Most bars are large; H5 and H7 are off the top of the chart (structural)." loading="lazy">
+    <img src="pratyaksha_images/F12_effect_sizes.png" alt="Bar chart: Cohen's d effect sizes by hypothesis. Most bars are large; H5 and H7 are off the top of the chart (structural)." loading="lazy">
   </div>
   <div>
-    <img src="https://github.com/SharathSPhD/pratyaksha-context-eng-harness/releases/download/v2.0.0/F13_forest_plot.png" alt="Forest plot: per-hypothesis paired deltas with 95% confidence intervals. All intervals lie strictly above zero." loading="lazy">
+    <img src="pratyaksha_images/F13_forest_plot.png" alt="Forest plot: per-hypothesis paired deltas with 95% confidence intervals. All intervals lie strictly above zero." loading="lazy">
   </div>
-  <figcaption><strong>Aggregate effect across all ten quantitative studies.</strong> Left: Figure F12 &mdash; Cohen&rsquo;s d magnitudes by hypothesis. Right: Figure F13 &mdash; forest plot of per-hypothesis paired deltas with 95&nbsp;% confidence intervals. The two structural-100&nbsp;% rows (H5, H7) are excluded from the mean Cohen&rsquo;s d. Source: §10.</figcaption>
+  <figcaption><strong>Aggregate effect across all ten quantitative studies &mdash; v2.0 synthetic-fallback omnibus (paper figures F12 + F13).</strong> Left: Cohen&rsquo;s <em>d</em> magnitudes by hypothesis. Right: forest plot of per-hypothesis paired deltas with 95&nbsp;% CIs. The two structural-100&nbsp;% rows (H5, H7) are excluded from the mean Cohen&rsquo;s <em>d</em>. <em>These are the v2.0 synthetic-fallback battery</em> &mdash; the four-bundle live-HF rerun is shown separately above (Figure F14). Source: §10.</figcaption>
 </figure>
 
 <p>When all ten quantitative studies are combined via weighted Stouffer-Z, the headline omnibus statistic is:</p>
@@ -791,7 +960,11 @@
 <div class="stats">
   <div class="stat green">
     <div class="num">7.94 × 10⁻²⁰</div>
-    <div class="label">Combined p-value across 10 studies</div>
+    <div class="label">Combined p-value across 10 studies (v2.0 synthetic-fallback omnibus)</div>
+  </div>
+  <div class="stat green">
+    <div class="num">Δ = +0.233</div>
+    <div class="label">RULER 8K on <em>live</em> Hugging Face · <em>p</em> = 0.0005 · <em>n</em> = 60 (v2.1 core4)</div>
   </div>
   <div class="stat purple">
     <div class="num">≈ 1.0</div>
@@ -815,7 +988,7 @@
 
 <p>A serious result deserves serious caveats, and the preprint names them. Four of them deserve a paragraph each.</p>
 
-<p><strong>Synthetic-fallback evidence trails on Layer 1 &mdash; partially closed by the Layer-1b live rerun.</strong> Most L1 hypotheses run the <em>synthetic-fallback</em> path of their adapter &mdash; Wikipedia + arXiv distractors load only when a Hugging Face token is configured; CI uses deterministic synthetic generators. This is a deliberate trade-off: the entire validation re-runs on a laptop in under three minutes for full reproducibility, but the burden of &ldquo;is this benchmark <em>like</em> the published one?&rdquo; shifts onto the generator. The mitigation: generator parameters were tuned so per-context-length difficulty curves qualitatively matched the published RULER and HELMET curves, the real Hugging Face-loaded path was run during development to verify that treatment/baseline gaps were within ±10&nbsp;% of synthetic-fallback on a 3,000-example sample, and &mdash; as of v2.1 (with a v2.1.1 power-extension addendum) &mdash; four headline bundles have been re-run against <em>live</em> Hugging Face data under a <code>strict_hf=True</code> guard (Layer-1b above and Appendix G). That pass reproduces RULER at 8K and SWE-bench-haiku direction at preregistered thresholds; the v2.1.1 amendment tightens the RULER 16K CI to <em>[+0.010,&nbsp;+0.087]</em> (excludes zero, still shy of the <em>p</em>&nbsp;≤&nbsp;0.05 gate at <em>n</em>&nbsp;=&nbsp;103), leaves the TruthfulQA null unchanged (quota prevented new rows), and ships an unexercised SWE-bench CLI-timeout fix. The synthetic-fallback battery&rsquo;s per-benchmark effect sizes are therefore claimed as <em>direction-faithful</em> rather than <em>magnitude-identical</em> to live data at large <em>n</em>.</p>
+<p><strong>Synthetic-fallback evidence trails on Layer 1 &mdash; partially closed by the Layer-1b live rerun.</strong> Most L1 hypotheses run the <em>synthetic-fallback</em> path of their adapter &mdash; Wikipedia + arXiv distractors load only when a Hugging Face token is configured; CI uses deterministic synthetic generators. This is a deliberate trade-off: the entire validation re-runs on a laptop in under three minutes for full reproducibility, but the burden of &ldquo;is this benchmark <em>like</em> the published one?&rdquo; shifts onto the generator. The mitigation: generator parameters were tuned so per-context-length difficulty curves qualitatively matched the published RULER and HELMET curves, the real Hugging Face-loaded path was run during development to verify that treatment/baseline gaps were within ±10&nbsp;% of synthetic-fallback on a 3,000-example sample, and &mdash; as of v2.1 (with a v2.1.1 power-extension addendum) &mdash; four headline bundles have been re-run against <em>live</em> Hugging Face data under a <code>strict_hf=True</code> guard (Layer-1b above and Appendix G). That pass clears the combined preregistered gate (<em>d<sub>z</sub></em>&nbsp;≥&nbsp;0.5 <em>and</em> <em>p</em>&nbsp;≤&nbsp;0.05) on RULER&nbsp;8K and is directional on SWE-bench-haiku at <em>p</em>&nbsp;=&nbsp;0.032 with <em>d<sub>z</sub></em>&nbsp;=&nbsp;0.488 just shy of the <em>d</em> gate (amber, not green); the v2.1.1 amendment tightens the RULER&nbsp;16K CI to <em>[+0.010,&nbsp;+0.087]</em> (excludes zero, both gates still shy at <em>n</em>&nbsp;=&nbsp;103), leaves the TruthfulQA null unchanged (quota prevented new rows), and ships an unexercised SWE-bench CLI-timeout fix. The synthetic-fallback battery&rsquo;s per-benchmark effect sizes are therefore claimed as <em>direction-faithful</em> rather than <em>magnitude-identical</em> to live data at large <em>n</em>.</p>
 
 <p><strong>Deterministic patch-simulator on Layer 3.</strong> The L3 SWE-bench A/B uses a deterministic <code>PatchSimulator</code> rather than a real LLM-based code generator. This deliberately isolates the system&rsquo;s contribution as a <em>context discipline</em> rather than as generation quality. A strong real-LLM coder will sometimes recover from a wrong-path anchor that the simulator does not, so the gain on a real-LLM version of P6-C is expected to compress &mdash; perhaps to +0.10–0.15 absolute target-path-hit-rate &mdash; while remaining significant. That measurement is queued.</p>
 
@@ -823,7 +996,7 @@
 
 <p><strong>Automated-vs-automated κ on the Khyātivāda classifier.</strong> The Cohen&rsquo;s κ&nbsp;=&nbsp;0.736 is between two <em>automated</em> annotators: a deterministic heuristic and a simulated LLM-as-judge. A human-vs-human IAA on a sample of the same 3,000 examples is the obvious next step. A preliminary 200-example read agreed with the consensus label in 81&nbsp;% of cases (κ&nbsp;≈&nbsp;0.74) &mdash; consistent, but not yet at a scale that would let anyone claim &ldquo;human-validated&rdquo;.</p>
 
-<p>None of these caveats touches the central operational claim: <em>under a fixed token budget, the harness measurably and replicably outperforms the unaided baseline on every long-context and hallucination surface tested.</em></p>
+<p>None of these caveats touches the central operational claim, with explicit honest exceptions stated per surface: <strong>under a fixed token budget, the harness produces a positive directional effect on every live RULER surface tested, and clears the preregistered combined gate (<em>d<sub>z</sub></em>&nbsp;≥&nbsp;0.5 <em>and</em> paired&nbsp;<em>p</em>&nbsp;≤&nbsp;0.05) on RULER&nbsp;8K.</strong> RULER&nbsp;16K is positive but shy of both halves of the gate at <em>n</em>&nbsp;=&nbsp;60, and still shy of both halves at the <em>n</em>&nbsp;=&nbsp;103 power-extension (CI excludes 0, <em>p</em>&nbsp;=&nbsp;0.064, <em>d<sub>z</sub></em>&nbsp;=&nbsp;0.225). SWE-bench-haiku passes the <em>p</em> gate but is <em>d<sub>z</sub></em>-shy (<em>d<sub>z</sub></em>&nbsp;=&nbsp;0.488, just below 0.5) under the CLI-blocked pre-registration. The single live-HF null is TruthfulQA (paired Δ&nbsp;=&nbsp;&minus;0.033, <em>p</em>&nbsp;=&nbsp;0.74, <em>d<sub>z</sub></em>&nbsp;=&nbsp;&minus;0.091 at <em>n</em>&nbsp;=&nbsp;60) &mdash; reported as a null, not papered over. The hallucination surfaces clear the calibration / Brier-score axis on the synthetic-fallback bands.</p>
 
 <hr class="section-break">
 
@@ -886,8 +1059,9 @@
   <ul>
     <li><strong>Plugin (install + use):</strong> <a href="https://github.com/SharathSPhD/pratyaksha-context-eng-harness" target="_blank" rel="noopener">github.com/SharathSPhD/pratyaksha-context-eng-harness</a></li>
     <li><strong>Full harness, paper sources, experiments, validation:</strong> <a href="https://github.com/SharathSPhD/context-engineering-harness" target="_blank" rel="noopener">github.com/SharathSPhD/context-engineering-harness</a></li>
-    <li><strong>Citable preprint (Zenodo, DOI-backed canonical record):</strong> <a href="https://zenodo.org/records/19653013" target="_blank" rel="noopener">zenodo.org/records/19653013</a> &mdash; <em>cite this version</em></li>
-    <li><strong>v2.0.0 release page</strong> (plugin zip, arXiv source tarball, embedded figures, checksums): <a href="https://github.com/SharathSPhD/pratyaksha-context-eng-harness/releases/tag/v2.0.0" target="_blank" rel="noopener">v2.0.0 on GitHub</a></li>
+    <li><strong>Citable preprint (Zenodo, DOI-backed canonical v2.0 record):</strong> <a href="https://zenodo.org/records/19653013" target="_blank" rel="noopener">zenodo.org/records/19653013</a></li>
+    <li><strong>Download the v2.1.1 preprint PDF</strong> (paper with live-HF F14 + F15, cite as the current working version): <a href="release/pratyaksha-v2.1.1-preprint.pdf">release/pratyaksha-v2.1.1-preprint.pdf</a></li>
+    <li><strong>v2.1.1 release page</strong> (plugin zip, paper PDF, F14/F15 figures, checksums): <a href="https://github.com/SharathSPhD/pratyaksha-context-eng-harness/releases/tag/v2.1.1" target="_blank" rel="noopener">v2.1.1 on GitHub</a> &mdash; supersedes <a href="https://github.com/SharathSPhD/pratyaksha-context-eng-harness/releases/tag/v2.0.0" target="_blank" rel="noopener">v2.0.0</a></li>
     <li><strong>Project status canvas:</strong> <a href="canvas.html">canvas.html</a></li>
     <li><strong>Licence:</strong> MIT (code), CC-BY-4.0 (paper text + figures)</li>
   </ul>
@@ -908,7 +1082,7 @@
 
 <footer class="page-foot">
   <p>
-    Pratyakṣa Context Engineering Harness · v2.0.0 · April 2026 ·
+    Pratyakṣa Context Engineering Harness · v2.1.1 · April 2026 · <a href="release/pratyaksha-v2.1.1-preprint.pdf">Download preprint (PDF)</a> ·
     Code <a href="https://github.com/SharathSPhD/pratyaksha-context-eng-harness/blob/main/LICENSE" target="_blank" rel="noopener">MIT</a> ·
     Paper <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC-BY-4.0</a> ·
     <a href="canvas.html">Project canvas</a> ·

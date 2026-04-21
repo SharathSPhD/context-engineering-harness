@@ -1,0 +1,88 @@
+{
+  "rows": [
+    {
+      "long_label": "H1_ruler_8192_live",
+      "band": "v2.1 core4",
+      "delta": 0.2333,
+      "ci_low": 0.12540023722829785,
+      "ci_high": 0.34119976277170216,
+      "p_value": 0.0005,
+      "cohens_d": 0.5471,
+      "n_paired": 60,
+      "gate_status": "met",
+      "ci_source": "wald_from_d"
+    },
+    {
+      "long_label": "H1_ruler_16384_live",
+      "band": "v2.1 core4",
+      "delta": 0.0667,
+      "ci_low": 0.0030127603754666193,
+      "ci_high": 0.13038723962453336,
+      "p_value": 0.117441,
+      "cohens_d": 0.265,
+      "n_paired": 60,
+      "gate_status": "shy",
+      "ci_source": "wald_from_d"
+    },
+    {
+      "long_label": "H_TQA_live_v2",
+      "band": "v2.1 core4",
+      "delta": -0.0333,
+      "ci_low": -0.1259942545339038,
+      "ci_high": 0.05939425453390381,
+      "p_value": 0.738631,
+      "cohens_d": -0.0909,
+      "n_paired": 60,
+      "gate_status": "null",
+      "ci_source": "wald_from_d"
+    },
+    {
+      "long_label": "H_SWEB_live_n15",
+      "band": "v2.1 core4",
+      "delta": 0.1093,
+      "ci_low": 0.029136474725031655,
+      "ci_high": 0.18946352527496835,
+      "p_value": 0.0322,
+      "cohens_d": 0.4879,
+      "n_paired": 30,
+      "gate_status": "shy",
+      "ci_source": "wald_from_d"
+    },
+    {
+      "long_label": "H1_ruler_16384_live_ext",
+      "band": "v2.1.1 ext",
+      "delta": 0.0485,
+      "ci_low": 0.0097,
+      "ci_high": 0.0874,
+      "p_value": 0.063894,
+      "cohens_d": 0.2248,
+      "n_paired": 103,
+      "gate_status": "shy",
+      "ci_source": "bootstrap"
+    },
+    {
+      "long_label": "H_TQA_live_v2_ext",
+      "band": "v2.1.1 ext",
+      "delta": -0.0333,
+      "ci_low": -0.1333,
+      "ci_high": 0.05,
+      "p_value": 0.735826,
+      "cohens_d": -0.0909,
+      "n_paired": 60,
+      "gate_status": "null",
+      "ci_source": "bootstrap"
+    },
+    {
+      "long_label": "H_SWEB_live_ext",
+      "band": "v2.1.1 ext",
+      "delta": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.0,
+      "p_value": null,
+      "cohens_d": null,
+      "n_paired": 1,
+      "gate_status": "unexercised",
+      "ci_source": "degenerate"
+    }
+  ]
+}

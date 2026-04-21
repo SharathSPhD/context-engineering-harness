@@ -353,8 +353,8 @@ original $n=15$). Treatment mean $0.9903$, baseline $0.9417$,
 paired $\Delta=+0.0485$, 95\% bootstrap CI \textbf{[+0.010,\,+0.087]
 (excludes 0)}, paired-permutation $p=0.064$, Cohen's $d_z=0.225$.
 Per-model: haiku $\Delta=+0.050$, $p=0.26$, $n=60$; sonnet
-$\Delta=+0.047$, $p=0.51$, $n=43$. Neither preregistered gate
-($\Delta\ge 0.05$ \emph{and} $p\le 0.05$) clears --- so the result
+$\Delta=+0.047$, $p=0.51$, $n=43$. Neither half of the preregistered combined gate
+($d_z \ge 0.5$ \emph{and} $p \le 0.05$) clears --- so the result
 reads as \textbf{tighter interval, same verdict: directional but
 underpowered}. The two sonnet seed-0 CLI aborts re-exposed the
 \passthrough{\lstinline!SessionStart!}-hook mode from
@@ -368,10 +368,18 @@ as scored 0 (per the pre-registered imputation convention); excluding
 them moves pooled $p$ to $0.061$ and $d_z$ to $0.229$ --- same
 verdict.
 
+\begin{figure}[!tbp]
+\centering
+\includegraphics[width=0.96\linewidth]{F15_ruler16k_ext_per_model.png}
+\caption{\textbf{F15 --- RULER 16\,K power-extension composition (v2.1.1).} \emph{Left:} paired $\Delta$ with 95\% bootstrap CI for the pooled $n_\text{pair}=103$ result (purple) and the two per-model splits: \passthrough{\lstinline!claude-haiku-4-5!} (fully extended to $n_\text{pair}=60$) and \passthrough{\lstinline!claude-sonnet-4-6!} (partial, $n_\text{pair}=43$). Dotted vertical line marks $\Delta = +0.05$ as a magnitude reference (the operative preregistered gate is the combined $d_z \ge 0.5$ and $p \le 0.05$). The pooled CI \emph{excludes} zero at $[+0.010, +0.087]$; the per-model CIs (haiku and sonnet, each at smaller $n$) are wider and individually cross zero at the lower edge. \emph{Right:} per-cell paired observation counts (harness\_on vs.\ harness\_off). Green cells are fully extended to the target $N=30$; amber cells are partial. Haiku's four cells each reached 30; sonnet seed~0 reached 30/28 (two \passthrough{\lstinline!SessionStart!}-hook aborts on the harness\_off side) and sonnet seed~1 was never extended past the v2.1 baseline of 15/15 before the quota halted. The resulting pooled $n_\text{pair}=\min(60,60)+\min(30,28)+\min(15,15)=60+28+15=103$. Source: \passthrough{\lstinline!experiments/results/p6a/_summary\_live.json!} (\passthrough{\lstinline!bundles[H1\_ruler\_16384\_live\_ext]!}).}
+\label{fig:f15_ruler16k_ext_per_model}
+\end{figure}
+
 \textbf{H\_TQA\_live\_v2\_ext.} No new rows billed before the
-quota halted. The checkpoint is byte-identical to the v2.1 N=15
-TruthfulQA checkpoint; the re-score is the v2.1 result re-reported
-at $n_\text{pair}=60$: $\Delta=-0.033$, $p=0.736$, $d_z=-0.091$.
+quota halted. The checkpoint is byte-identical to the v2.1
+TruthfulQA checkpoint (\passthrough{\lstinline!H_TQA_live_v2!},
+$n_\text{pair}=60$); the re-score is the v2.1 result re-reported
+without extension: $\Delta=-0.033$, $p=0.736$, $d_z=-0.091$.
 The v2.1.1 read on TruthfulQA therefore adds \emph{no new
 information}; the v2.1 null remains the operative verdict, and a
 proper power-extension is left as pre-registered open work.

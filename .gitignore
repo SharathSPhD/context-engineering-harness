@@ -17,6 +17,9 @@ mlruns/
 # Ralph loop / power-ext run logs (per-machine, regenerated on each run)
 tools/dev/orchestration/logs/
 
+# tectonic build artifacts
+paper/build/
+
 # Private planning artifacts — user-facing docs (guide.md, validation_report.md) are tracked
 docs/prd.md
 docs/spec.md
