@@ -47,6 +47,7 @@ class HaluEvalQAAdapter(BenchmarkAdapter):
 
     default_n: int = 50
     load_real: bool = False
+    strict_hf: bool = False
     hf_dataset_id: str = "pminervini/HaluEval"
     hf_config: str = "qa"
     hf_split: str = "data"
@@ -57,6 +58,11 @@ class HaluEvalQAAdapter(BenchmarkAdapter):
             try:
                 return self._load_from_hf(n=n_use, seed=seed)
             except HFUnavailable as exc:
+                if self.strict_hf:
+                    raise RuntimeError(
+                        f"HaluEval QA live loader failed with strict_hf=True: {exc}. "
+                        "Refusing to fall back to synthetic under load_real=True."
+                    ) from exc
                 logger.warning("HaluEval QA real loader unavailable (%s); using synthetic", exc)
         return self._load_synthetic(n=n_use, seed=seed)
 

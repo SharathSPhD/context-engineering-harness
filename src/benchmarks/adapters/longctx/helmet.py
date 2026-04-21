@@ -85,7 +85,8 @@ class HelmetRagAdapter(BenchmarkAdapter):
         if condition == "harness_on":
             return (
                 "You are a retrieval-augmented assistant. The DOCUMENT below "
-                "contains the answer. Quote the exact 6-character activation code.\n\n"
+                "contains the answer. Quote the exact activation code verbatim "
+                "as it appears in the document (digits and/or letters, any length).\n\n"
                 f"DOCUMENT:\n{example.context}\n\n"
                 f"QUESTION: What is the activation code for vault {example.prompt}?\n"
                 "ANSWER (code only):"

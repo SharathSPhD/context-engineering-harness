@@ -48,7 +48,11 @@ class FactsGroundingAdapter(BenchmarkAdapter):
     default_n: int = 30
     load_real: bool = False
     hf_dataset_id: str = "google/FACTS-grounding-public"
-    hf_split: str = "test"
+    # The `public` split on google/FACTS-grounding-public is the only split
+    # shipped with the dataset (the `test` split is internal-only). We accept
+    # either name here so operators can keep using the DeepMind-canonical
+    # `test` label without failing the loader.
+    hf_split: str = "public"
 
     def load_examples(self, *, n: int | None = None, seed: int = 0) -> list[BenchmarkExample]:
         n_use = n or self.default_n

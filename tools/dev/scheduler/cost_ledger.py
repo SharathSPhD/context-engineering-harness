@@ -41,13 +41,24 @@ CREATE INDEX IF NOT EXISTS calls_regime    ON calls(regime);
 
 @dataclass(frozen=True)
 class WindowSummary:
-    """Aggregated stats over a rolling window."""
+    """Aggregated stats over a rolling window.
+
+    ``input_tokens`` is the raw sum across every recorded row and is
+    used for total-volume accounting (e.g. cost reports that want to
+    include cache reads). ``billed_input_tokens`` is the subset that
+    actually hit the Anthropic API — it excludes disk-cache hits, which
+    are local replays and do not consume the account's rate-limited
+    token budget. Window-exhaustion decisions should always use the
+    billed figure so that a warm cache never artificially stalls the
+    scheduler.
+    """
 
     window_hours: float
     started_at_unix: float
     n_calls: int
     n_cache_hits: int
     input_tokens: int
+    billed_input_tokens: int
     output_tokens: int
     n_rate_limited: int
 
@@ -118,6 +129,12 @@ class CostLedger:
                  COUNT(*)                              AS n_calls,
                  COALESCE(SUM(cache_hit), 0)           AS n_cache_hits,
                  COALESCE(SUM(input_tokens), 0)        AS input_tokens,
+                 COALESCE(SUM(
+                     CASE WHEN cache_hit = 0
+                          THEN input_tokens
+                          ELSE 0
+                     END
+                 ), 0)                                 AS billed_input_tokens,
                  COALESCE(SUM(output_tokens), 0)       AS output_tokens,
                  SUM(CASE WHEN regime = 'HALT' THEN 1 ELSE 0 END)
                                                        AS n_rate_limited
@@ -131,6 +148,7 @@ class CostLedger:
             n_calls=int(row["n_calls"] or 0),
             n_cache_hits=int(row["n_cache_hits"] or 0),
             input_tokens=int(row["input_tokens"] or 0),
+            billed_input_tokens=int(row["billed_input_tokens"] or 0),
             output_tokens=int(row["output_tokens"] or 0),
             n_rate_limited=int(row["n_rate_limited"] or 0),
         )
@@ -143,7 +161,7 @@ class CostLedger:
         max_calls: int | None = None,
     ) -> bool:
         s = self.window_summary(window_hours=window_hours)
-        if max_input_tokens is not None and s.input_tokens >= max_input_tokens:
+        if max_input_tokens is not None and s.billed_input_tokens >= max_input_tokens:
             return True
         if max_calls is not None and s.n_calls - s.n_cache_hits >= max_calls:
             return True

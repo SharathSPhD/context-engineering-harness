@@ -22,6 +22,7 @@ from tools.dev.scheduler import (
     CostLedger,
     DiskCache,
     PromptCache,
+    QuotaExhausted,
     RateLimitDetector,
     SchedulerConfig,
     SchedulerError,
@@ -150,6 +151,24 @@ def test_prompt_cache_emits_cache_control():
         ("HTTP 429 Too Many Requests", "", 1, True),
         ("Some other error", "", 1, False),
         ("", '{"is_error": true, "subtype": "weekly_limit_reached"}', 1, True),
+        # Regression: a clean result whose content legitimately mentions
+        # "rate limit" (e.g. a TruthfulQA answer) must NOT false-positive.
+        (
+            "",
+            '{"type":"result","subtype":"success","is_error":false,'
+            '"result":"The Anthropic API has a rate limit, but this answer '
+            'is fine.","usage":{"input_tokens":10}}',
+            0,
+            False,
+        ),
+        # Regression: hook chatter on stdout is not an error stream.
+        (
+            "",
+            '{"type":"system","subtype":"hook_response","output":"rate-limit doc"}\n'
+            + '{"type":"result","subtype":"success","is_error":false,"result":"ok"}',
+            0,
+            False,
+        ),
     ],
 )
 def test_rate_limit_detector(stderr, stdout, exit_code, expected):
@@ -249,6 +268,71 @@ def test_pre_call_window_cap_triggers_sleep(tmp_path):
         messages=[{"role": "user", "content": "hi"}],
     )
     assert any(s > 0 for s in sleeps), "expected sleep before the call"
+
+
+def test_fail_fast_on_quota_raises_on_pre_call_window_cap(tmp_path):
+    """Pre-call window exhaustion under fail_fast_on_quota must raise, not sleep."""
+    runner = _make_runner()  # should never be called
+    sched, sleeps = _sched(
+        tmp_path,
+        runner,
+        max_calls_per_window=1,
+        fail_fast_on_quota=True,
+    )
+    sched.ledger.record(prompt_hash="prev", model="m", input_tokens=100)
+
+    with pytest.raises(QuotaExhausted) as exc_info:
+        sched.submit(
+            model="claude-haiku-4-5",
+            system="",
+            messages=[{"role": "user", "content": "hi"}],
+        )
+    assert "pre-call window cap reached" in exc_info.value.reason
+    assert exc_info.value.window_summary["next_window_at"]
+    assert sleeps == []
+    assert len(runner.calls) == 0  # type: ignore[attr-defined]
+
+
+def test_fail_fast_on_quota_raises_on_rate_limit(tmp_path):
+    """Rate-limit detection under fail_fast_on_quota must raise, not sleep."""
+    runner = _make_runner(
+        (1, "", "Error: rate_limit_error from upstream\n"),
+    )
+    sched, sleeps = _sched(
+        tmp_path,
+        runner,
+        max_retries=3,
+        fail_fast_on_quota=True,
+    )
+
+    with pytest.raises(QuotaExhausted) as exc_info:
+        sched.submit(
+            model="claude-sonnet-4-6",
+            system="",
+            messages=[{"role": "user", "content": "go"}],
+            max_tokens=64,
+        )
+    assert "rate-limit detected" in exc_info.value.reason
+    assert exc_info.value.window_summary["next_window_at"]
+    assert sleeps == []
+    assert len(runner.calls) == 1  # type: ignore[attr-defined]
+
+
+def test_fail_fast_default_is_off_preserves_legacy_sleep_behaviour(tmp_path):
+    """Legacy runners without fail_fast_on_quota must keep the sleep-to-next-window path."""
+    runner = _make_runner(
+        (1, "", "Error: rate_limit_error from upstream\n"),
+        (0, _ok_payload("recovered", 5, 6), ""),
+    )
+    sched, sleeps = _sched(tmp_path, runner, max_retries=3)
+
+    res = sched.submit(
+        model="claude-sonnet-4-6",
+        system="",
+        messages=[{"role": "user", "content": "go"}],
+    )
+    assert res.text == "recovered"
+    assert any(s > 0 for s in sleeps)
 
 
 def test_status_summarizes_window(tmp_path):

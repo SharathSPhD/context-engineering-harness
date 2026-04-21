@@ -57,10 +57,27 @@ class RateLimitDetector:
     def detect(
         self, *, stderr: str, stdout: str, exit_code: int
     ) -> RateLimitState:
-        # 1. JSON-structured error, against the FINAL result event.
-        #    Supports both legacy single-JSON and modern NDJSON stream output
-        #    (--output-format=stream-json). The final ``{"type":"result", ...}``
-        #    line carries ``is_error`` and any API error subtype.
+        """Infer rate-limit state from CLI output.
+
+        Detection policy (conservative; fewer false positives > more coverage):
+
+        1.  Final ``{"type":"result"}`` event (single-JSON or NDJSON):
+            - If ``subtype`` contains one of the canonical Anthropic error
+              codes (``rate_limit``, ``usage_limit``, ``quota_exceeded``),
+              that IS a rate-limit → fire.
+            - Otherwise, a clean result event is authoritative: do NOT scan
+              the blob for free-text regex matches. Model-generated text
+              (TruthfulQA answers, TQA misconception explanations,
+              session-hook echoes) often contains the substrings "rate"
+              and "limit" legitimately; burning a 5h window on false
+              positives is far worse than letting a rare true rate-limit
+              through (the next call will retrigger).
+        2.  Non-zero exit code with no parseable result event:
+            scan stderr/stdout with the regex patterns — this is the
+            429-banner / "exhausted capacity" path.
+        3.  Zero exit code with no result event (e.g. blank stdout):
+            treat as OK; the scheduler will error-retry on its own loop.
+        """
         result_obj = self._final_result_obj(stdout)
         if isinstance(result_obj, dict):
             subtype = str(
@@ -73,10 +90,24 @@ class RateLimitDetector:
                     )
                 )
             ).lower()
-            if any(s in subtype for s in ("rate_limit", "usage_limit", "quota_exceeded")):
+            if any(
+                s in subtype
+                for s in (
+                    "rate_limit",
+                    "usage_limit",
+                    "quota_exceeded",
+                    "weekly_limit",
+                    "opus_limit",
+                )
+            ):
                 return RateLimitState.hit(
                     pattern=subtype, source="json", excerpt=json.dumps(result_obj)[:280]
                 )
+            # Only regex-scan the result blob when the result declares itself
+            # an error. A clean (is_error != True) result must be trusted —
+            # otherwise model-generated text containing "rate" / "limit"
+            # (TruthfulQA answers, hook documentation echoed by stream-json)
+            # causes catastrophic false positives that waste the 5h window.
             if result_obj.get("is_error"):
                 blob = json.dumps(result_obj)
                 for pat in _PATTERNS:
@@ -87,16 +118,11 @@ class RateLimitDetector:
                             source="json",
                             excerpt=blob[:280],
                         )
-            if result_obj.get("is_error") is False and exit_code == 0:
-                # Canonical "success" - do not false-positive on incidental
-                # mentions of "rate-limit" / "limit" that appear in session
-                # hook additionalContext echoed on stdout by stream-json.
-                return RateLimitState.ok()
+            return RateLimitState.ok()
 
-        # 2. Pattern-match stderr/stdout, but ONLY when exit_code != 0.
-        #    A zero-exit call with a clean result event cannot be rate limited;
-        #    any incidental "rate-limit" tokens in stream-json hook output are
-        #    documentation noise, not a rate-limit signal.
+        # No parseable result event. Only fire patterns against stderr/stdout
+        # when the subprocess exited non-zero, otherwise we'd false-positive
+        # on hook documentation echoed in stream-json.
         if exit_code != 0:
             for pat in _PATTERNS:
                 m = pat.search(stderr)

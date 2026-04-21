@@ -79,6 +79,7 @@ class SWEBenchVerifiedAdapter(BenchmarkAdapter):
 
     default_n: int = 20
     load_real: bool = False
+    strict_hf: bool = False
     hf_dataset_id: str = "princeton-nlp/SWE-bench_Verified"
     hf_split: str = "test"
     file_overlap_weight: float = 0.5
@@ -91,6 +92,11 @@ class SWEBenchVerifiedAdapter(BenchmarkAdapter):
             try:
                 return self._load_from_hf(n=n_use, seed=seed)
             except HFUnavailable as exc:
+                if self.strict_hf:
+                    raise RuntimeError(
+                        f"SWE-bench Verified live loader failed with strict_hf=True: {exc}. "
+                        "Refusing to fall back to synthetic under load_real=True."
+                    ) from exc
                 logger.warning("SWE-bench Verified real loader unavailable (%s); using synthetic", exc)
         return self._load_synthetic(n=n_use, seed=seed)
 

@@ -49,6 +49,36 @@ def test_ruler_render_prompt_treatment_vs_baseline_differ():
     assert ex.context in baseline
 
 
+def test_ruler_harness_on_is_length_agnostic():
+    """Regression guard for the '6-character code' prompt bug.
+
+    Real RULER needles (simonjegou/ruler niah_single_1) are 7-digit
+    numbers; the synthetic generator emits 6-char hex. The harness_on
+    prompt must not bias the model toward any fixed length.
+    """
+    adapter = RulerNIAHAdapter(target_tokens=2_000, default_n=1)
+    ex = adapter.load_examples(seed=0)[0]
+    treatment = adapter.render_prompt(ex, condition="harness_on")
+    assert "6-character" not in treatment
+    assert "6 character" not in treatment
+    assert "six-character" not in treatment.lower()
+    system = adapter.system_prompt(condition="harness_on")
+    assert "6-character" not in system
+
+
+def test_ruler_scorer_handles_7digit_real_needle():
+    """Scorer is length-agnostic: a 7-digit GT embedded in pred still matches."""
+    adapter = RulerNIAHAdapter(target_tokens=2_000, default_n=1)
+    ex = adapter.load_examples(seed=0)[0]
+    ex.ground_truth = "6688090"
+    hit = ModelOutput(text="The activation code for this vault is 6688090.")
+    miss_truncated = ModelOutput(text="668809")
+    s_hit, ok_hit, _ = adapter.score(ex, hit)
+    s_miss, ok_miss, _ = adapter.score(ex, miss_truncated)
+    assert (s_hit, ok_hit) == (1.0, True)
+    assert (s_miss, ok_miss) == (0.0, False)
+
+
 def test_ruler_score_recognizes_inline_code():
     adapter = RulerNIAHAdapter(target_tokens=2_000, default_n=1)
     ex = adapter.load_examples(seed=0)[0]
@@ -74,6 +104,37 @@ def test_ruler_multi_adapter_partial_credit():
     assert ok_partial is False
     assert score_full == 1.0
     assert ok_full is True
+
+
+def test_helmet_rag_harness_on_is_length_agnostic():
+    """Same 6-char regression guard for HELMET RAG."""
+    adapter = HelmetRagAdapter(target_tokens=2_000, default_n=1)
+    ex = adapter.load_examples(seed=0)[0]
+    treatment = adapter.render_prompt(ex, condition="harness_on")
+    assert "6-character" not in treatment
+    assert "6 character" not in treatment
+
+
+def test_nocha_mutated_claim_handles_variable_length_and_mixed_case():
+    """_mutated_claim must accept real-data-style variable-length codes."""
+    true_7digit = "The activation code for vault vault-0-0 is 6688090."
+    false_7digit = NochaJointAccuracyAdapter._mutated_claim(
+        true_7digit, seed=0, eid="x"
+    )
+    assert false_7digit != true_7digit
+    assert "6688090" not in false_7digit
+    true_alpha = "The activation code for vault vault-0-0 is abc123xyz."
+    false_alpha = NochaJointAccuracyAdapter._mutated_claim(
+        true_alpha, seed=0, eid="x"
+    )
+    assert false_alpha != true_alpha
+    assert "abc123xyz" not in false_alpha
+    true_synth = "The activation code for vault vault-0-0 is A1B2C3."
+    false_synth = NochaJointAccuracyAdapter._mutated_claim(
+        true_synth, seed=0, eid="x"
+    )
+    assert false_synth != true_synth
+    assert "A1B2C3" not in false_synth
 
 
 def test_helmet_recall_score_full_vs_partial():

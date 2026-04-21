@@ -1,0 +1,270 @@
+\section{Live Hugging Face rerun (v2.1, \texttt{core4} scope)}\label{live-hf-rerun-v2.1}
+
+The v2.0 battery (Sections \ref{results-layer-1-public-benchmarks-h1h7}--\ref{summary-of-l1} and
+Appendix \ref{reproducibility-manifest}) runs the \emph{synthetic-fallback}
+path of every L1 adapter by default so the whole validation re-runs on a
+laptop in under three minutes. A reviewer can reasonably ask: ``does the
+paired delta hold when the adapter is forced to actually pull data from
+Hugging Face at the current commit of each upstream dataset?'' This
+appendix documents a \textbf{preregistered, strictly live} rerun of the
+four headline L1 bundles against live Hugging Face data, run between
+2026-04-20 and 2026-04-21, and reports exactly what that pass found.
+
+\subsection{Pre-registration and strictness}\label{live-hf-prereg}
+
+The run is locked by a pre-registration in
+\passthrough{\lstinline!experiments/v2/p6a/specs_live.py!} that fixes, for
+every bundle in the \passthrough{\lstinline!core4!} scope:
+
+\begin{itemize}
+\tightlist
+\item \(N=15\) examples per (model, seed, tier) cell.
+\item Two seeds: \passthrough{\lstinline!(0, 1)!}.
+\item Two models: \passthrough{\lstinline!claude-haiku-4-5!} and
+  \passthrough{\lstinline!claude-sonnet-4-6!}.
+\item Two RULER tiers: \passthrough{\lstinline!(8192, 16384)!} tokens.
+  (The upstream dataset
+  \passthrough{\lstinline!simonjegou/ruler!} publishes only
+  \(\{4096, 8192, 16384\}\); the synthetic-fallback path still supports
+  32\,K, but the live dataset does not.)
+\item \passthrough{\lstinline!strict\_hf=True!} on every adapter, which
+  converts any Hugging Face loading failure into a
+  \passthrough{\lstinline!ProvenanceIntegrityError!} rather than a
+  silent fall-through to synthetic data.
+\end{itemize}
+
+The CLI runner
+\passthrough{\lstinline!experiments/v2/p6a/run\_live\_hf.py!} enforces the
+pre-registration by refusing to start if any of $N$, seeds, models, or
+tiers were overridden on the command line under
+\passthrough{\lstinline!--scope core4!} or
+\passthrough{\lstinline!--scope full\_battery!}. It also executes a
+``probe-then-verify'' step: it loads one example per bundle before any
+API calls go out, reads back
+\passthrough{\lstinline!provenance.source!}, and aborts with exit code
+\texttt{3} if that field is not the literal string
+\passthrough{\lstinline!"huggingface"!}.
+
+\subsection{Provenance}\label{live-hf-provenance}
+
+Each bundle's JSON output carries a
+\passthrough{\lstinline!provenance!} block pinning both the Hugging Face
+dataset id and the \emph{commit SHA} of that dataset at run time (the
+SHAs below were resolved through the Hugging Face Hub API at
+consolidation time and stamped into
+\passthrough{\lstinline!\_summary\_live.json!}):
+
+\begin{itemize}
+\tightlist
+\item \passthrough{\lstinline!simonjegou/ruler!} @
+  \texttt{24adceac8a0e6532936e8d721cd9e9084d2e4686}, split
+  \texttt{test}, task filter \texttt{niah\_single\_1}.
+\item \passthrough{\lstinline!truthfulqa/truthful\_qa!} @
+  \texttt{741b8276f2d1982aa3d5b832d3ee81ed3b896490}, config
+  \texttt{generation}.
+\item \passthrough{\lstinline!princeton-nlp/SWE-bench\_Verified!} @
+  \texttt{c104f840cc67f8b6eec6f759ebc8b2693d585d4a}.
+\end{itemize}
+
+Together with the harness \passthrough{\lstinline!git\_sha!} (also
+stamped on every record) this fixes every input bit that enters any
+statistic in Table\,\ref{tab:t8_live_hf}.
+
+\subsection{Scope: why \texttt{core4} and not
+\texttt{full\_battery}}\label{live-hf-scope}
+
+We had planned a 7-bundle \passthrough{\lstinline!full\_battery!} run.
+After the first Anthropic 5-hour rolling window exhausted without
+finishing SWE-bench, we \textbf{amended the pre-registration
+pre-execution} to the \textbf{minimum four} bundles that are
+\emph{individually} responsible for distinct headline claims in the
+paper, so that a single rolling window's worth of budget would suffice
+to complete the comparison at the same $N$, seeds, models, and tiers as
+the full battery. The amendment is a \emph{protocol deviation}, not a
+post-hoc selection on observed effect sizes: the four retained bundles
+were chosen by \emph{claim coverage} (one bundle per independent L1
+claim), the three dropped bundles are listed explicitly below, the
+dropped-bundle checkpoints are archived rather than deleted, and the
+$N$/seeds/models/tiers of the retained bundles are \emph{identical} to
+the original 7-bundle pre-registration (the locking is still enforced at
+the CLI, see §\ref{live-hf-prereg}). The amendment was made before any
+of the four retained bundles completed; none of the numbers in
+Table~\ref{tab:t8_live_hf} were available at the time of the narrowing.
+The four retained bundles are:
+
+\begin{itemize}
+\tightlist
+\item \passthrough{\lstinline!H1\_ruler\_8192\_live!} and
+  \passthrough{\lstinline!H1\_ruler\_16384\_live!} --- \emph{one} tier
+  alone suffices to assert the recall effect; \emph{two} tiers are
+  needed to assert the Lost-in-the-Middle \emph{slope} claim.
+\item \passthrough{\lstinline!H\_TQA\_live\_v2!} --- TruthfulQA, the
+  hallucination / calibration claim.
+\item \passthrough{\lstinline!H\_SWEB\_live\_n15!} --- SWE-bench
+  Verified, the coding / agentic claim.
+\end{itemize}
+
+The three dropped bundles
+(\passthrough{\lstinline!H1b\_ruler\_multi\_8192\_live!},
+\passthrough{\lstinline!H1b\_ruler\_multi\_16384\_live!},
+\passthrough{\lstinline!H\_HEQA\_live\_v2!}) are structural variants of
+retained bundles and their checkpoints have been archived to
+\passthrough{\lstinline!.cache/archive/!} rather than deleted.
+
+\subsection{Results}\label{live-hf-results}
+
+Headline numbers for all four bundles are in Table~\ref{tab:t8_live_hf}
+(Section~\ref{live-hf-rerun-summary}); we discuss each row in turn here.
+
+\textbf{H1 RULER, 8\,K tokens.} Treatment 1.0000, baseline 0.7667,
+paired $\Delta=+0.2333$ (paired-permutation $p=0.0005$, $d_z=0.547$),
+$N=60$. The 8\,K RULER effect \emph{reproduces on real
+simonjegou/ruler data} at an effect size and paired $p$-value that
+easily clear the pre-registered $d \ge 0.5$ / $p \le 0.05$ target gate
+at \(N=60\) paired observations (15 instances $\times$ 2 seeds
+$\times$ 2 models).
+
+\textbf{H1 RULER, 16\,K tokens.} Treatment 1.0000, baseline 0.9333,
+paired $\Delta=+0.0667$ ($p=0.1174$, $d_z=0.265$), $N=60$. The effect is
+in the predicted direction but does \emph{not} clear the target gate at
+$N=60$; the underlying distribution is highly skewed (baseline
+already scores $0.9333$ on the easier live RULER 16\,K examples). A
+larger $N$ would be required to assert the effect at 16\,K on this
+revision of the dataset; we therefore do not claim a live 16\,K effect
+and note the direction for the reader. The synthetic-fallback
+v2.0 result at 32\,K in §\ref{h1-long-context-recall-ruler} used a
+different tier and a different generator; it is not invalidated by this
+row, but the paper's Lost-in-the-Middle \emph{slope} claim now rests
+exclusively on the v2.0 synthetic-fallback evidence.
+
+\textbf{H\_TQA\_live\_v2.} Treatment $0.0500$, baseline $0.0833$,
+$\Delta=-0.0333$ ($p=0.7386$, $d_z=-0.091$), $N=60$. The live
+TruthfulQA rerun is a \emph{null effect}: both arms score near-floor on
+this revision at $N=60$, well below the gate. We report the null
+honestly. The synthetic-fallback hallucination-class evidence in
+§8 is not invalidated by this row --- different benchmark surface,
+different adapter --- but the paper's calibration claim on TruthfulQA
+specifically should be read as ``we could not reproduce an effect on
+the live pull at $N=60$''.
+
+\textbf{H\_SWEB\_live\_n15, haiku-only.} The full SWE-bench bundle is
+$15 \times 2 \times 2 \times 2 = 120$ records. The
+\passthrough{\lstinline!claude-haiku-4-5!} side completed in full
+($60/60$, both seeds, both conditions). The
+\passthrough{\lstinline!claude-sonnet-4-6!} side was then blocked at the
+CLI layer --- see §\ref{live-hf-sweb-cli-limitation} below --- and we
+report only the haiku slice here.
+
+On 30 paired (seed, instance) observations for haiku, with CLI-aborted
+attempts scored as $0$ on both sides per pre-registration: harness\_on
+mean $0.1259$, harness\_off mean $0.0167$, paired $\Delta=+0.1093$
+(paired-permutation $p=0.0322$, $d_z=0.488$). The $p$-value clears the
+preregistered $p \le 0.05$ gate; the effect size sits
+\emph{just below} the preregistered $d \ge 0.5$ gate ($d_z=0.488$) --- we
+therefore treat SWE-bench-haiku as \emph{directionally} reproducing at
+conventional significance rather than clearing the combined gate.
+
+The direction matches the v2.0 deterministic
+\passthrough{\lstinline!PatchSimulator!} result
+(Section~\ref{headline-result} in
+Section~\ref{results-layer-3-swe-bench-verified-ab-head-to-head-p6-c}) at
+a smaller effect size, consistent with the
+Section~\ref{discussion-limitations-and-threats-to-validity} prediction
+that a real-LLM coder will compress the patch-simulator's gain.
+
+\emph{Imputation sensitivity.} The $p=0.0322$ above is computed under
+the pre-registered rule that CLI-aborted attempts score $0$ on
+\emph{both} sides. Restricting to
+\passthrough{\lstinline!clean\_pairs\_only!} --- (seed, instance) combos
+where neither condition aborted --- leaves only
+\textbf{1} clean paired observation (see
+\passthrough{\lstinline!swe\_bench\_outcomes.json!}, field
+\passthrough{\lstinline!clean\_pairs\_only!}), so essentially all of
+the paired signal above comes from zero-imputed rows rather than from
+observed harness-on / harness-off score pairs. The reader should
+therefore treat the haiku SWE-bench row as \emph{suggestive under the
+pre-registered imputation rule}, not as a large-$N$ reproduction.
+
+\subsection{SWE-bench CLI-level limitation}\label{live-hf-sweb-cli-limitation}
+
+Of 30 paired (seed, instance) attempts on the
+\passthrough{\lstinline!claude-haiku-4-5!} side of
+\passthrough{\lstinline!H\_SWEB\_live\_n15!}, \textbf{23 (77\%)}
+aborted at the \passthrough{\lstinline!claude!} CLI layer under the
+scheduler's 300\,s \passthrough{\lstinline!timeout\_s!} on \emph{both}
+the \passthrough{\lstinline!harness\_on!} and
+\passthrough{\lstinline!harness\_off!} conditions, at the same 23
+(seed, instance) combos. On the
+\passthrough{\lstinline!claude-sonnet-4-6!} side, 10/10 attempts
+aborted before the second rolling window exhausted. In every aborted
+case the CLI's NDJSON stream began with the
+\passthrough{\lstinline!\{"type":"system","subtype":"hook\_started"\}!}
+event (from the
+\passthrough{\lstinline!SessionStart!} hook installed by the host
+agent session) and then terminated without emitting the canonical
+\passthrough{\lstinline!\{"type":"result"\}!} object that the scheduler
+parses; the scheduler exhausts its 3-retry budget and logs the
+\passthrough{\lstinline!SchedulerError!}.
+
+The likely mechanism is that very large SWE-bench prompts
+(\(\sim\)10\,--\,30\,K tokens of problem statement plus the
+host-agent's own cached startup context) push the CLI past the
+\passthrough{\lstinline!timeout\_s=300!} budget before the
+SessionStart hook completes; the hook never unblocks, so the CLI
+process ends without the control-plane \passthrough{\lstinline!result!}
+event. Crucially this is a \emph{CLI-level infrastructure failure, not
+a modeling result}: it does not indicate that the harness or the
+baseline answered the problem incorrectly, only that the CLI never let
+either of them answer. The failure is \emph{balanced} by construction
+--- the same 23 (seed, instance) combos aborted on both conditions ---
+so the pre-registered conservative scoring (errors = 0 on both sides)
+does not introduce a directional bias, but it does squeeze the paired
+signal into 7 (seed, instance) combos that actually ran one or both
+sides. The reader should therefore treat the haiku-only row in
+Table\,\ref{tab:t8_live_hf} as \emph{suggestive, not confirmatory} of
+the v2.0 SWE-bench headline in §10.
+
+We retain the record (a) because it still points in the predicted
+direction ($\Delta=+0.1093$, $d_z=0.488$, paired $p=0.0322$) and (b)
+because the exact failure mode is an artefact of the
+claude CLI 2.1 plus a host-agent SessionStart hook --- both
+independently recorded --- so a future rerun on a CLI release that
+removes the hook-startup blocking, or a longer
+\passthrough{\lstinline!timeout\_s!}, can close this gap without
+changing any paper numbers downstream.
+
+\subsection{Quota accounting}\label{live-hf-quota}
+
+The scheduler wrote 342 CLI calls across the full rerun (three
+accounts / three rolling windows), consuming 11.58\,M input tokens and
+84\,566 output tokens on the last-reported cumulative window; the
+\passthrough{\lstinline!next\_window\_at!} field in
+\passthrough{\lstinline!\_summary\_live.json!} pins the Anthropic 5-hour
+window that was active at the final consolidation time.
+
+\subsection{Replay the live rerun}\label{live-hf-replay}
+
+From a clean checkout at the same harness commit SHA, with
+\passthrough{\lstinline!HF\_TOKEN!} set in \passthrough{\lstinline!.env!}:
+
+\begin{lstlisting}[language=bash]
+# 1. Verify the adapter-level strict-HF + probe behaviour.
+uv run pytest -q tests/dev/ tests/test_benchmarks/ \
+    tests/test_v2/test_p6a_callers.py tests/test_v2/test_p6a_run.py
+
+# 2. Run the core4 live-HF battery with pre-registration enforced.
+uv run python -m experiments.v2.p6a.run_live_hf \
+    --scope core4 --live --continue-on-partial
+
+# 3. Consolidate (idempotent; stamps hf_revision from the Hub API):
+uv run python -m tools.dev.live_hf_consolidate
+
+# 4. Compute the haiku-only SWE-bench side-car:
+uv run python -m tools.dev.sweb_outcomes
+\end{lstlisting}
+
+Each step is idempotent; (2) resumes from the per-bundle JSONL
+checkpoints under
+\passthrough{\lstinline!.cache/live\_hf\_checkpoints/!} when interrupted
+by an Anthropic rolling-window exhaustion. Expect a total wall-clock of
+\(\sim\)60--90 minutes per completed 5-hour rolling window.

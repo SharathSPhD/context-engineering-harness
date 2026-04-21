@@ -15,6 +15,7 @@ from .cost_ledger import CostLedger
 from .rate_limit import RateLimitDetector, RateLimitState
 from .cli_budget import (
     CLIBudgetScheduler,
+    QuotaExhausted,
     SchedulerConfig,
     SchedulerError,
     SubmitResult,
@@ -25,6 +26,7 @@ __all__ = [
     "CostLedger",
     "DiskCache",
     "PromptCache",
+    "QuotaExhausted",
     "RateLimitDetector",
     "RateLimitState",
     "SchedulerConfig",

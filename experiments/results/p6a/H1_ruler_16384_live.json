@@ -1,0 +1,183 @@
+{
+  "label": "H1_ruler_16384_live",
+  "status": "complete",
+  "spec": {
+    "hypothesis_id": "H1",
+    "description": "[LIVE-HF] Avacchedaka structured retriever prompt lifts RULER NIAH accuracy at 16384-token contexts on the real simonjegou/ruler dataset; effect \u2265 5 pts.",
+    "adapter_name": "ruler_niah",
+    "treatment_condition": "harness_on",
+    "baseline_condition": "harness_off",
+    "metric": "accuracy",
+    "direction": "greater",
+    "delta": 0.05,
+    "n_examples": 15,
+    "seeds": [
+      0,
+      1
+    ],
+    "models": [
+      "claude-haiku-4-5",
+      "claude-sonnet-4-6"
+    ],
+    "significance_alpha": 0.05,
+    "notes": "Tier=16384 tokens. load_real=True, dataset=simonjegou/ruler, task=niah_single_1. Pre-registered N=15, seeds=[0, 1]. Stopping rule: stop at N, no peeking."
+  },
+  "outcome": {
+    "treatment_metric": 1.0,
+    "baseline_metric": 0.9333,
+    "delta_observed": 0.0667,
+    "ci_low": 0.0167,
+    "ci_high": 0.1333,
+    "p_value": 0.117441,
+    "cohens_d": 0.265,
+    "target_met": false,
+    "n_examples_used": 60,
+    "n_seeds_used": 2,
+    "extra": {
+      "treatment_runs": 4,
+      "baseline_runs": 4,
+      "models": [
+        "claude-haiku-4-5",
+        "claude-sonnet-4-6"
+      ]
+    }
+  },
+  "treatment_runs": [
+    {
+      "adapter": "ruler_niah",
+      "model": "claude-haiku-4-5",
+      "condition": "harness_on",
+      "seed": 0,
+      "n": 15,
+      "mean_score": 1.0,
+      "accuracy": 1.0,
+      "total_input_tokens": 838405,
+      "total_output_tokens": 3139
+    },
+    {
+      "adapter": "ruler_niah",
+      "model": "claude-haiku-4-5",
+      "condition": "harness_on",
+      "seed": 1,
+      "n": 15,
+      "mean_score": 1.0,
+      "accuracy": 1.0,
+      "total_input_tokens": 837190,
+      "total_output_tokens": 3265
+    },
+    {
+      "adapter": "ruler_niah",
+      "model": "claude-sonnet-4-6",
+      "condition": "harness_on",
+      "seed": 0,
+      "n": 15,
+      "mean_score": 1.0,
+      "accuracy": 1.0,
+      "total_input_tokens": 563245,
+      "total_output_tokens": 105
+    },
+    {
+      "adapter": "ruler_niah",
+      "model": "claude-sonnet-4-6",
+      "condition": "harness_on",
+      "seed": 1,
+      "n": 15,
+      "mean_score": 1.0,
+      "accuracy": 1.0,
+      "total_input_tokens": 563241,
+      "total_output_tokens": 105
+    }
+  ],
+  "baseline_runs": [
+    {
+      "adapter": "ruler_niah",
+      "model": "claude-haiku-4-5",
+      "condition": "harness_off",
+      "seed": 0,
+      "n": 15,
+      "mean_score": 1.0,
+      "accuracy": 1.0,
+      "total_input_tokens": 933865,
+      "total_output_tokens": 6533
+    },
+    {
+      "adapter": "ruler_niah",
+      "model": "claude-haiku-4-5",
+      "condition": "harness_off",
+      "seed": 1,
+      "n": 15,
+      "mean_score": 0.8667,
+      "accuracy": 0.8667,
+      "total_input_tokens": 915696,
+      "total_output_tokens": 7018
+    },
+    {
+      "adapter": "ruler_niah",
+      "model": "claude-sonnet-4-6",
+      "condition": "harness_off",
+      "seed": 0,
+      "n": 15,
+      "mean_score": 0.9333,
+      "accuracy": 0.9333,
+      "total_input_tokens": 658690,
+      "total_output_tokens": 3318
+    },
+    {
+      "adapter": "ruler_niah",
+      "model": "claude-sonnet-4-6",
+      "condition": "harness_off",
+      "seed": 1,
+      "n": 15,
+      "mean_score": 0.9333,
+      "accuracy": 0.9333,
+      "total_input_tokens": 659225,
+      "total_output_tokens": 3660
+    }
+  ],
+  "wallclock_s": 4.08,
+  "ts": "2026-04-21T07:27:10.407176+00:00",
+  "provenance": {
+    "source": "huggingface",
+    "adapter_name": "ruler_niah",
+    "adapter_kwargs": {
+      "target_tokens": 16384,
+      "default_n": 15,
+      "load_real": true,
+      "strict_hf": true,
+      "hf_task_filter": "niah_single_1"
+    },
+    "hf_dataset_id": "simonjegou/ruler",
+    "hf_config": "",
+    "hf_task": "niah_single_1",
+    "load_real": true,
+    "strict_hf": true,
+    "git_sha": "32a3f51ee3c8337a6692afd1485a3101f249246b",
+    "ts": "2026-04-21T07:27:06.297524+00:00"
+  },
+  "metadata": {
+    "scheduler_status": {
+      "window_hours": 5.0,
+      "n_calls": 0,
+      "n_cache_hits": 0,
+      "cache_hit_rate": 0.0,
+      "input_tokens": 0,
+      "billed_input_tokens": 0,
+      "output_tokens": 0,
+      "n_rate_limited": 0,
+      "max_input_tokens_per_window": 20000000,
+      "max_calls_per_window": null,
+      "exhausted": false,
+      "next_window_at": "2026-04-21T10:00:00+00:00",
+      "total": {
+        "n_calls": 270,
+        "input_tokens": 11375828,
+        "output_tokens": 65636,
+        "n_cache_hits": 60
+      }
+    },
+    "fail_fast_on_quota": true,
+    "git_sha": "32a3f51ee3c8337a6692afd1485a3101f249246b",
+    "checkpoint_path": "/Users/sharath/Library/CloudStorage/OneDrive-Personal/wsl_projects/context/.cache/live_hf_checkpoints/H1_ruler_16384_live.jsonl",
+    "checkpointed_records": 120
+  }
+}

@@ -47,6 +47,27 @@ class SchedulerError(RuntimeError):
     """Raised when the scheduler exhausts retries or hits a non-retryable error."""
 
 
+class QuotaExhausted(SchedulerError):
+    """Raised when a window-level quota is hit and ``fail_fast_on_quota`` is set.
+
+    Carries a machine-readable ``reason`` + ``window_summary`` so callers can
+    decide whether to checkpoint + exit or wait. Used by the live-HF
+    benchmark runner to gracefully shut down across the Claude 5-hour
+    window boundary.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        reason: str,
+        window_summary: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.reason = reason
+        self.window_summary = window_summary or {}
+
+
 @dataclass(frozen=True)
 class SchedulerConfig:
     cache_root: str | Path = ".cache/llm"
@@ -68,6 +89,10 @@ class SchedulerConfig:
     # When True, persists the AttractorFlow journal entry on every call.
     write_journal: bool = True
     timeout_s: int = 300
+    # When True, raise QuotaExhausted instead of sleeping across a 5-hour
+    # Claude quota window. Used by the live-HF runner so we can checkpoint,
+    # emit a partial-results receipt, and exit cleanly.
+    fail_fast_on_quota: bool = False
 
 
 @dataclass(frozen=True)
@@ -179,6 +204,13 @@ class CLIBudgetScheduler:
 
         # Pre-call window check.
         if self._window_exhausted():
+            if self.config.fail_fast_on_quota:
+                self._raise_quota_exhausted(
+                    reason="pre-call window cap reached",
+                    ph=ph,
+                    model=model,
+                    attempt=0,
+                )
             self._sleep_until_next_window(reason="pre-call window cap reached")
 
         last_err: str = ""
@@ -217,6 +249,13 @@ class CLIBudgetScheduler:
                     regime="HALT",
                     note=f"attempt {attempt}: rate-limit {rl.matched_pattern}",
                 )
+                if self.config.fail_fast_on_quota:
+                    self._raise_quota_exhausted(
+                        reason=f"rate-limit detected (attempt {attempt}): {rl.matched_pattern}",
+                        ph=ph,
+                        model=model,
+                        attempt=attempt,
+                    )
                 self._sleep_until_next_window(
                     reason=f"rate-limit detected (attempt {attempt})"
                 )
@@ -294,6 +333,7 @@ class CLIBudgetScheduler:
             "n_cache_hits": s.n_cache_hits,
             "cache_hit_rate": round(s.cache_hit_rate, 3),
             "input_tokens": s.input_tokens,
+            "billed_input_tokens": s.billed_input_tokens,
             "output_tokens": s.output_tokens,
             "n_rate_limited": s.n_rate_limited,
             "max_input_tokens_per_window": self.config.max_input_tokens_per_window,
@@ -312,6 +352,45 @@ class CLIBudgetScheduler:
             window_hours=self.config.window_hours,
             max_input_tokens=self.config.max_input_tokens_per_window,
             max_calls=self.config.max_calls_per_window,
+        )
+
+    def _raise_quota_exhausted(
+        self,
+        *,
+        reason: str,
+        ph: str,
+        model: str,
+        attempt: int,
+    ) -> None:
+        """Journal a QUOTA_EXHAUSTED row and raise QuotaExhausted.
+
+        Callers of ``submit(...)`` can catch this, checkpoint whatever
+        partial results they have, and exit gracefully without waiting 5h
+        for the next Claude quota window.
+        """
+        summary = self.ledger.window_summary(
+            window_hours=self.config.window_hours
+        ).__dict__
+        next_at = next_window_start(
+            self._clock(), window_hours=self.config.window_hours
+        ).isoformat()
+        note = (
+            f"fail_fast_on_quota: {reason}; "
+            f"model={model} ph={ph[:12]} attempt={attempt} next_window_at={next_at}"
+        )
+        self._emit_journal(regime="QUOTA_EXHAUSTED", note=note)
+        logger.warning("QUOTA_EXHAUSTED %s", note)
+        raise QuotaExhausted(
+            f"Claude quota window exhausted: {reason}. "
+            f"Next window starts at {next_at}.",
+            reason=reason,
+            window_summary={
+                **summary,
+                "next_window_at": next_at,
+                "model": model,
+                "prompt_hash": ph,
+                "attempt": attempt,
+            },
         )
 
     def _sleep_until_next_window(self, *, reason: str) -> None:

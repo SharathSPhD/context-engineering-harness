@@ -1,0 +1,169 @@
+{
+  "ts": "2026-04-21T08:27:09+00:00",
+  "git_sha": "32a3f51ee3c8337a6692afd1485a3101f249246b",
+  "source": "live_hf_consolidate",
+  "bundles": [
+    {
+      "label": "H1_ruler_16384_live",
+      "status": "complete",
+      "out_path": "/Users/sharath/Library/CloudStorage/OneDrive-Personal/wsl_projects/context/experiments/results/p6a/H1_ruler_16384_live.json",
+      "wallclock_s": 4.08,
+      "outcome": {
+        "treatment_metric": 1.0,
+        "baseline_metric": 0.9333,
+        "delta_observed": 0.0667,
+        "p_value": 0.117441,
+        "cohens_d": 0.265,
+        "target_met": false,
+        "n_examples_used": 60,
+        "n_seeds_used": 2
+      },
+      "provenance": {
+        "source": "huggingface",
+        "adapter_name": "ruler_niah",
+        "adapter_kwargs": {
+          "target_tokens": 16384,
+          "default_n": 15,
+          "load_real": true,
+          "strict_hf": true,
+          "hf_task_filter": "niah_single_1"
+        },
+        "hf_dataset_id": "simonjegou/ruler",
+        "hf_config": "",
+        "hf_task": "niah_single_1",
+        "load_real": true,
+        "strict_hf": true,
+        "git_sha": "32a3f51ee3c8337a6692afd1485a3101f249246b",
+        "ts": "2026-04-21T07:27:06.297524+00:00",
+        "hf_revision": "24adceac8a0e6532936e8d721cd9e9084d2e4686"
+      }
+    },
+    {
+      "label": "H1_ruler_8192_live",
+      "status": "complete",
+      "out_path": "/Users/sharath/Library/CloudStorage/OneDrive-Personal/wsl_projects/context/experiments/results/p6a/H1_ruler_8192_live.json",
+      "wallclock_s": 3.806,
+      "outcome": {
+        "treatment_metric": 1.0,
+        "baseline_metric": 0.7667,
+        "delta_observed": 0.2333,
+        "p_value": 0.0005,
+        "cohens_d": 0.5471,
+        "target_met": true,
+        "n_examples_used": 60,
+        "n_seeds_used": 2
+      },
+      "provenance": {
+        "source": "huggingface",
+        "adapter_name": "ruler_niah",
+        "adapter_kwargs": {
+          "target_tokens": 8192,
+          "default_n": 15,
+          "load_real": true,
+          "strict_hf": true,
+          "hf_task_filter": "niah_single_1"
+        },
+        "hf_dataset_id": "simonjegou/ruler",
+        "hf_config": "",
+        "hf_task": "niah_single_1",
+        "load_real": true,
+        "strict_hf": true,
+        "git_sha": "32a3f51ee3c8337a6692afd1485a3101f249246b",
+        "ts": "2026-04-21T07:27:01.061352+00:00",
+        "hf_revision": "24adceac8a0e6532936e8d721cd9e9084d2e4686"
+      }
+    },
+    {
+      "label": "H_TQA_live_v2",
+      "status": "complete",
+      "out_path": "/Users/sharath/Library/CloudStorage/OneDrive-Personal/wsl_projects/context/experiments/results/p6a/H_TQA_live_v2.json",
+      "wallclock_s": 5.327,
+      "outcome": {
+        "treatment_metric": 0.05,
+        "baseline_metric": 0.0833,
+        "delta_observed": -0.0333,
+        "p_value": 0.738631,
+        "cohens_d": -0.0909,
+        "target_met": false,
+        "n_examples_used": 60,
+        "n_seeds_used": 2
+      },
+      "provenance": {
+        "source": "huggingface",
+        "adapter_name": "truthful_qa",
+        "adapter_kwargs": {
+          "default_n": 15,
+          "load_real": true,
+          "strict_hf": true
+        },
+        "hf_dataset_id": "truthful_qa",
+        "hf_config": "generation",
+        "hf_task": "",
+        "load_real": true,
+        "strict_hf": true,
+        "git_sha": "32a3f51ee3c8337a6692afd1485a3101f249246b",
+        "ts": "2026-04-21T07:27:12.599669+00:00",
+        "hf_revision": "741b8276f2d1982aa3d5b832d3ee81ed3b896490"
+      }
+    },
+    {
+      "label": "H_SWEB_live_n15",
+      "status": "partial_quota",
+      "out_path": "/Users/sharath/Library/CloudStorage/OneDrive-Personal/wsl_projects/context/.cache/live_hf_checkpoints/H_SWEB_live_n15_partial.json",
+      "wallclock_s": 3414.897,
+      "partial_reason": "rate-limit detected (attempt 3): \\b429\\b",
+      "window_summary": {
+        "window_hours": 5.0,
+        "started_at_unix": 1776741854.327615,
+        "n_calls": 104,
+        "n_cache_hits": 0,
+        "input_tokens": 302068,
+        "billed_input_tokens": 302068,
+        "output_tokens": 14914,
+        "n_rate_limited": 1,
+        "next_window_at": "2026-04-21T10:00:00+00:00",
+        "model": "claude-sonnet-4-6",
+        "prompt_hash": "5f0b2b41b5075ce936558f36ec5625a88ed91e342e85a16e4fe33362bd86845f",
+        "attempt": 3
+      },
+      "checkpointed_records": 70,
+      "provenance": {
+        "source": "huggingface",
+        "adapter_name": "swe_bench_verified",
+        "adapter_kwargs": {
+          "default_n": 15,
+          "load_real": true,
+          "strict_hf": true
+        },
+        "hf_dataset_id": "princeton-nlp/SWE-bench_Verified",
+        "hf_config": "",
+        "hf_task": "",
+        "load_real": true,
+        "strict_hf": true,
+        "git_sha": "32a3f51ee3c8337a6692afd1485a3101f249246b",
+        "ts": "2026-04-21T07:27:19.379049+00:00",
+        "hf_revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a"
+      }
+    }
+  ],
+  "scheduler_status": {
+    "window_hours": 5.0,
+    "n_calls": 104,
+    "n_cache_hits": 0,
+    "cache_hit_rate": 0.0,
+    "input_tokens": 302068,
+    "billed_input_tokens": 302068,
+    "output_tokens": 14914,
+    "n_rate_limited": 1,
+    "max_input_tokens_per_window": 2000000,
+    "max_calls_per_window": null,
+    "exhausted": false,
+    "next_window_at": "2026-04-21T10:00:00+00:00",
+    "total": {
+      "n_calls": 374,
+      "input_tokens": 11677896,
+      "output_tokens": 80550,
+      "n_cache_hits": 60
+    }
+  }
+}

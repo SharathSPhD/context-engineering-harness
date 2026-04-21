@@ -61,6 +61,11 @@ class RulerNIAHAdapter(BenchmarkAdapter):
     default_n: int = 50
 
     load_real: bool = False
+    # When True, an HF load failure is an error, not a silent synthetic
+    # fallback. Live-HF bundles set this so a broken dataset or a wrong
+    # task filter fails the bundle rather than quietly publishing
+    # synthetic results under `provenance.source = "huggingface"`.
+    strict_hf: bool = False
     hf_dataset_id: str = "simonjegou/ruler"
     hf_split: str = "test"
     hf_task_filter: str = "niah_single_1"
@@ -74,6 +79,12 @@ class RulerNIAHAdapter(BenchmarkAdapter):
             try:
                 return self._load_from_hf(n=n_use, seed=seed)
             except HFUnavailable as exc:
+                if self.strict_hf:
+                    raise RuntimeError(
+                        f"RULER live loader failed with strict_hf=True at "
+                        f"{self.target_tokens} tokens: {exc}. Refusing to "
+                        "fall back to synthetic under load_real=True."
+                    ) from exc
                 logger.warning(
                     "RULER real loader unavailable (%s); falling back to synthetic at %d tokens",
                     exc,
@@ -218,7 +229,8 @@ class RulerNIAHAdapter(BenchmarkAdapter):
             return (
                 f"You are a focused long-context retriever. "
                 f"Skim the document below and report ONLY the activation code for vault {example.prompt}. "
-                f"Reply with the bare 6-character code, no surrounding prose.\n\n"
+                f"Reply with the bare activation code exactly as it appears (digits and/or letters, "
+                f"any length), with no surrounding prose.\n\n"
                 f"=== DOCUMENT ===\n{example.context}\n=== END DOCUMENT ===\n\n"
                 f"What is the activation code for vault {example.prompt}?"
             )
@@ -231,8 +243,9 @@ class RulerNIAHAdapter(BenchmarkAdapter):
     def system_prompt(self, *, condition: str) -> str:
         if condition == "harness_on":
             return (
-                "You answer with the single requested code only. "
-                "Do not summarize the document, do not explain your reasoning."
+                "You answer with the single requested code only, "
+                "verbatim and unmodified. Do not truncate, pad, reformat, "
+                "summarize, or explain your reasoning."
             )
         return ""
 

@@ -93,6 +93,19 @@ The headline numbers in the paper use \textbf{\passthrough{\lstinline!--research
 
 Output: \passthrough{\lstinline!experiments/results/p6c/summary.json!} and per-instance traces under \passthrough{\lstinline!experiments/results/p6c/runs/!}.
 
+\subsubsection{L1 --- Live Hugging Face rerun (v2.1 \texttt{core4})}\label{l1-live-hf-rerun-core4}
+
+The live rerun (Appendix \ref{live-hf-rerun-v2.1}) is reproduced by three idempotent commands, assuming \passthrough{\lstinline!HF\_TOKEN!} is set in \passthrough{\lstinline!.env!}:
+
+\begin{lstlisting}[language=bash]
+uv run python -m experiments.v2.p6a.run_live_hf \
+    --scope core4 --live --continue-on-partial
+uv run python -m tools.dev.live_hf_consolidate
+uv run python -m tools.dev.sweb_outcomes
+\end{lstlisting}
+
+Outputs: per-bundle JSON under \passthrough{\lstinline!experiments/results/p6a/H*\_live*.json!}, consolidated \passthrough{\lstinline!\_summary\_live.json!} with \passthrough{\lstinline!hf\_revision!} stamped per bundle, and \passthrough{\lstinline!swe\_bench\_outcomes.json!} for the haiku-only SWE-bench paired slice. Per-record checkpoints live under \passthrough{\lstinline!.cache/live\_hf\_checkpoints/!} and let the run resume across Anthropic 5-hour rolling windows.
+
 \subsubsection{Aggregator --- figures and tables (P7)}\label{aggregator-figures-and-tables-p7}
 
 \begin{lstlisting}[language=bash]

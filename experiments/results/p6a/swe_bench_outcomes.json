@@ -1,0 +1,52 @@
+{
+  "source_jsonl": ".cache/live_hf_checkpoints/H_SWEB_live_n15.jsonl",
+  "caveat": "claude CLI 2.1 SessionStart hook reliably aborts SWE-bench prompts when the startup exceeds the 300s submit timeout; ~77% of haiku attempts and 100% of sonnet attempts were blocked at the CLI layer. full_errors_as_zero treats those aborts conservatively as score=0.0 on both sides (per pre-registration); clean_pairs_only restricts to (seed, instance) combos where neither side aborted, which loses most of the signal.",
+  "per_model": {
+    "claude-haiku-4-5": {
+      "n_paired_attempts": 30,
+      "n_total_records": 60,
+      "per_condition_error_rate_on": 0.7667,
+      "per_condition_error_rate_off": 0.7667,
+      "full_errors_as_zero": {
+        "harness_on_mean": 0.1259,
+        "harness_off_mean": 0.0167,
+        "delta_observed": 0.1093,
+        "cohens_dz": 0.4879,
+        "paired_permutation_p": 0.0322,
+        "n_nonzero_on": 7,
+        "n_nonzero_off": 1
+      },
+      "clean_pairs_only": {
+        "n_clean_pairs": 1,
+        "harness_on_mean": 0.5,
+        "harness_off_mean": 0.5,
+        "delta_observed": 0.0,
+        "cohens_dz": 0.0,
+        "paired_permutation_p": 1.0
+      }
+    },
+    "claude-sonnet-4-6": {
+      "n_paired_attempts": 0,
+      "n_total_records": 10,
+      "per_condition_error_rate_on": null,
+      "per_condition_error_rate_off": null,
+      "full_errors_as_zero": {
+        "harness_on_mean": null,
+        "harness_off_mean": null,
+        "delta_observed": null,
+        "cohens_dz": 0.0,
+        "paired_permutation_p": 1.0,
+        "n_nonzero_on": 0,
+        "n_nonzero_off": 0
+      },
+      "clean_pairs_only": {
+        "n_clean_pairs": 0,
+        "harness_on_mean": null,
+        "harness_off_mean": null,
+        "delta_observed": null,
+        "cohens_dz": 0.0,
+        "paired_permutation_p": 1.0
+      }
+    }
+  }
+}

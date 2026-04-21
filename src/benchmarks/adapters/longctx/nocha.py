@@ -82,15 +82,30 @@ class NochaJointAccuracyAdapter(BenchmarkAdapter):
 
     @staticmethod
     def _mutated_claim(true_claim: str, *, seed: int, eid: str) -> str:
+        """Flip one character of the activation code to produce a false claim.
+
+        Accepts activation codes of any length (4-32 chars) composed of
+        letters and/or digits — covers synthetic 6-char hex codes AND
+        real-world RULER-style variable-length digit strings without the
+        caller having to configure anything. The mutation alphabet is
+        inferred from the matched code's own character class so the false
+        claim stays syntactically plausible.
+        """
         rng = random.Random(f"{seed}:{eid}")
-        match = re.search(r"is ([0-9A-Z]{6})\.", true_claim)
+        match = re.search(r"is ([0-9A-Za-z]{4,32})\.", true_claim)
         if not match:
             return true_claim.replace(".", " (revoked).")
         original = match.group(1)
         chars = list(original)
         i = rng.randrange(len(chars))
-        alphabet = "0123456789ABCDEF"
-        replacement = rng.choice([c for c in alphabet if c != chars[i]])
+        target = chars[i]
+        if target.isdigit():
+            alphabet = "0123456789"
+        elif target.isupper():
+            alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        else:
+            alphabet = "abcdefghijklmnopqrstuvwxyz"
+        replacement = rng.choice([c for c in alphabet if c != target])
         chars[i] = replacement
         return true_claim.replace(original, "".join(chars))
 

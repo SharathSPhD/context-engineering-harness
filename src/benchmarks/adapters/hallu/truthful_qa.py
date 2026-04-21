@@ -46,6 +46,7 @@ class TruthfulQAAdapter(BenchmarkAdapter):
 
     default_n: int = 30
     load_real: bool = False
+    strict_hf: bool = False
     hf_dataset_id: str = "truthful_qa"
     hf_config: str = "generation"
     hf_split: str = "validation"
@@ -56,6 +57,11 @@ class TruthfulQAAdapter(BenchmarkAdapter):
             try:
                 return self._load_from_hf(n=n_use, seed=seed)
             except HFUnavailable as exc:
+                if self.strict_hf:
+                    raise RuntimeError(
+                        f"TruthfulQA live loader failed with strict_hf=True: {exc}. "
+                        "Refusing to fall back to synthetic under load_real=True."
+                    ) from exc
                 logger.warning("TruthfulQA real loader unavailable (%s); using synthetic", exc)
         return self._load_synthetic(n=n_use, seed=seed)
 
