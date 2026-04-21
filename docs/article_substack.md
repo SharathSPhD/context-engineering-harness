@@ -272,7 +272,7 @@ Install the plugin. Watch the audit log. The vocabulary was waiting.
 - **Plugin (install + use):** [github.com/SharathSPhD/pratyaksha-context-eng-harness](https://github.com/SharathSPhD/pratyaksha-context-eng-harness)
 - **Full harness, paper sources, experiments, validation:** [github.com/SharathSPhD/context-engineering-harness](https://github.com/SharathSPhD/context-engineering-harness)
 - **Citable preprint (Zenodo, DOI-backed canonical v2.0 record):** [zenodo.org/records/19653013](https://zenodo.org/records/19653013)
-- **Current working preprint (v2.1.1 PDF, paper with live-HF F14 + F15):** [pratyaksha-v2.1.1-preprint.pdf](release/pratyaksha-v2.1.1-preprint.pdf)
+- **Current working preprint (v2.1.1 PDF, paper with live-HF F14 + F15):** [pratyaksha-v2.1.1-preprint.pdf (GitHub release)](https://github.com/SharathSPhD/pratyaksha-context-eng-harness/releases/download/v2.1.1/pratyaksha-v2.1.1-preprint.pdf)
 - **v2.1.1 release page** (plugin zip, paper PDF, F14 / F15 figures, checksums): [v2.1.1 on GitHub](https://github.com/SharathSPhD/pratyaksha-context-eng-harness/releases/tag/v2.1.1) — supersedes [v2.0.0](https://github.com/SharathSPhD/pratyaksha-context-eng-harness/releases/tag/v2.0.0)
 - **Licence:** MIT (code), CC-BY-4.0 (paper text + figures)
 
